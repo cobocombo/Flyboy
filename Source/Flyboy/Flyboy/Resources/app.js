@@ -1,0 +1,14 @@
+///////////////////////////////////////////////////////////
+
+class HomePage extends ui.Page
+{
+  onInit()
+  {
+    this.navigationBarTitle = 'Home';
+    this.backgroundColor = 'red';
+  }
+}
+
+app.present({ root: new HomePage() });
+
+///////////////////////////////////////////////////////////
