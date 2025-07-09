@@ -37,31 +37,17 @@ class GameScene extends Phaser.Scene
 
   preload() 
   {
-    this.load.setCORS('anonymous'); // or 'use-credentials' if needed
     this.load.image('background', 'background.png');
-    this.load.on('loaderror', (file) => { console.error('Failed to load:', file.key); });
   }
 
   create() 
   {
-    const { width, height } = this.sys.game.canvas;
-    const bg = this.add.image(width / 2, height / 2, 'background');
-    bg.setDisplaySize(width, height);
+    this.background = this.add.image(device.screenHeight / 2, device.screenWidth / 2, 'background');
+    this.background.setDisplaySize(device.screenHeight , device.screenWidth);
   }
 }
 
-class HomePage extends ui.Page
-{
-  onInit()
-  {
-    this.navigationBarTitle = 'Home';
-
-    this.addComponents({ components: [ new ImageV2({ source: './background.png' }) ] })
-  }
-}
-
-
-const game = new ui.PhaserGame({ config: { scene: [ GameScene ], loader: { baseURL: './', crossOrigin: 'anonymous' }} })
+const game = new ui.PhaserGame({ config: { scene: [ GameScene ] } })
 app.present({ root: game });
 
 ///////////////////////////////////////////////////////////
