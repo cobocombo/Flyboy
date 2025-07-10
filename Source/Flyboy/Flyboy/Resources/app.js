@@ -35,6 +35,7 @@ class GameScene extends Phaser.Scene
   background;
   joystick;
   plane;
+  shootButton;
 
   constructor() 
   {
@@ -47,6 +48,7 @@ class GameScene extends Phaser.Scene
     this.load.image('plane-fly-1', 'plane-fly-1.png');
     this.load.image('joystick-base', 'joystick-base.png');
     this.load.image('joystick', 'joystick.png');
+    this.load.image('shoot-button', 'shoot-button.png');
   }
 
   create() 
@@ -55,13 +57,12 @@ class GameScene extends Phaser.Scene
     this.background.setDisplaySize(device.screenHeight , device.screenWidth);
 
     this.plane = new Plane({ scene: this });
+    this.joystick = new Joystick({ scene: this });
+    this.shootButton = new ShootButton({ scene: this });
     
     const x = 20 + (this.plane.sprite.displayWidth / 2);
     const y = (device.screenWidth / 2) - (device.screenWidth / 12);
-
     this.plane.setPosition({ x: x, y: y });
-
-    this.joystick = new Joystick({ scene: this });
   }
 }
 
@@ -186,6 +187,83 @@ class Joystick
       {
         this.currentState = this.states.idle;
         console.log(this.states.idle);
+      }
+    });
+  }
+}
+
+class ShootButton 
+{
+  errors;
+  scene;
+  sprite;
+  isHeld;
+
+  constructor({ scene } = {}) 
+  {
+    this.errors = 
+    {
+      sceneError: 'Shoot Button Error:: A valid phaser scene is required.'
+    };
+
+    if(!scene) 
+    {
+      console.error(this.errors.sceneError);
+      return;
+    }
+
+    this.scene = scene;
+    this.isHeld = false;
+
+    const targetHeight = device.screenWidth / 6;
+    this.sprite = scene.add.image(0, 0, 'shoot-button');
+
+    const scale = targetHeight / this.sprite.height;
+    this.sprite.setScale(scale);
+
+    const padding = 20;
+    const screenWidth = device.screenHeight; 
+    const screenHeight = device.screenWidth; 
+
+    const x = screenWidth - padding - (this.sprite.displayWidth / 2);
+    const y = screenHeight - padding - (this.sprite.displayHeight / 2);
+
+    this.sprite.setPosition(x, y);
+    this.sprite.setInteractive();
+
+    this.sprite.on('pointerdown', () => 
+    {
+      if(!this.isHeld) 
+      {
+        this.isHeld = true;
+        console.log('shoot: hold start');
+      }
+    });
+
+    this.sprite.on('pointerup', () => 
+    {
+      if(this.isHeld) 
+      {
+        console.log('shoot: hold end');
+        this.isHeld = false;
+      }
+    });
+
+    this.sprite.on('pointerout', () => 
+    {
+      if(this.isHeld) 
+      {
+        console.log('shoot: hold end');
+        this.isHeld = false;
+      }
+    });
+
+    this.sprite.on('pointerupoutside', () => 
+    {
+      if(this.isHeld) 
+      {
+        console.log('shoot: hold end');
+        this.isHeld = false;
       }
     });
   }
