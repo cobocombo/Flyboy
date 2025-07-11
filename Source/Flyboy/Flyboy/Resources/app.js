@@ -46,6 +46,7 @@ class GameScene extends Phaser.Scene
   {
     this.load.image('background', 'background.png');
     this.load.image('plane-fly-1', 'plane-fly-1.png');
+    this.load.image('plane-fly-2', 'plane-fly-2.png');
     this.load.image('joystick-base', 'joystick-base.png');
     this.load.image('joystick', 'joystick.png');
     this.load.image('shoot-button', 'shoot-button.png');
@@ -55,6 +56,16 @@ class GameScene extends Phaser.Scene
   {
     this.background = this.add.image(device.screenHeight / 2, device.screenWidth / 2, 'background');
     this.background.setDisplaySize(device.screenHeight , device.screenWidth);
+
+    this.anims.create({
+      key: 'plane-fly',
+      frames: [
+        { key: 'plane-fly-1' },
+        { key: 'plane-fly-2' }
+      ],
+      frameRate: 12,
+      repeat: -1
+    });
 
     this.plane = new Plane({ scene: this });
     this.joystick = new Joystick({ scene: this });
@@ -93,6 +104,7 @@ class Plane
 
     this.scene = scene;
     this.sprite = scene.add.sprite(0, 0, 'plane-fly-1');
+    this.sprite.play('plane-fly');
 
     const targetHeight = device.screenWidth / 6;
     const scale = targetHeight / this.sprite.height;
@@ -104,6 +116,16 @@ class Plane
     if(!typeChecker.check({ type: 'number', value: x })) console.error(this.errors.xTypeError);
     if(!typeChecker.check({ type: 'number', value: y })) console.error(this.errors.yTypeError);
     this.sprite.setPosition(x, y);
+
+    const bobAmount = this.sprite.displayHeight / 4;
+    this.scene.tweens.add({
+      targets: this.sprite,
+      y: y - bobAmount,
+      duration: 1500,
+      ease: 'Sine.easeInOut',
+      yoyo: true,
+      repeat: -1
+    });
   }
 }
 
