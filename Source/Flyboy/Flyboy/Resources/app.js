@@ -93,6 +93,34 @@ class GameScene extends Phaser.Scene
     const y = (device.screenWidth / 2) - (device.screenWidth / 12);
     this.plane.setPosition({ x: x, y: y });
   }
+
+  update(time, delta) 
+  {
+    const joystickState = this.joystick.currentState;
+    const speedPerSecond = device.screenWidth / 3;
+    const speed = (speedPerSecond * delta) / 1000;
+
+    let newY = this.plane.sprite.y;
+
+    if(joystickState === 'up') 
+    {
+      newY -= speed;
+      this.plane.stopBobbing();
+    } 
+    else if (joystickState === 'down') 
+    {
+      newY += speed;
+      this.plane.stopBobbing();
+    } 
+    else this.plane.startBobbing();
+
+    const topBound = 5 + (this.plane.sprite.displayHeight / 2);
+    const bottomBound = this.joystick.base.y - this.joystick.base.displayHeight / 1.15;
+
+    newY = Phaser.Math.Clamp(newY, topBound, bottomBound);
+
+    if(joystickState === 'up' || joystickState === 'down') this.plane.setPosition({ x: this.plane.sprite.x, y: newY });
+  }
 }
 
 ///////////////////////////////////////////////////////////
@@ -101,11 +129,13 @@ class GameScene extends Phaser.Scene
 
 class Plane 
 {
+  baseY;
+  bobTween;
   currentAnim;
   errors;
   scene;
   sprite;
-
+  
   constructor({ scene } = {}) 
   {
     this.errors = 
@@ -136,25 +166,40 @@ class Plane
     if(!typeChecker.check({ type: 'number', value: x })) console.error(this.errors.xTypeError);
     if(!typeChecker.check({ type: 'number', value: y })) console.error(this.errors.yTypeError);
     this.sprite.setPosition(x, y);
+    this.baseY = y;
+  }
 
-    const bobAmount = this.sprite.displayHeight / 4;
-    this.scene.tweens.add({
+  setAnimation(name) 
+  {
+    if(this.currentAnim !== name) 
+    {
+      this.sprite.play(name);
+      this.currentAnim = name;
+    }
+  }
+
+  startBobbing() 
+  {
+    if(this.bobTween) return;
+
+    const bobAmount = this.sprite.displayHeight / 12;
+    this.bobTween = this.scene.tweens.add({
       targets: this.sprite,
-      y: y - bobAmount,
-      duration: 1500,
+      y: this.baseY - bobAmount,
+      duration: 1000,
       ease: 'Sine.easeInOut',
       yoyo: true,
       repeat: -1
     });
   }
 
-  setAnimation(name) 
+  stopBobbing() 
   {
-    console.log(name);
-    if(this.currentAnim !== name) 
+    if(this.bobTween) 
     {
-      this.sprite.play(name);
-      this.currentAnim = name;
+      this.bobTween.stop();
+      this.bobTween = null;
+      this.sprite.setY(this.baseY);
     }
   }
 }
