@@ -33,6 +33,8 @@
 class GameScene extends Phaser.Scene 
 {
   background;
+  bullets;
+  bulletTimer;
   joystick;
   plane;
   shootButton;
@@ -55,6 +57,11 @@ class GameScene extends Phaser.Scene
     this.load.image('joystick-base', 'joystick-base.png');
     this.load.image('joystick', 'joystick.png');
     this.load.image('shoot-button', 'shoot-button.png');
+    this.load.image('bullet-1', 'bullet-1.png');
+    this.load.image('bullet-2', 'bullet-2.png');
+    this.load.image('bullet-3', 'bullet-3.png');
+    this.load.image('bullet-4', 'bullet-4.png');
+    this.load.image('bullet-5', 'bullet-5.png');
   }
 
   create() 
@@ -94,10 +101,26 @@ class GameScene extends Phaser.Scene
       repeat: -1
     });
 
+    this.anims.create({
+      key: 'bullet-anim',
+      frames: [
+        { key: 'bullet-1' },
+        { key: 'bullet-2' },
+        { key: 'bullet-3' },
+        { key: 'bullet-4' },
+        { key: 'bullet-5' }
+      ],
+      frameRate: 20,
+      repeat: -1
+    });
+
     this.plane = new Plane({ scene: this });
     this.joystick = new Joystick({ scene: this });
     this.shootButton = new ShootButton({ scene: this, plane: this.plane });
-    
+
+    this.bullets = this.add.group();
+    this.bulletTimer = 0;
+
     const x = 20 + (this.plane.sprite.displayWidth / 2);
     const y = (device.screenWidth / 2) - (device.screenWidth / 12);
     this.plane.setPosition({ x: x, y: y });
@@ -145,6 +168,26 @@ class GameScene extends Phaser.Scene
     if(this.background2.x <= resetX) {
       this.background2.x = this.background1.x + device.screenHeight - 3;
     }
+
+    this.shootButton.update(delta);
+
+    Phaser.Actions.Call(this.bullets.getChildren(), bulletSprite => 
+    {
+      if(!bulletSprite || !bulletSprite.active) return;
+
+      const bullet = { sprite: bulletSprite };
+      bullet.update = Bullet.prototype.update;
+      bullet.isOffScreen = Bullet.prototype.isOffScreen;
+      bullet.destroy = Bullet.prototype.destroy;
+
+      bullet.update(delta);
+      if(bullet.isOffScreen()) 
+      {
+        console.log('Removing bullet from scene...')
+        bullet.destroy();
+        this.bullets.remove(bulletSprite, true, true);
+      }
+    });
   }
 }
 
@@ -342,6 +385,9 @@ class ShootButton
     this.plane = plane;
     this.isHeld = false;
 
+    this.shootCooldown = 120;
+    this.elapsed = 0;
+
     const targetHeight = device.screenWidth / 6;
     this.sprite = scene.add.image(0, 0, 'shoot-button');
 
@@ -365,6 +411,12 @@ class ShootButton
         this.isHeld = true;
         console.log('shoot: hold start');
         this.plane?.setAnimation('plane-shoot');
+
+        const x = this.plane.sprite.x + this.plane.sprite.displayWidth / 2;
+        const y = this.plane.sprite.y + this.plane.sprite.displayHeight / 4;
+        new Bullet({ scene: this.scene, x, y });
+
+        this.elapsed = -this.shootCooldown / 2;
       }
     });
 
@@ -381,6 +433,54 @@ class ShootButton
     this.sprite.on('pointerup', stopShooting);
     this.sprite.on('pointerout', stopShooting);
     this.sprite.on('pointerupoutside', stopShooting);
+  }
+
+  update(delta) 
+  {
+    if(!this.isHeld) return;
+
+    this.elapsed += delta;
+    if(this.elapsed >= this.shootCooldown) 
+    {
+      this.elapsed = 0;
+
+      const x = this.plane.sprite.x + this.plane.sprite.displayWidth / 2;
+      const y = this.plane.sprite.y + this.plane.sprite.displayHeight / 4;
+      new Bullet({ scene: this.scene, x, y });
+    }
+  }
+}
+
+class Bullet 
+{
+  constructor({ scene, x, y }) 
+  {
+    this.scene = scene;
+
+    this.sprite = scene.add.sprite(x, y, 'bullet-1');
+    this.sprite.play('bullet-anim');
+
+    const bulletHeight = device.screenWidth / 18;
+    const scale = bulletHeight / this.sprite.height;
+    this.sprite.setScale(scale);
+
+    scene.bullets.add(this.sprite);
+  }
+
+  update(delta) 
+  {
+    const speed = device.screenWidth * 0.75;
+    this.sprite.x += (speed * delta) / 1000;
+  }
+
+  isOffScreen() 
+  {
+    return this.sprite.x > device.screenHeight + this.sprite.displayWidth;
+  }
+
+  destroy() 
+  {
+    this.sprite.destroy();
   }
 }
 
