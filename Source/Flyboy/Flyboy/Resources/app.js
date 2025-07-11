@@ -2,33 +2,33 @@
 // SCENES
 ///////////////////////////////////////////////////////////
 
-class SplashScene extends Phaser.Scene 
-{
-  constructor() 
-  {
-    super('SplashScene');
-  }
+// class SplashScene extends Phaser.Scene 
+// {
+//   constructor() 
+//   {
+//     super('SplashScene');
+//   }
 
-  create() 
-  {
-    this.cameras.main.setBackgroundColor('#00ff00');
-    setTimeout(() => { this.scene.start('MainMenuScene'); }, 2000);
-  }
-}
+//   create() 
+//   {
+//     this.cameras.main.setBackgroundColor('#00ff00');
+//     setTimeout(() => { this.scene.start('MainMenuScene'); }, 2000);
+//   }
+// }
 
-class MainMenuScene extends Phaser.Scene 
-{
-  constructor() 
-  {
-    super('MainMenuScene');
-  }
+// class MainMenuScene extends Phaser.Scene 
+// {
+//   constructor() 
+//   {
+//     super('MainMenuScene');
+//   }
 
-  create() 
-  {
-    this.cameras.main.setBackgroundColor('#0000ff');
-    setTimeout(() => { this.scene.start('GameScene'); }, 2000);
-  }
-}
+//   create() 
+//   {
+//     this.cameras.main.setBackgroundColor('#0000ff');
+//     setTimeout(() => { this.scene.start('GameScene'); }, 2000);
+//   }
+// }
 
 class GameScene extends Phaser.Scene 
 {
@@ -47,6 +47,11 @@ class GameScene extends Phaser.Scene
     this.load.image('background', 'background.png');
     this.load.image('plane-fly-1', 'plane-fly-1.png');
     this.load.image('plane-fly-2', 'plane-fly-2.png');
+    this.load.image('plane-shoot-1', 'plane-shoot-1.png');
+    this.load.image('plane-shoot-2', 'plane-shoot-2.png');
+    this.load.image('plane-shoot-3', 'plane-shoot-3.png');
+    this.load.image('plane-shoot-4', 'plane-shoot-4.png');
+    this.load.image('plane-shoot-5', 'plane-shoot-5.png');
     this.load.image('joystick-base', 'joystick-base.png');
     this.load.image('joystick', 'joystick.png');
     this.load.image('shoot-button', 'shoot-button.png');
@@ -67,9 +72,22 @@ class GameScene extends Phaser.Scene
       repeat: -1
     });
 
+    this.anims.create({
+      key: 'plane-shoot',
+      frames: [
+        { key: 'plane-shoot-1' },
+        { key: 'plane-shoot-2' },
+        { key: 'plane-shoot-3' },
+        { key: 'plane-shoot-4' },
+        { key: 'plane-shoot-5' }
+      ],
+      frameRate: 15,
+      repeat: -1
+    });
+
     this.plane = new Plane({ scene: this });
     this.joystick = new Joystick({ scene: this });
-    this.shootButton = new ShootButton({ scene: this });
+    this.shootButton = new ShootButton({ scene: this, plane: this.plane });
     
     const x = 20 + (this.plane.sprite.displayWidth / 2);
     const y = (device.screenWidth / 2) - (device.screenWidth / 12);
@@ -83,6 +101,7 @@ class GameScene extends Phaser.Scene
 
 class Plane 
 {
+  currentAnim;
   errors;
   scene;
   sprite;
@@ -105,6 +124,7 @@ class Plane
     this.scene = scene;
     this.sprite = scene.add.sprite(0, 0, 'plane-fly-1');
     this.sprite.play('plane-fly');
+    this.currentAnim = 'plane-fly';
 
     const targetHeight = device.screenWidth / 6;
     const scale = targetHeight / this.sprite.height;
@@ -126,6 +146,16 @@ class Plane
       yoyo: true,
       repeat: -1
     });
+  }
+
+  setAnimation(name) 
+  {
+    console.log(name);
+    if(this.currentAnim !== name) 
+    {
+      this.sprite.play(name);
+      this.currentAnim = name;
+    }
   }
 }
 
@@ -217,15 +247,17 @@ class Joystick
 class ShootButton 
 {
   errors;
+  isHeld;
+  plane;
   scene;
   sprite;
-  isHeld;
-
-  constructor({ scene } = {}) 
+  
+  constructor({ scene, plane } = {}) 
   {
     this.errors = 
     {
-      sceneError: 'Shoot Button Error:: A valid phaser scene is required.'
+      planeTypeError: 'Shoot Button Erorr: Expected type Plane for plane.',
+      sceneError: 'Shoot Button Error: A valid phaser scene is required.'
     };
 
     if(!scene) 
@@ -234,7 +266,10 @@ class ShootButton
       return;
     }
 
+    if(!typeChecker.check({ type: 'plane', value: plane })) console.error(this.errors.planeTypeError);
+
     this.scene = scene;
+    this.plane = plane;
     this.isHeld = false;
 
     const targetHeight = device.screenWidth / 6;
@@ -259,40 +294,29 @@ class ShootButton
       {
         this.isHeld = true;
         console.log('shoot: hold start');
+        this.plane?.setAnimation('plane-shoot');
       }
     });
 
-    this.sprite.on('pointerup', () => 
+    const stopShooting = () => 
     {
       if(this.isHeld) 
       {
         console.log('shoot: hold end');
         this.isHeld = false;
+        this.plane?.setAnimation('plane-fly');
       }
-    });
+    };
 
-    this.sprite.on('pointerout', () => 
-    {
-      if(this.isHeld) 
-      {
-        console.log('shoot: hold end');
-        this.isHeld = false;
-      }
-    });
-
-    this.sprite.on('pointerupoutside', () => 
-    {
-      if(this.isHeld) 
-      {
-        console.log('shoot: hold end');
-        this.isHeld = false;
-      }
-    });
+    this.sprite.on('pointerup', stopShooting);
+    this.sprite.on('pointerout', stopShooting);
+    this.sprite.on('pointerupoutside', stopShooting);
   }
 }
 
 ///////////////////////////////////////////////////////////
 
+typeChecker.register({ name: 'plane', constructor: Plane });
 const game = new ui.PhaserGame({ config: { scene: [ GameScene ] } })
 app.present({ root: game });
 
