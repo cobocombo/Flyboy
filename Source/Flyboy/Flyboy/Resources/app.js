@@ -59,8 +59,17 @@ class GameScene extends Phaser.Scene
 
   create() 
   {
-    this.background = this.add.image(device.screenHeight / 2, device.screenWidth / 2, 'background');
-    this.background.setDisplaySize(device.screenHeight , device.screenWidth);
+    this.background1 = this.add.image(0, 0, 'background');
+    this.background2 = this.add.image(0, 0, 'background');
+
+    this.background1.setDisplaySize(device.screenHeight, device.screenWidth);
+    this.background2.setDisplaySize(device.screenHeight, device.screenWidth);
+
+    this.background1.setOrigin(0, 0);
+    this.background2.setOrigin(0, 0);
+
+    this.background1.setPosition(0, 0);
+    this.background2.setPosition(device.screenHeight - 3, 0);
 
     this.anims.create({
       key: 'plane-fly',
@@ -120,6 +129,22 @@ class GameScene extends Phaser.Scene
     newY = Phaser.Math.Clamp(newY, topBound, bottomBound);
 
     if(joystickState === 'up' || joystickState === 'down') this.plane.setPosition({ x: this.plane.sprite.x, y: newY });
+
+    const scrollSpeed = device.screenWidth / 4;
+    const scrollAmount = (scrollSpeed * delta) / 1000;
+
+    this.background1.x -= scrollAmount;
+    this.background2.x -= scrollAmount;
+
+    const resetX = -device.screenHeight;
+
+    if(this.background1.x <= resetX) {
+      this.background1.x = this.background2.x + device.screenHeight - 3;
+    }
+
+    if(this.background2.x <= resetX) {
+      this.background2.x = this.background1.x + device.screenHeight - 3;
+    }
   }
 }
 
