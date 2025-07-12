@@ -140,11 +140,14 @@ class GameScene extends Phaser.Scene
     const shootButtonX = this.shootButton.sprite.x;
     const midX = (joystickX + shootButtonX) / 2;
 
+    this.pauseAlert = new PauseAlertDialog({ scene: this.scene });
+
     pauseButton.setPosition(midX, midY);
     pauseButton.setInteractive();
     pauseButton.on('pointerdown', () => 
     {
-      console.log('Pause button tapped...');
+      this.scene.pause();
+      this.pauseAlert.present();
     });
   }
 
@@ -210,6 +213,26 @@ class GameScene extends Phaser.Scene
         this.bullets.remove(bulletSprite, true, true);
       }
     });
+  }
+}
+
+///////////////////////////////////////////////////////////
+// DIALOGS
+///////////////////////////////////////////////////////////
+
+class PauseAlertDialog extends ui.AlertDialog
+{
+  constructor({ scene })
+  {
+    super();
+    this.cancelable = false;
+    this.title = 'Game Paused';
+    this.addComponents({ components: [ new ui.Text({ text: 'Select an option' }) ] });
+
+    this.rowfooter = true;
+    let resumeButton = new ui.AlertDialogButton({ text: 'Resume', onTap: () => { scene.resume();  } });
+    let quitButton = new ui.AlertDialogButton({ text: 'Quit', textColor: 'red', onTap: () => { console.log('Go to main menu...') } });
+    this.buttons = [ resumeButton, quitButton ];
   }
 }
 
