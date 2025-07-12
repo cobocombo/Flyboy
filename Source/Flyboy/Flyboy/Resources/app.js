@@ -16,19 +16,26 @@
 //   }
 // }
 
-// class MainMenuScene extends Phaser.Scene 
-// {
-//   constructor() 
-//   {
-//     super('MainMenuScene');
-//   }
+class MainMenuScene extends Phaser.Scene 
+{
+  constructor() 
+  {
+    super('MainMenuScene');
+  }
 
-//   create() 
-//   {
-//     this.cameras.main.setBackgroundColor('#0000ff');
-//     setTimeout(() => { this.scene.start('GameScene'); }, 2000);
-//   }
-// }
+  preload()
+  {
+    this.load.image('background', 'background.png');
+  }
+
+  create() 
+  {
+    this.background = this.add.image(0, 0, 'background');
+    this.background.setOrigin(0, 0);
+    this.background.setDisplaySize(device.screenHeight, device.screenWidth);
+    setTimeout(() => { this.scene.start('GameScene'); }, 2000);
+  }
+}
 
 class GameScene extends Phaser.Scene 
 {
@@ -79,41 +86,50 @@ class GameScene extends Phaser.Scene
     this.background1.setPosition(0, 0);
     this.background2.setPosition(device.screenHeight - 3, 0);
 
-    this.anims.create({
-      key: 'plane-fly',
-      frames: [
-        { key: 'plane-fly-1' },
-        { key: 'plane-fly-2' }
-      ],
-      frameRate: 12,
-      repeat: -1
-    });
+    if(!this.anims.exists('plane-fly')) 
+    {
+      this.anims.create({
+        key: 'plane-fly',
+        frames: [
+          { key: 'plane-fly-1' },
+          { key: 'plane-fly-2' }
+        ],
+        frameRate: 12,
+        repeat: -1
+      });
+    };
 
-    this.anims.create({
-      key: 'plane-shoot',
-      frames: [
-        { key: 'plane-shoot-1' },
-        { key: 'plane-shoot-2' },
-        { key: 'plane-shoot-3' },
-        { key: 'plane-shoot-4' },
-        { key: 'plane-shoot-5' }
-      ],
-      frameRate: 15,
-      repeat: -1
-    });
+    if(!this.anims.exists('plane-shoot')) 
+    {
+      this.anims.create({
+        key: 'plane-shoot',
+        frames: [
+          { key: 'plane-shoot-1' },
+          { key: 'plane-shoot-2' },
+          { key: 'plane-shoot-3' },
+          { key: 'plane-shoot-4' },
+          { key: 'plane-shoot-5' }
+        ],
+        frameRate: 15,
+        repeat: -1
+      });
+    };
 
-    this.anims.create({
-      key: 'bullet-anim',
-      frames: [
-        { key: 'bullet-1' },
-        { key: 'bullet-2' },
-        { key: 'bullet-3' },
-        { key: 'bullet-4' },
-        { key: 'bullet-5' }
-      ],
-      frameRate: 20,
-      repeat: -1
-    });
+    if(!this.anims.exists('bullet-anim')) 
+    {
+      this.anims.create({
+        key: 'bullet-anim',
+        frames: [
+          { key: 'bullet-1' },
+          { key: 'bullet-2' },
+          { key: 'bullet-3' },
+          { key: 'bullet-4' },
+          { key: 'bullet-5' }
+        ],
+        frameRate: 20,
+        repeat: -1
+      });
+    };
 
     this.plane = new Plane({ scene: this });
     this.joystick = new Joystick({ scene: this });
@@ -222,7 +238,7 @@ class GameScene extends Phaser.Scene
 
 class PauseAlertDialog extends ui.AlertDialog
 {
-  constructor({ scene })
+  constructor({ scene } = {})
   {
     super();
     this.cancelable = false;
@@ -230,8 +246,12 @@ class PauseAlertDialog extends ui.AlertDialog
     this.addComponents({ components: [ new ui.Text({ text: 'Select an option' }) ] });
 
     this.rowfooter = true;
-    let resumeButton = new ui.AlertDialogButton({ text: 'Resume', onTap: () => { scene.resume();  } });
-    let quitButton = new ui.AlertDialogButton({ text: 'Quit', textColor: 'red', onTap: () => { console.log('Go to main menu...') } });
+    let resumeButton = new ui.AlertDialogButton({ text: 'Resume', onTap: () => { scene.resume(); } });
+    let quitButton = new ui.AlertDialogButton({ text: 'Quit', textColor: 'red', onTap: () => 
+    { 
+      scene.stop('GameScene');
+      scene.start('MainMenuScene'); 
+    }});
     this.buttons = [ resumeButton, quitButton ];
   }
 }
@@ -532,7 +552,7 @@ class Bullet
 ///////////////////////////////////////////////////////////
 
 typeChecker.register({ name: 'plane', constructor: Plane });
-const game = new ui.PhaserGame({ config: { scene: [ GameScene ] } });
+const game = new ui.PhaserGame({ config: { scene: [ MainMenuScene, GameScene ] } });
 app.present({ root: game });
 
 ///////////////////////////////////////////////////////////
