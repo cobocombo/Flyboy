@@ -385,7 +385,7 @@ class ShootButton
     this.plane = plane;
     this.isHeld = false;
 
-    this.shootCooldown = 120;
+    this.shootCooldown = 200;
     this.elapsed = 0;
 
     const targetHeight = device.screenWidth / 6;
@@ -487,7 +487,7 @@ class Bullet
 ///////////////////////////////////////////////////////////
 
 typeChecker.register({ name: 'plane', constructor: Plane });
-const game = new ui.PhaserGame({ config: { scene: [ GameScene ] } })
+const game = new ui.PhaserGame({ config: { scene: [ GameScene ] } });
 app.present({ root: game });
 
 ///////////////////////////////////////////////////////////
