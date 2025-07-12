@@ -62,6 +62,7 @@ class GameScene extends Phaser.Scene
     this.load.image('bullet-3', 'bullet-3.png');
     this.load.image('bullet-4', 'bullet-4.png');
     this.load.image('bullet-5', 'bullet-5.png');
+    this.load.image('pause-button', 'pause-button.png');
   }
 
   create() 
@@ -124,6 +125,27 @@ class GameScene extends Phaser.Scene
     const x = 20 + (this.plane.sprite.displayWidth / 2);
     const y = (device.screenWidth / 2) - (device.screenWidth / 12);
     this.plane.setPosition({ x: x, y: y });
+
+    const pauseButton = this.add.image(0, 0, 'pause-button');
+
+    const targetHeight = device.screenWidth / 8;
+    const scale = targetHeight / pauseButton.height;
+    pauseButton.setScale(scale);
+
+    const joystickY = this.joystick.base.y;
+    const shootButtonY = this.shootButton.sprite.y;
+    const midY = (joystickY + shootButtonY) / 2;
+
+    const joystickX = this.joystick.base.x;
+    const shootButtonX = this.shootButton.sprite.x;
+    const midX = (joystickX + shootButtonX) / 2;
+
+    pauseButton.setPosition(midX, midY);
+    pauseButton.setInteractive();
+    pauseButton.on('pointerdown', () => 
+    {
+      console.log('Pause button tapped...');
+    });
   }
 
   update(time, delta) 
