@@ -26,6 +26,9 @@ class MainMenuScene extends Phaser.Scene
   preload()
   {
     this.load.image('background', 'background.png');
+    const font = new FontFace('BulgariaDreams', 'url("Bulgaria Dreams Regular.ttf")');
+    font.load().then((loadedFace) => { document.fonts.add(loadedFace);})
+      .catch((err) => { console.warn('Font failed to load', err); });
   }
 
   create() 
@@ -33,6 +36,18 @@ class MainMenuScene extends Phaser.Scene
     this.background = this.add.image(0, 0, 'background');
     this.background.setOrigin(0, 0);
     this.background.setDisplaySize(device.screenHeight, device.screenWidth);
+
+    setTimeout(() => 
+    {
+      this.add.text(this.scale.width / 2, this.scale.height / 4, 'Flyboy', 
+      {
+        fontFamily: 'BulgariaDreams',
+        fontSize: `${device.screenWidth / 3.5}px`,
+        color: '#000000',
+        align: 'center'
+      }).setOrigin(0.5);
+    },1);
+
     setTimeout(() => { this.scene.start('GameScene'); }, 2000);
   }
 }
@@ -243,16 +258,16 @@ class PauseAlertDialog extends ui.AlertDialog
     super();
     this.cancelable = false;
     this.title = 'Game Paused';
-    this.addComponents({ components: [ new ui.Text({ text: 'Select an option' }) ] });
+    this.addComponents({ components: [ new ui.Text({ text: 'All progress will be lost.' }) ] });
 
     this.rowfooter = true;
-    let resumeButton = new ui.AlertDialogButton({ text: 'Resume', onTap: () => { scene.resume(); } });
     let quitButton = new ui.AlertDialogButton({ text: 'Quit', textColor: 'red', onTap: () => 
     { 
       scene.stop('GameScene');
       scene.start('MainMenuScene'); 
     }});
-    this.buttons = [ resumeButton, quitButton ];
+    let resumeButton = new ui.AlertDialogButton({ text: 'Resume', onTap: () => { scene.resume(); } });
+    this.buttons = [ quitButton, resumeButton ];
   }
 }
 
