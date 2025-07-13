@@ -26,6 +26,7 @@ class MainMenuScene extends Phaser.Scene
   preload()
   {
     this.load.image('background', 'background.png');
+    this.load.image('start-button', 'start-button.png');
     const font = new FontFace('BulgariaDreams', 'url("Bulgaria Dreams Regular.ttf")');
     font.load().then((loadedFace) => { document.fonts.add(loadedFace);})
       .catch((err) => { console.warn('Font failed to load', err); });
@@ -48,7 +49,19 @@ class MainMenuScene extends Phaser.Scene
       }).setOrigin(0.5);
     },1);
 
-    setTimeout(() => { this.scene.start('GameScene'); }, 2000);
+    const startButton = this.add.image(0, 0, 'start-button');
+    const targetHeight = device.screenWidth / 8;
+    const scale = targetHeight / startButton.height;
+    startButton.setScale(scale);
+
+    const x = this.cameras.main.centerX;
+    const y = this.cameras.main.height * 0.75;
+    startButton.setPosition(x, y);
+
+    startButton.setInteractive();
+    startButton.on('pointerdown', () => {
+      this.scene.start('GameScene');
+    });
   }
 }
 
