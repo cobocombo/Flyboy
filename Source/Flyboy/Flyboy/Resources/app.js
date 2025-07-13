@@ -60,8 +60,59 @@ class MainMenuScene extends Phaser.Scene
 
     startButton.setInteractive();
     startButton.on('pointerdown', () => {
-      this.scene.start('GameScene');
+      this.scene.start('LoadingScene');
     });
+  }
+}
+
+class LoadingScene extends Phaser.Scene 
+{
+  constructor() 
+  {
+    super('LoadingScene');
+  }
+
+  preload() 
+  {
+    const font = new FontFace('BulgariaDreams', 'url("Bulgaria Dreams Regular.ttf")');
+    font.load().then((loadedFace) => { document.fonts.add(loadedFace);})
+      .catch((err) => { console.warn('Font failed to load', err); });
+  }
+
+  create() 
+  {
+    this.cameras.main.setBackgroundColor('#000000');
+    const centerX = this.cameras.main.centerX;
+    const centerY = this.cameras.main.centerY;
+
+    setTimeout(() => 
+    {
+      const loadingText = this.add.text(centerX, centerY, 'Loading', 
+      {
+        fontFamily: 'BulgariaDreams',
+        fontSize: `${device.screenWidth / 4}px`,
+        color: '#ffffff'
+      }).setOrigin(0.5);
+
+      const dots = ['', '.', '..', '...'];
+      let dotIndex = 0;
+
+      const interval = this.time.addEvent({
+        delay: 400,
+        loop: true,
+        callback: () => 
+        {
+          loadingText.setText('Loading' + dots[dotIndex]);
+          dotIndex = (dotIndex + 1) % dots.length;
+        }
+      });
+
+      this.time.delayedCall(3000, () => 
+      {
+        interval.remove(false);
+        this.scene.start('GameScene');
+      });
+    },1);
   }
 }
 
@@ -579,7 +630,7 @@ class Bullet
 ///////////////////////////////////////////////////////////
 
 typeChecker.register({ name: 'plane', constructor: Plane });
-const game = new ui.PhaserGame({ config: { scene: [ MainMenuScene, GameScene ] } });
+const game = new ui.PhaserGame({ config: { scene: [ MainMenuScene, LoadingScene, GameScene ] } });
 app.present({ root: game });
 
 ///////////////////////////////////////////////////////////
