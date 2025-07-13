@@ -2,19 +2,26 @@
 // SCENES
 ///////////////////////////////////////////////////////////
 
-// class SplashScene extends Phaser.Scene 
-// {
-//   constructor() 
-//   {
-//     super('SplashScene');
-//   }
+class LevelSelectScene extends Phaser.Scene 
+{
+  constructor() 
+  {
+    super('LevelSelectScene');
+  }
 
-//   create() 
-//   {
-//     this.cameras.main.setBackgroundColor('#00ff00');
-//     setTimeout(() => { this.scene.start('MainMenuScene'); }, 2000);
-//   }
-// }
+  preload()
+  {
+    this.load.image('background', 'background.png');
+  }
+
+  create() 
+  {
+    this.background = this.add.image(0, 0, 'background');
+    this.background.setOrigin(0, 0);
+    this.background.setDisplaySize(device.screenHeight, device.screenWidth);
+    setTimeout(() => { this.scene.start('LoadingScene'); }, 2000);
+  }
+}
 
 class MainMenuScene extends Phaser.Scene 
 {
@@ -60,7 +67,7 @@ class MainMenuScene extends Phaser.Scene
 
     startButton.setInteractive();
     startButton.on('pointerdown', () => {
-      this.scene.start('LoadingScene');
+      this.scene.start('LevelSelectScene');
     });
   }
 }
@@ -630,7 +637,7 @@ class Bullet
 ///////////////////////////////////////////////////////////
 
 typeChecker.register({ name: 'plane', constructor: Plane });
-const game = new ui.PhaserGame({ config: { scene: [ MainMenuScene, LoadingScene, GameScene ] } });
+const game = new ui.PhaserGame({ config: { scene: [ MainMenuScene, LevelSelectScene, LoadingScene, GameScene ] } });
 app.present({ root: game });
 
 ///////////////////////////////////////////////////////////
