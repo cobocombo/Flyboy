@@ -257,8 +257,7 @@ class PauseAlertDialog extends ui.AlertDialog
   {
     super();
     this.cancelable = false;
-    this.title = 'Game Paused';
-    this.addComponents({ components: [ new ui.Text({ text: 'All progress will be lost.' }) ] });
+    this.addComponents({ components: [ new ui.Text({ type: 'header-3', text: 'Game Paused' }) ] });
 
     this.rowfooter = true;
     let quitButton = new ui.AlertDialogButton({ text: 'Quit', textColor: 'red', onTap: () => 
