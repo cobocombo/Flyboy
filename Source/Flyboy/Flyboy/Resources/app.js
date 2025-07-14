@@ -660,6 +660,70 @@ class Bullet
 }
 
 ///////////////////////////////////////////////////////////
+// DATA MODELS
+///////////////////////////////////////////////////////////
+
+/**
+ * Class representing the data for a single level.
+ */
+class LevelData
+{
+  #errors;
+
+  /**
+   * Creates a new LevelData object.
+   * @param {object} level - The level object from the JSON file.
+   */
+  constructor(level = {}) 
+  {
+    this.#errors = 
+    {
+      invalidType: 'LevelData Error: Expected an object for level.',
+      idMissing: 'LevelData Error: Level ID is required and must be a number.',
+      enemiesType: 'LevelData Error: Enemies must be an array.',
+      obstaclesType: 'LevelData Error: Obstacles must be an array.',
+      pickupsType: 'LevelData Error: Pickups must be an array.',
+    };
+
+    if(!typeChecker.check({ type: 'object', value: level })) 
+    {
+      console.error(this.#errors.invalidType);
+      return;
+    }
+
+    if(!typeChecker.check({ type: 'number', value: level.id })) 
+    {
+      console.error(this.#errors.idMissing);
+      return;
+    }
+
+    if(!typeChecker.check({ type: 'array', value: level.enemies }))
+    {
+      console.error(this.#errors.enemiesType);
+      return;
+    }
+
+    if(!typeChecker.check({ type: 'array', value: level.obstacles })) 
+    {
+      console.error(this.#errors.obstaclesType);
+      return;
+    }
+
+    if(!typeChecker.check({ type: 'array', value: level.pickups })) 
+    {
+      console.error(this.#errors.pickupsType);
+      return;
+    }
+
+    this.id = level.id;
+    this.background = level.background || '';
+    this.enemies = level.enemies;
+    this.obstacles = level.obstacles;
+    this.pickups = level.pickups;
+  }
+}
+
+///////////////////////////////////////////////////////////
 // LEVELS MODULE
 ///////////////////////////////////////////////////////////
 
@@ -694,25 +758,36 @@ class LevelManager
     LevelManager.#instance = this;
   }
 
-  /** Static method to get the singleton instance. */
+  /** Returns the singleton instance. */
   static getInstance() 
   {
-    return new LevelManager();
+    if (!LevelManager.#instance) {
+      LevelManager.#instance = new LevelManager();
+    }
+    return LevelManager.#instance;
   }
 
   /**
    * Loads level data from a JSON array.
-   * @param {Array<Object>} levels - Array of level objects.
+   * @param {Array<Object>} levels - Array of raw level objects.
    */
   load({ levels } = {}) 
   {
-    if(!Array.isArray(levels)) 
+    if(!typeChecker.check({ type: 'array', value: levels })) 
     {
       console.error(this.#errors.levelsTypeError);
       return;
     }
 
-    this.#levels = levels;
+    this.#levels = [];
+
+    for(const rawLevel of levels) 
+    {
+      if(!typeChecker.check({ type: 'object', value: rawLevel })) continue;
+      const level = new LevelData(rawLevel);
+      if(level?.id != null) this.#levels.push(level);
+    }
+
     this.#currentLevel = null;
   }
 
@@ -722,7 +797,7 @@ class LevelManager
    */
   selectLevel({ id } = {}) 
   {
-    if (!typeChecker.check({ type: 'number', value: id })) 
+    if(!typeChecker.check({ type: 'number', value: id })) 
     {
       console.error(this.#errors.levelIdTypeError);
       return;
@@ -740,7 +815,7 @@ class LevelManager
 
   /**
    * Gets the currently selected level.
-   * @returns {Object|null} The current level object.
+   * @returns {LevelData|null} The current level object.
    */
   get currentLevel() 
   {
@@ -755,7 +830,7 @@ class LevelManager
 
   /**
    * Gets all loaded levels.
-   * @returns {Array<Object>} All level data.
+   * @returns {Array<LevelData>} All level data.
    */
   getAllLevels() 
   {
