@@ -2,6 +2,24 @@
 // SCENES
 ///////////////////////////////////////////////////////////
 
+class SplashScene extends Phaser.Scene 
+{
+  constructor() 
+  {
+    super('SplashScene');
+  }
+
+  preload()
+  {
+    this.load.json('levels', 'levels.json');
+  }
+
+  create() 
+  {
+    setTimeout(() => { this.scene.start('MainMenuScene'); }, 2000);
+  }
+}
+
 class LevelSelectScene extends Phaser.Scene 
 {
   constructor() 
@@ -19,6 +37,13 @@ class LevelSelectScene extends Phaser.Scene
     this.background = this.add.image(0, 0, 'background');
     this.background.setOrigin(0, 0);
     this.background.setDisplaySize(device.screenHeight, device.screenWidth);
+
+    const data = this.cache.json.get('levels');
+    levels.load({ levels: data.levels });
+    levels.selectLevel({ id: 1 });
+    console.log('Loaded levels:', levels.getAllLevels());
+    console.log('Current level:', levels.currentLevel);
+
     setTimeout(() => { this.scene.start('LoadingScene'); }, 2000);
   }
 }
@@ -717,7 +742,7 @@ class LevelManager
    * Gets the currently selected level.
    * @returns {Object|null} The current level object.
    */
-  getCurrentLevel() 
+  get currentLevel() 
   {
     if(!this.#currentLevel) 
     {
@@ -752,7 +777,7 @@ class LevelManager
 globalThis.levels = LevelManager.getInstance();
 typeChecker.register({ name: 'plane', constructor: Plane });
 
-const game = new ui.PhaserGame({ config: { scene: [ MainMenuScene, LevelSelectScene, LoadingScene, GameScene ] } });
+const game = new ui.PhaserGame({ config: { scene: [ SplashScene, MainMenuScene, LevelSelectScene, LoadingScene, GameScene ] } });
 app.present({ root: game });
 
 ///////////////////////////////////////////////////////////
