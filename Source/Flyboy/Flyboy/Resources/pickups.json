@@ -1,0 +1,10 @@
+{
+  "pickups": 
+  [
+    {
+      "id": 1,
+      "name": "coin",
+      "sprite": "coin.png"
+    }
+  ]
+}

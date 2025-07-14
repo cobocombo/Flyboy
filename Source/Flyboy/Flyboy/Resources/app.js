@@ -12,6 +12,7 @@ class SplashScene extends Phaser.Scene
   preload()
   {
     this.load.json('levels', 'levels.json');
+    this.load.json('pickups', 'pickups.json');
   }
 
   create() 
@@ -41,9 +42,6 @@ class LevelSelectScene extends Phaser.Scene
     const data = this.cache.json.get('levels');
     levels.load({ levels: data.levels });
     levels.selectLevel({ id: 1 });
-    console.log('Loaded levels:', levels.getAllLevels());
-    console.log('Current level:', levels.currentLevel);
-
     setTimeout(() => { this.scene.start('LoadingScene'); }, 2000);
   }
 }
@@ -185,6 +183,10 @@ class GameScene extends Phaser.Scene
 
   create() 
   {
+    const data = this.cache.json.get('pickups');
+
+    console.log(data);
+
     this.background1 = this.add.image(0, 0, 'background');
     this.background2 = this.add.image(0, 0, 'background');
 
