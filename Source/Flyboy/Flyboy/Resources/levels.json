@@ -1,0 +1,12 @@
+{
+  "levels": 
+  [
+    {
+      "id": 1,
+      "background": "",
+      "enemies": [{ }],
+      "obstacles": [{ }],
+      "pickups": [{ }]
+    }
+  ]
+}

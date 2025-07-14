@@ -635,8 +635,123 @@ class Bullet
 }
 
 ///////////////////////////////////////////////////////////
+// LEVELS MODULE
+///////////////////////////////////////////////////////////
 
+/** Singleton class representing the global LevelManager. */
+class LevelManager 
+{
+  #errors;
+  #levels;
+  #currentLevel;
+  static #instance = null;
+
+  /** Initializes the LevelManager singleton. */
+  constructor() 
+  {
+    this.#errors = 
+    {
+      singleInstanceError: 'Level Manager Error: Only one LevelManager instance can exist.',
+      levelsTypeError: 'Level Manager Error: Expected an array of level objects.',
+      levelIdTypeError: 'Level Manager Error: Expected type number for level ID.',
+      levelNotFoundError: 'Level Manager Error: No level found with the specified ID.',
+      levelsNotLoadedError: 'Level Manager Error: No levels have been loaded yet.',
+    };
+
+    if(LevelManager.#instance) 
+    {
+      console.error(this.#errors.singleInstanceError);
+      return LevelManager.#instance;
+    }
+
+    this.#levels = [];
+    this.#currentLevel = null;
+    LevelManager.#instance = this;
+  }
+
+  /** Static method to get the singleton instance. */
+  static getInstance() 
+  {
+    return new LevelManager();
+  }
+
+  /**
+   * Loads level data from a JSON array.
+   * @param {Array<Object>} levels - Array of level objects.
+   */
+  load({ levels } = {}) 
+  {
+    if(!Array.isArray(levels)) 
+    {
+      console.error(this.#errors.levelsTypeError);
+      return;
+    }
+
+    this.#levels = levels;
+    this.#currentLevel = null;
+  }
+
+  /**
+   * Selects the current level by ID.
+   * @param {number} id - ID of the level to select.
+   */
+  selectLevel({ id } = {}) 
+  {
+    if (!typeChecker.check({ type: 'number', value: id })) 
+    {
+      console.error(this.#errors.levelIdTypeError);
+      return;
+    }
+
+    const level = this.#levels.find(level => level.id === id);
+    if(!level) 
+    {
+      console.error(this.#errors.levelNotFoundError);
+      return;
+    }
+
+    this.#currentLevel = level;
+  }
+
+  /**
+   * Gets the currently selected level.
+   * @returns {Object|null} The current level object.
+   */
+  getCurrentLevel() 
+  {
+    if(!this.#currentLevel) 
+    {
+      console.warn(this.#errors.levelsNotLoadedError);
+      return null;
+    }
+
+    return this.#currentLevel;
+  }
+
+  /**
+   * Gets all loaded levels.
+   * @returns {Array<Object>} All level data.
+   */
+  getAllLevels() 
+  {
+    return this.#levels;
+  }
+
+  /**
+   * Clears all loaded levels and the current level.
+   */
+  clear() 
+  {
+    this.#levels = [];
+    this.#currentLevel = null;
+  }
+}
+
+///////////////////////////////////////////////////////////
+
+globalThis.levels = LevelManager.getInstance();
 typeChecker.register({ name: 'plane', constructor: Plane });
+
 const game = new ui.PhaserGame({ config: { scene: [ MainMenuScene, LevelSelectScene, LoadingScene, GameScene ] } });
 app.present({ root: game });
 
