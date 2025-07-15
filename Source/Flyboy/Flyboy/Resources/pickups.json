@@ -2,9 +2,9 @@
   "pickups": 
   [
     {
-      "id": 1,
       "name": "coin",
-      "sprite": "coin.png"
+      "sprite": "coin",
+      "heightScale": 18
     }
   ]
 }

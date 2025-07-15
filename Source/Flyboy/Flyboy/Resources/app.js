@@ -11,8 +11,7 @@ class SplashScene extends Phaser.Scene
 
   preload()
   {
-    this.load.json('levels', 'levels.json');
-    this.load.json('pickups', 'pickups.json');
+    
   }
 
   create() 
@@ -31,6 +30,7 @@ class LevelSelectScene extends Phaser.Scene
   preload()
   {
     this.load.image('background', 'background.png');
+    this.load.json('levels', `levels.json?v=${Date.now()}`);
   }
 
   create() 
@@ -107,6 +107,7 @@ class LoadingScene extends Phaser.Scene
     const font = new FontFace('BulgariaDreams', 'url("Bulgaria Dreams Regular.ttf")');
     font.load().then((loadedFace) => { document.fonts.add(loadedFace);})
       .catch((err) => { console.warn('Font failed to load', err); });
+    this.load.json('pickups', `pickups.json?v=${Date.now()}`);
   }
 
   create() 
@@ -148,7 +149,8 @@ class LoadingScene extends Phaser.Scene
 
 class GameScene extends Phaser.Scene 
 {
-  background;
+  background1;
+  background2;
   bullets;
   bulletTimer;
   joystick;
@@ -179,23 +181,18 @@ class GameScene extends Phaser.Scene
     this.load.image('bullet-4', 'bullet-4.png');
     this.load.image('bullet-5', 'bullet-5.png');
     this.load.image('pause-button', 'pause-button.png');
+    this.load.image('coin', 'coin.png');
   }
 
   create() 
   {
-    const data = this.cache.json.get('pickups');
-
-    console.log(data);
-
+    
     this.background1 = this.add.image(0, 0, 'background');
     this.background2 = this.add.image(0, 0, 'background');
-
     this.background1.setDisplaySize(device.screenHeight, device.screenWidth);
     this.background2.setDisplaySize(device.screenHeight, device.screenWidth);
-
     this.background1.setOrigin(0, 0);
     this.background2.setOrigin(0, 0);
-
     this.background1.setPosition(0, 0);
     this.background2.setPosition(device.screenHeight - 3, 0);
 
@@ -255,12 +252,6 @@ class GameScene extends Phaser.Scene
     const y = (device.screenWidth / 2) - (device.screenWidth / 12);
     this.plane.setPosition({ x: x, y: y });
 
-    const pauseButton = this.add.image(0, 0, 'pause-button');
-
-    const targetHeight = device.screenWidth / 8;
-    const scale = targetHeight / pauseButton.height;
-    pauseButton.setScale(scale);
-
     const joystickY = this.joystick.base.y;
     const shootButtonY = this.shootButton.sprite.y;
     const midY = (joystickY + shootButtonY) / 2;
@@ -270,7 +261,8 @@ class GameScene extends Phaser.Scene
     const midX = (joystickX + shootButtonX) / 2;
 
     this.pauseAlert = new PauseAlertDialog({ scene: this.scene });
-
+    const pauseButton = this.add.image(0, 0, 'pause-button');
+    pauseButton.setScale((device.screenWidth / 8) / (pauseButton.height));
     pauseButton.setPosition(midX, midY);
     pauseButton.setInteractive();
     pauseButton.on('pointerdown', () => 
@@ -278,10 +270,21 @@ class GameScene extends Phaser.Scene
       this.scene.pause();
       this.pauseAlert.present();
     });
+
+    this.pickups = this.add.group();
+    this.pickupSpawnQueue = [];
+    this.elapsedTime = 0;
+
+    const level = levels.currentLevel;
+    if(level && level.pickups) {
+      this.pickupSpawnQueue = [...level.pickups].sort((a, b) => a.spawnTime - b.spawnTime);
+    }
   }
 
   update(time, delta) 
   {
+    this.elapsedTime += delta;
+
     const joystickState = this.joystick.currentState;
     const speedPerSecond = device.screenWidth / 3;
     const speed = (speedPerSecond * delta) / 1000;
@@ -293,7 +296,7 @@ class GameScene extends Phaser.Scene
       newY -= speed;
       this.plane.stopBobbing();
     } 
-    else if (joystickState === 'down') 
+    else if(joystickState === 'down') 
     {
       newY += speed;
       this.plane.stopBobbing();
@@ -313,15 +316,8 @@ class GameScene extends Phaser.Scene
     this.background1.x -= scrollAmount;
     this.background2.x -= scrollAmount;
 
-    const resetX = -device.screenHeight;
-
-    if(this.background1.x <= resetX) {
-      this.background1.x = this.background2.x + device.screenHeight - 3;
-    }
-
-    if(this.background2.x <= resetX) {
-      this.background2.x = this.background1.x + device.screenHeight - 3;
-    }
+    if(this.background1.x <= -device.screenHeight) this.background1.x = this.background2.x + device.screenHeight - 3;
+    if(this.background2.x <= -device.screenHeight) this.background2.x = this.background1.x + device.screenHeight - 3;
 
     this.shootButton.update(delta);
 
@@ -337,9 +333,37 @@ class GameScene extends Phaser.Scene
       bullet.update(delta);
       if(bullet.isOffScreen()) 
       {
-        console.log('Removing bullet from scene...')
         bullet.destroy();
         this.bullets.remove(bulletSprite, true, true);
+      }
+    });
+
+    while(this.pickupSpawnQueue.length > 0 && this.elapsedTime >= this.pickupSpawnQueue[0].spawnTime) 
+    {
+      const pickupData = this.pickupSpawnQueue.shift();
+      const spawnX = device.screenHeight + 50;
+      const spawnY = device.screenWidth * pickupData.spawnPosition;
+
+      const pickup = new Pickup({
+        scene: this,
+        type: pickupData.type,
+        x: spawnX,
+        y: spawnY
+      });
+
+      this.pickups.add(pickup.sprite);
+      pickup.sprite.__pickup = pickup;
+    }
+
+    Phaser.Actions.Call(this.pickups.getChildren(), sprite => {
+      const pickup = sprite.__pickup;
+      if (!pickup) return;
+
+      pickup.update(delta);
+
+      if (pickup.isOffScreen()) {
+        pickup.destroy();
+        this.pickups.remove(sprite, true, true);
       }
     });
   }
@@ -660,6 +684,48 @@ class Bullet
     this.sprite.destroy();
   }
 }
+
+class Pickup 
+{
+  constructor({ scene, type, x, y }) 
+  {
+    const data = scene.cache.json.get('pickups');
+    const pickupDef = data.pickups.find(p => p.name === type);
+
+    console.log(pickupDef);
+
+    if(!pickupDef) 
+    {
+      console.error(`Pickup Error: No pickup definition found for type "${type}".`);
+      return;
+    }
+
+    this.scene = scene;
+    this.sprite = scene.add.sprite(x, y, pickupDef.sprite);
+
+    const targetHeight = device.screenWidth / pickupDef.heightScale;
+    const originalHeight = this.sprite.height || 1;
+    const scale = targetHeight / originalHeight;
+    this.sprite.setScale(scale);
+  }
+
+  update(delta) 
+  {
+    const speed = device.screenWidth * 0.2;
+    this.sprite.x -= (speed * delta) / 1000;
+  }
+
+  isOffScreen() 
+  {
+    return this.sprite.x < -this.sprite.displayWidth;
+  }
+
+  destroy() 
+  {
+    this.sprite.destroy();
+  }
+}
+
 
 ///////////////////////////////////////////////////////////
 // DATA MODELS

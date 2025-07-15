@@ -6,7 +6,11 @@
       "background": "",
       "enemies": [{ }],
       "obstacles": [{ }],
-      "pickups": [{ }]
+      "pickups": [
+        { "type": "coin", "spawnPosition": 0.1, "spawnTime": 500 }, 
+        { "type": "coin", "spawnPosition": 0.3, "spawnTime": 1500 }, 
+        { "type": "coin", "spawnPosition": 0.5, "spawnTime": 2500 }
+      ]
     }
   ]
 }
