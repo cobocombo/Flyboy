@@ -20,6 +20,8 @@ class SplashScene extends Phaser.Scene
   }
 }
 
+/////////////////////////////////////////////////
+
 class LevelSelectScene extends Phaser.Scene 
 {
   constructor() 
@@ -45,6 +47,8 @@ class LevelSelectScene extends Phaser.Scene
     setTimeout(() => { this.scene.start('LoadingScene'); }, 2000);
   }
 }
+
+/////////////////////////////////////////////////
 
 class MainMenuScene extends Phaser.Scene 
 {
@@ -95,6 +99,8 @@ class MainMenuScene extends Phaser.Scene
   }
 }
 
+/////////////////////////////////////////////////
+
 class LoadingScene extends Phaser.Scene 
 {
   constructor() 
@@ -104,7 +110,7 @@ class LoadingScene extends Phaser.Scene
 
   preload() 
   {
-    const font = new FontFace('BulgariaDreams', 'url("Bulgaria Dreams Regular.ttf")');
+    let font = new FontFace('BulgariaDreams', 'url("Bulgaria Dreams Regular.ttf")');
     font.load().then((loadedFace) => { document.fonts.add(loadedFace);})
       .catch((err) => { console.warn('Font failed to load', err); });
     this.load.json('pickups', `pickups.json?v=${Date.now()}`);
@@ -113,22 +119,18 @@ class LoadingScene extends Phaser.Scene
   create() 
   {
     this.cameras.main.setBackgroundColor('#000000');
-    const centerX = this.cameras.main.centerX;
-    const centerY = this.cameras.main.centerY;
-
     setTimeout(() => 
     {
-      const loadingText = this.add.text(centerX, centerY, 'Loading', 
+      let loadingText = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, 'Loading', 
       {
         fontFamily: 'BulgariaDreams',
         fontSize: `${device.screenWidth / 4}px`,
         color: '#ffffff'
       }).setOrigin(0.5);
 
-      const dots = ['', '.', '..', '...'];
+      let dots = ['', '.', '..', '...'];
       let dotIndex = 0;
-
-      const interval = this.time.addEvent({
+      let interval = this.time.addEvent({
         delay: 400,
         loop: true,
         callback: () => 
@@ -138,14 +140,18 @@ class LoadingScene extends Phaser.Scene
         }
       });
 
-      this.time.delayedCall(3000, () => 
+      this.time.delayedCall(3500, () => 
       {
         interval.remove(false);
-        this.scene.start('GameScene');
+        loadingText.setText('Start ');
+        loadingText.setInteractive({ useHandCursor: true });
+        loadingText.on('pointerdown', () => { this.scene.start('GameScene'); });
       });
     },1);
   }
 }
+
+/////////////////////////////////////////////////
 
 class GameScene extends Phaser.Scene 
 {
@@ -463,6 +469,8 @@ class Plane
   }
 }
 
+/////////////////////////////////////////////////
+
 class Joystick 
 {
   base;
@@ -546,6 +554,8 @@ class Joystick
   }
 }
 
+/////////////////////////////////////////////////
+
 class ShootButton 
 {
   errors;
@@ -625,6 +635,8 @@ class ShootButton
   }
 }
 
+/////////////////////////////////////////////////
+
 class Bullet 
 {
   errors;
@@ -665,6 +677,8 @@ class Bullet
     this.sprite.destroy();
   }
 }
+
+/////////////////////////////////////////////////
 
 class Pickup 
 {
