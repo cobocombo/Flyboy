@@ -113,7 +113,9 @@ class LoadingScene extends Phaser.Scene
     let font = new FontFace('BulgariaDreams', 'url("Bulgaria Dreams Regular.ttf")');
     font.load().then((loadedFace) => { document.fonts.add(loadedFace);})
       .catch((err) => { console.warn('Font failed to load', err); });
+
     this.load.json('pickups', `pickups.json?v=${Date.now()}`);
+    this.load.json('enemies', `enemies.json?v=${Date.now()}`);
   }
 
   create() 
@@ -160,6 +162,9 @@ class GameScene extends Phaser.Scene
   bullets;
   bulletTimer;
   elapsedTime;
+  enemies;
+  enemyData;
+  enemySpawnQueue;
   joystick;
   pauseButton;
   pickups;
@@ -198,12 +203,33 @@ class GameScene extends Phaser.Scene
     this.load.image('bullet-5', 'bullet-5.png');
     this.load.image('pause-button', 'pause-button.png');
 
+    // Load pickups data and load all images.
     this.pickupData = this.cache.json.get('pickups');
     if(this.pickupData && typeChecker.check({ type: 'array', value: this.pickupData.pickups }))
     {
       this.pickupData.pickups.forEach(pickup => 
       {
         if(pickup.name && pickup.sprite) this.load.image(pickup.name, pickup.sprite);
+      });
+    }
+
+    // Load enemy data and load all images.
+    this.enemyData = this.cache.json.get('enemies');
+    if(this.enemyData && typeChecker.check({ type: 'array', value: this.enemyData.enemies }))
+    {
+      this.enemyData.enemies.forEach(enemy => 
+      {
+        if(enemy.name && enemy.sprite && enemy.animations)
+        {
+          this.load.image(enemy.name, enemy.sprite);
+          enemy.animations.forEach((animation) => 
+          {
+            animation.frames.forEach((frame) => 
+            {
+              this.load.image(frame.key, frame.sprite);
+            });
+          });
+        }
       });
     }
   }
@@ -264,6 +290,32 @@ class GameScene extends Phaser.Scene
       });
     };
 
+    if(this.enemyData && typeChecker.check({ type: 'array', value: this.enemyData.enemies })) 
+    {
+      this.enemyData.enemies.forEach(enemy => 
+      {
+        if(enemy.name && enemy.sprite && enemy.animations) 
+        {
+          enemy.animations.forEach((animation) => 
+          {
+            const frames = animation.frames.map((frame) => {
+              return { key: frame.key };
+            });
+
+            if(!this.anims.exists(animation.key)) 
+            {
+              this.anims.create({
+                key: animation.key,
+                frames: frames,
+                frameRate: animation.frameRate || 12,
+                repeat: animation.repeat ?? -1
+              });
+            }
+          });
+        }
+      });
+    }
+
     this.plane = new Plane({ scene: this });
     this.plane.setPosition({ x: 20 + (this.plane.sprite.displayWidth / 2), y: (device.screenWidth / 2) - (device.screenWidth / 12) });
 
@@ -288,9 +340,13 @@ class GameScene extends Phaser.Scene
 
     this.pickups = this.add.group();
     this.pickupSpawnQueue = [];
+
+    this.enemies = this.add.group();
+    this.enemySpawnQueue = [];
     
     this.level = levels.currentLevel;
     if(this.level && this.level.pickups) this.pickupSpawnQueue = [...this.level.pickups].sort((a, b) => a.spawnTime - b.spawnTime);
+    if(this.level && this.level.enemies) this.enemySpawnQueue = [...this.level.enemies].sort((a, b) => a.spawnTime - b.spawnTime);
   }
 
   update(_time, delta) 
@@ -306,7 +362,7 @@ class GameScene extends Phaser.Scene
     {
       if(!bulletSprite || !bulletSprite.active) return;
 
-      const bullet = { sprite: bulletSprite };
+      let bullet = { sprite: bulletSprite };
       bullet.update = Bullet.prototype.update;
       bullet.isOffScreen = Bullet.prototype.isOffScreen;
       bullet.destroy = Bullet.prototype.destroy;
@@ -329,6 +385,16 @@ class GameScene extends Phaser.Scene
       pickup.sprite.__pickup = pickup;
     }
 
+    while(this.enemySpawnQueue.length > 0 && this.elapsedTime >= this.enemySpawnQueue[0].spawnTime) 
+    {
+      let enemyData = this.enemySpawnQueue.shift();
+      let spawnX = device.screenHeight;
+      let spawnY = device.screenWidth * enemyData.spawnPosition;
+      let enemy = new Enemy({ scene: this, data: this.enemyData, type: enemyData.type, x: spawnX, y: spawnY });
+      this.enemies.add(enemy.sprite);
+      enemy.sprite.__enemy = enemy;
+    }
+
     Phaser.Actions.Call(this.pickups.getChildren(), sprite => 
     {
       let pickup = sprite.__pickup;
@@ -341,6 +407,19 @@ class GameScene extends Phaser.Scene
         this.pickups.remove(sprite, true, true);
       }
     });
+
+    Phaser.Actions.Call(this.enemies.getChildren(), sprite => 
+    {
+      let enemy = sprite.__enemy;
+      if(!enemy) return;
+      enemy.update({ delta: delta });
+
+      if(enemy.isOffScreen()) 
+      {
+        enemy.destroy();
+        this.enemies.remove(sprite, true, true);
+      }
+    });
   }
 
   updateBackground({ delta } = {})
@@ -349,8 +428,8 @@ class GameScene extends Phaser.Scene
     let backgroundScrollSpeed = device.screenWidth / 4;
     this.background1.x -= (backgroundScrollSpeed * delta) / 1000;
     this.background2.x -= (backgroundScrollSpeed * delta) / 1000;
-    if(this.background1.x <= -device.screenHeight) this.background1.x = this.background2.x + device.screenHeight - 3;
-    if(this.background2.x <= -device.screenHeight) this.background2.x = this.background1.x + device.screenHeight - 3;
+    if(this.background1.x <= -device.screenHeight) this.background1.x = this.background2.x + device.screenHeight - 5;
+    if(this.background2.x <= -device.screenHeight) this.background2.x = this.background1.x + device.screenHeight - 5;
   }
 }
 
@@ -697,13 +776,8 @@ class Pickup
   constructor({ scene, data, type, x, y }) 
   {
     let pickupDef = data.pickups.find(p => p.name === type);
-
-    if(!pickupDef) 
-    {
-      console.error(`Pickup Error: No pickup definition found for type "${type}".`);
-      return;
-    }
-
+    if(!pickupDef) console.error(`Pickup Error: No pickup definition found for type "${type}".`);
+   
     this.scene = scene;
     this.sprite = scene.add.sprite(x, y, pickupDef.name);
     this.sprite.setScale((device.screenWidth / pickupDef.heightScale) / this.sprite.height);
@@ -725,6 +799,43 @@ class Pickup
     this.sprite.destroy();
   }
 }
+
+/////////////////////////////////////////////////
+
+class Enemy
+{
+  errors;
+  scene;
+
+  constructor({ scene, data, type, x, y }) 
+  {
+    let enemyDef = data.enemies.find(e => e.name === type);
+    if(!enemyDef) console.error(`Pickup Error: No pickup definition found for type "${type}".`);
+    
+    this.scene = scene;
+    this.sprite = scene.add.sprite(x, y, enemyDef.name);
+    this.sprite.setScale((device.screenWidth / enemyDef.heightScale) / this.sprite.height);
+
+    if(enemyDef.flipX) this.sprite.setFlipX(true);
+    if(enemyDef.startingAnimation) this.sprite.play(enemyDef.startingAnimation);
+  }
+
+  update({ delta } = {}) 
+  {
+    let speed = device.screenWidth * 0.2;
+    this.sprite.x -= (speed * delta) / 1000;
+  }
+
+  isOffScreen() 
+  {
+    return this.sprite.x < -this.sprite.displayWidth;
+  }
+
+  destroy() 
+  {
+    this.sprite.destroy();
+  }
+} 
 
 ///////////////////////////////////////////////////////////
 // DATA MODELS

@@ -2,9 +2,24 @@
   "enemies": 
   [
     {
-      "name": "coin",
-      "sprite": "coin",
-      "heightScale": 18
+      "name": "bird",
+      "sprite": "bird-fly-1.png",
+      "heightScale": 12,
+      "flipX": true,
+      "animations": 
+      [
+        { 
+          "key": "bird-fly",
+          "frames":
+          [
+            { "key": "bird-fly-1", "sprite": "bird-fly-1.png" },
+            { "key": "bird-fly-2", "sprite": "bird-fly-2.png" }
+          ],
+          "frameRate": 4,
+          "repeat": -1
+        }
+      ],
+      "startingAnimation": "bird-fly"
     }
   ]
 }
