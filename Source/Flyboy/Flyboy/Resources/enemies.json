@@ -1,9 +1,9 @@
 {
-  "pickups": 
+  "enemies": 
   [
     {
       "name": "coin",
-      "sprite": "coin.png",
+      "sprite": "coin",
       "heightScale": 18
     }
   ]

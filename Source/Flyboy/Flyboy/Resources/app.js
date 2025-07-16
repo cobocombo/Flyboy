@@ -163,6 +163,7 @@ class GameScene extends Phaser.Scene
   joystick;
   pauseButton;
   pickups;
+  pickupData;
   pickupSpawnQueue;
   plane;
   shootButton;
@@ -174,7 +175,7 @@ class GameScene extends Phaser.Scene
     this.errors = 
     {
       deltaTypeError: 'Game Scene Error: Expected type number for delta'
-    };
+    }; 
   }
 
   preload() 
@@ -196,7 +197,15 @@ class GameScene extends Phaser.Scene
     this.load.image('bullet-4', 'bullet-4.png');
     this.load.image('bullet-5', 'bullet-5.png');
     this.load.image('pause-button', 'pause-button.png');
-    this.load.image('coin', 'coin.png');
+
+    this.pickupData = this.cache.json.get('pickups');
+    if(this.pickupData && typeChecker.check({ type: 'array', value: this.pickupData.pickups }))
+    {
+      this.pickupData.pickups.forEach(pickup => 
+      {
+        if(pickup.name && pickup.sprite) this.load.image(pickup.name, pickup.sprite);
+      });
+    }
   }
 
   create() 
@@ -315,7 +324,7 @@ class GameScene extends Phaser.Scene
       let pickupData = this.pickupSpawnQueue.shift();
       let spawnX = device.screenHeight;
       let spawnY = device.screenWidth * pickupData.spawnPosition;
-      let pickup = new Pickup({ scene: this, type: pickupData.type, x: spawnX, y: spawnY });
+      let pickup = new Pickup({ scene: this, data: this.pickupData, type: pickupData.type, x: spawnX, y: spawnY });
       this.pickups.add(pickup.sprite);
       pickup.sprite.__pickup = pickup;
     }
@@ -685,9 +694,8 @@ class Pickup
   errors;
   scene;
   
-  constructor({ scene, type, x, y }) 
+  constructor({ scene, data, type, x, y }) 
   {
-    let data = scene.cache.json.get('pickups');
     let pickupDef = data.pickups.find(p => p.name === type);
 
     if(!pickupDef) 
@@ -697,7 +705,7 @@ class Pickup
     }
 
     this.scene = scene;
-    this.sprite = scene.add.sprite(x, y, pickupDef.sprite);
+    this.sprite = scene.add.sprite(x, y, pickupDef.name);
     this.sprite.setScale((device.screenWidth / pickupDef.heightScale) / this.sprite.height);
   }
 
