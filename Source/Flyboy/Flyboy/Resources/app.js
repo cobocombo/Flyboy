@@ -153,13 +153,22 @@ class GameScene extends Phaser.Scene
   background2;
   bullets;
   bulletTimer;
+  elapsedTime;
   joystick;
+  pauseButton;
+  pickups;
+  pickupSpawnQueue;
   plane;
   shootButton;
 
   constructor() 
   {
     super('GameScene');
+
+    this.errors = 
+    {
+      deltaTypeError: 'Game Scene Error: Expected type number for delta'
+    };
   }
 
   preload() 
@@ -186,7 +195,6 @@ class GameScene extends Phaser.Scene
 
   create() 
   {
-    
     this.background1 = this.add.image(0, 0, 'background');
     this.background2 = this.add.image(0, 0, 'background');
     this.background1.setDisplaySize(device.screenHeight, device.screenWidth);
@@ -242,84 +250,42 @@ class GameScene extends Phaser.Scene
     };
 
     this.plane = new Plane({ scene: this });
+    this.plane.setPosition({ x: 20 + (this.plane.sprite.displayWidth / 2), y: (device.screenWidth / 2) - (device.screenWidth / 12) });
+
     this.joystick = new Joystick({ scene: this });
     this.shootButton = new ShootButton({ scene: this, plane: this.plane });
 
     this.bullets = this.add.group();
     this.bulletTimer = 0;
 
-    const x = 20 + (this.plane.sprite.displayWidth / 2);
-    const y = (device.screenWidth / 2) - (device.screenWidth / 12);
-    this.plane.setPosition({ x: x, y: y });
-
-    const joystickY = this.joystick.base.y;
-    const shootButtonY = this.shootButton.sprite.y;
-    const midY = (joystickY + shootButtonY) / 2;
-
-    const joystickX = this.joystick.base.x;
-    const shootButtonX = this.shootButton.sprite.x;
-    const midX = (joystickX + shootButtonX) / 2;
-
     this.pauseAlert = new PauseAlertDialog({ scene: this.scene });
-    const pauseButton = this.add.image(0, 0, 'pause-button');
-    pauseButton.setScale((device.screenWidth / 8) / (pauseButton.height));
-    pauseButton.setPosition(midX, midY);
-    pauseButton.setInteractive();
-    pauseButton.on('pointerdown', () => 
+    this.pauseButton = this.add.image(0, 0, 'pause-button');
+    this.pauseButton.setScale((device.screenWidth / 8) / this.pauseButton.height);
+    this.pauseButton.setPosition((this.joystick.base.x + this.shootButton.sprite.x) / 2, (this.joystick.base.y + this.shootButton.sprite.y) / 2);
+    this.pauseButton.setInteractive();
+    this.pauseButton.on('pointerdown', () => 
     {
       this.scene.pause();
       this.pauseAlert.present();
     });
 
-    this.pickups = this.add.group();
-    this.pickupSpawnQueue = [];
     this.elapsedTime = 0;
 
-    const level = levels.currentLevel;
-    if(level && level.pickups) {
-      this.pickupSpawnQueue = [...level.pickups].sort((a, b) => a.spawnTime - b.spawnTime);
-    }
+    this.pickups = this.add.group();
+    this.pickupSpawnQueue = [];
+    
+    this.level = levels.currentLevel;
+    if(this.level && this.level.pickups) this.pickupSpawnQueue = [...this.level.pickups].sort((a, b) => a.spawnTime - b.spawnTime);
   }
 
-  update(time, delta) 
+  update(_time, delta) 
   {
+    if(!typeChecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
+
     this.elapsedTime += delta;
-
-    const joystickState = this.joystick.currentState;
-    const speedPerSecond = device.screenWidth / 3;
-    const speed = (speedPerSecond * delta) / 1000;
-
-    let newY = this.plane.sprite.y;
-
-    if(joystickState === 'up') 
-    {
-      newY -= speed;
-      this.plane.stopBobbing();
-    } 
-    else if(joystickState === 'down') 
-    {
-      newY += speed;
-      this.plane.stopBobbing();
-    } 
-    else this.plane.startBobbing();
-
-    const topBound = 5 + (this.plane.sprite.displayHeight / 2);
-    const bottomBound = this.joystick.base.y - this.joystick.base.displayHeight / 1.15;
-
-    newY = Phaser.Math.Clamp(newY, topBound, bottomBound);
-
-    if(joystickState === 'up' || joystickState === 'down') this.plane.setPosition({ x: this.plane.sprite.x, y: newY });
-
-    const scrollSpeed = device.screenWidth / 4;
-    const scrollAmount = (scrollSpeed * delta) / 1000;
-
-    this.background1.x -= scrollAmount;
-    this.background2.x -= scrollAmount;
-
-    if(this.background1.x <= -device.screenHeight) this.background1.x = this.background2.x + device.screenHeight - 3;
-    if(this.background2.x <= -device.screenHeight) this.background2.x = this.background1.x + device.screenHeight - 3;
-
-    this.shootButton.update(delta);
+    this.updateBackground({ delta: delta });
+    this.plane.update({ joystick: this.joystick, delta: delta });
+    this.shootButton.update({ delta: delta });
 
     Phaser.Actions.Call(this.bullets.getChildren(), bulletSprite => 
     {
@@ -330,7 +296,7 @@ class GameScene extends Phaser.Scene
       bullet.isOffScreen = Bullet.prototype.isOffScreen;
       bullet.destroy = Bullet.prototype.destroy;
 
-      bullet.update(delta);
+      bullet.update({ delta: delta });
       if(bullet.isOffScreen()) 
       {
         bullet.destroy();
@@ -340,32 +306,36 @@ class GameScene extends Phaser.Scene
 
     while(this.pickupSpawnQueue.length > 0 && this.elapsedTime >= this.pickupSpawnQueue[0].spawnTime) 
     {
-      const pickupData = this.pickupSpawnQueue.shift();
-      const spawnX = device.screenHeight + 50;
-      const spawnY = device.screenWidth * pickupData.spawnPosition;
-
-      const pickup = new Pickup({
-        scene: this,
-        type: pickupData.type,
-        x: spawnX,
-        y: spawnY
-      });
-
+      let pickupData = this.pickupSpawnQueue.shift();
+      let spawnX = device.screenHeight;
+      let spawnY = device.screenWidth * pickupData.spawnPosition;
+      let pickup = new Pickup({ scene: this, type: pickupData.type, x: spawnX, y: spawnY });
       this.pickups.add(pickup.sprite);
       pickup.sprite.__pickup = pickup;
     }
 
-    Phaser.Actions.Call(this.pickups.getChildren(), sprite => {
-      const pickup = sprite.__pickup;
-      if (!pickup) return;
+    Phaser.Actions.Call(this.pickups.getChildren(), sprite => 
+    {
+      let pickup = sprite.__pickup;
+      if(!pickup) return;
+      pickup.update({ delta: delta });
 
-      pickup.update(delta);
-
-      if (pickup.isOffScreen()) {
+      if(pickup.isOffScreen()) 
+      {
         pickup.destroy();
         this.pickups.remove(sprite, true, true);
       }
     });
+  }
+
+  updateBackground({ delta } = {})
+  {
+    if(!typeChecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
+    let backgroundScrollSpeed = device.screenWidth / 4;
+    this.background1.x -= (backgroundScrollSpeed * delta) / 1000;
+    this.background2.x -= (backgroundScrollSpeed * delta) / 1000;
+    if(this.background1.x <= -device.screenHeight) this.background1.x = this.background2.x + device.screenHeight - 3;
+    if(this.background2.x <= -device.screenHeight) this.background2.x = this.background1.x + device.screenHeight - 3;
   }
 }
 
@@ -409,25 +379,21 @@ class Plane
   {
     this.errors = 
     {
+      deltaTypeError: 'Plane Error: Expected type number for delta',
+      joystickTypeError: 'Plane Error: Expected type Joystick for joystick.',
+      nameTypeError: 'Expected type string for name',
       sceneError: 'Plane Error: A valid phaser scene is required.',
       xTypeError: 'Plane Error: Expected type number for x when setting position of plane.',
       yTypeError: 'Plane Error: Expected type number for y when setting position of plane.'
     };
 
-    if(!scene) 
-    {
-      console.error(this.errors.sceneError);
-      return;
-    }
-
+    if(!scene) console.error(this.errors.sceneError);
+  
     this.scene = scene;
     this.sprite = scene.add.sprite(0, 0, 'plane-fly-1');
+    this.sprite.setScale((device.screenWidth / 6) / (this.sprite.height));
     this.sprite.play('plane-fly');
     this.currentAnim = 'plane-fly';
-
-    const targetHeight = device.screenWidth / 6;
-    const scale = targetHeight / this.sprite.height;
-    this.sprite.setScale(scale);
   }
 
   setPosition({ x, y } = {}) 
@@ -438,8 +404,9 @@ class Plane
     this.baseY = y;
   }
 
-  setAnimation(name) 
+  setAnimation({ name } = {}) 
   {
+    if(!typeChecker.check({ type: 'string', value: name })) console.error(this.errors.nameTypeError);
     if(this.currentAnim !== name) 
     {
       this.sprite.play(name);
@@ -450,8 +417,7 @@ class Plane
   startBobbing() 
   {
     if(this.bobTween) return;
-
-    const bobAmount = this.sprite.displayHeight / 12;
+    let bobAmount = this.sprite.displayHeight / 12;
     this.bobTween = this.scene.tweens.add({
       targets: this.sprite,
       y: this.baseY - bobAmount,
@@ -470,6 +436,30 @@ class Plane
       this.bobTween = null;
       this.sprite.setY(this.baseY);
     }
+  }
+
+  update({ joystick, delta } = {})
+  {
+    if(!typeChecker.check({ type: 'joystick', value: joystick })) console.error(this.errors.joystickTypeError);
+    if(!typeChecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
+
+    let verticalSpeed = ((device.screenWidth / 3) * delta) / 1000;
+    if(joystick.currentState === 'up') 
+    {
+      this.sprite.y -= verticalSpeed;
+      this.stopBobbing();
+    } 
+    else if(joystick.currentState === 'down') 
+    {
+      this.sprite.y += verticalSpeed;
+      this.stopBobbing();
+    } 
+    else this.startBobbing();
+
+    let planeTopBound = 5 + (this.sprite.displayHeight / 2);
+    let planeBottomBound = joystick.base.y - joystick.base.displayHeight / 1.15;
+    this.sprite.y = Phaser.Math.Clamp(this.sprite.y, planeTopBound, planeBottomBound);
+    if(joystick.currentState === 'up' || joystick.currentState === 'down') this.setPosition({ x: this.sprite.x, y: this.sprite.y });
   }
 }
 
@@ -542,7 +532,6 @@ class Joystick
       if(newState !== this.currentState) 
       {
         this.currentState = newState;
-        console.log(this.currentState);
       }
     });
 
@@ -552,7 +541,6 @@ class Joystick
       if(this.currentState !== this.states.idle) 
       {
         this.currentState = this.states.idle;
-        console.log(this.states.idle);
       }
     });
   }
@@ -570,38 +558,26 @@ class ShootButton
   {
     this.errors = 
     {
+      deltaTypeError: 'Shoot Button Error: Expected type number for delta',
       planeTypeError: 'Shoot Button Erorr: Expected type Plane for plane.',
       sceneError: 'Shoot Button Error: A valid phaser scene is required.'
     };
 
-    if(!scene) 
-    {
-      console.error(this.errors.sceneError);
-      return;
-    }
-
+    if(!scene) console.error(this.errors.sceneError);
     if(!typeChecker.check({ type: 'plane', value: plane })) console.error(this.errors.planeTypeError);
 
     this.scene = scene;
     this.plane = plane;
     this.isHeld = false;
 
-    this.shootCooldown = 200;
+    this.sprite = scene.add.image(0, 0, 'shoot-button');
+    this.sprite.setScale((device.screenWidth / 6) / (this.sprite.height));
+
+    this.shootCooldown = 250;
     this.elapsed = 0;
 
-    const targetHeight = device.screenWidth / 6;
-    this.sprite = scene.add.image(0, 0, 'shoot-button');
-
-    const scale = targetHeight / this.sprite.height;
-    this.sprite.setScale(scale);
-
-    const padding = 20;
-    const screenWidth = device.screenHeight; 
-    const screenHeight = device.screenWidth; 
-
-    const x = screenWidth - padding - (this.sprite.displayWidth / 2);
-    const y = screenHeight - padding - (this.sprite.displayHeight / 2);
-
+    let x = device.screenHeight - 20 - (this.sprite.displayWidth / 2);
+    let y = device.screenWidth - 20 - (this.sprite.displayHeight / 2);
     this.sprite.setPosition(x, y);
     this.sprite.setInteractive();
 
@@ -610,8 +586,7 @@ class ShootButton
       if(!this.isHeld) 
       {
         this.isHeld = true;
-        console.log('shoot: hold start');
-        this.plane?.setAnimation('plane-shoot');
+        this.plane?.setAnimation({ name: 'plane-shoot' });
 
         const x = this.plane.sprite.x + this.plane.sprite.displayWidth / 2;
         const y = this.plane.sprite.y + this.plane.sprite.displayHeight / 4;
@@ -621,13 +596,12 @@ class ShootButton
       }
     });
 
-    const stopShooting = () => 
+    let stopShooting = () => 
     {
       if(this.isHeld) 
       {
-        console.log('shoot: hold end');
         this.isHeld = false;
-        this.plane?.setAnimation('plane-fly');
+        this.plane?.setAnimation({ name: 'plane-fly' });
       }
     };
 
@@ -636,41 +610,48 @@ class ShootButton
     this.sprite.on('pointerupoutside', stopShooting);
   }
 
-  update(delta) 
+  update({ delta } = {}) 
   {
+    if(!typeChecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
     if(!this.isHeld) return;
-
     this.elapsed += delta;
     if(this.elapsed >= this.shootCooldown) 
     {
       this.elapsed = 0;
-
-      const x = this.plane.sprite.x + this.plane.sprite.displayWidth / 2;
-      const y = this.plane.sprite.y + this.plane.sprite.displayHeight / 4;
-      new Bullet({ scene: this.scene, x, y });
+      let x = this.plane.sprite.x + this.plane.sprite.displayWidth / 2;
+      let y = this.plane.sprite.y + this.plane.sprite.displayHeight / 4;
+      new Bullet({ scene: this.scene, x: x, y: y });
     }
   }
 }
 
 class Bullet 
 {
+  errors;
+  scene;
+  sprite;
+
   constructor({ scene, x, y }) 
   {
+    this.errors = 
+    {
+      deltaTypeError: 'Bullet Error: Expected type number for delta',
+      sceneError: 'Bullet Error: A valid phaser scene is required.'
+    };
+
     this.scene = scene;
 
     this.sprite = scene.add.sprite(x, y, 'bullet-1');
     this.sprite.play('bullet-anim');
-
-    const bulletHeight = device.screenWidth / 18;
-    const scale = bulletHeight / this.sprite.height;
-    this.sprite.setScale(scale);
+    this.sprite.setScale((device.screenWidth / 18) / this.sprite.height);
 
     scene.bullets.add(this.sprite);
   }
 
-  update(delta) 
+  update({ delta } = {}) 
   {
-    const speed = device.screenWidth * 0.75;
+    if(!typeChecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
+    let speed = device.screenWidth * 0.75;
     this.sprite.x += (speed * delta) / 1000;
   }
 
@@ -687,12 +668,13 @@ class Bullet
 
 class Pickup 
 {
+  errors;
+  scene;
+  
   constructor({ scene, type, x, y }) 
   {
-    const data = scene.cache.json.get('pickups');
-    const pickupDef = data.pickups.find(p => p.name === type);
-
-    console.log(pickupDef);
+    let data = scene.cache.json.get('pickups');
+    let pickupDef = data.pickups.find(p => p.name === type);
 
     if(!pickupDef) 
     {
@@ -702,16 +684,12 @@ class Pickup
 
     this.scene = scene;
     this.sprite = scene.add.sprite(x, y, pickupDef.sprite);
-
-    const targetHeight = device.screenWidth / pickupDef.heightScale;
-    const originalHeight = this.sprite.height || 1;
-    const scale = targetHeight / originalHeight;
-    this.sprite.setScale(scale);
+    this.sprite.setScale((device.screenWidth / pickupDef.heightScale) / this.sprite.height);
   }
 
-  update(delta) 
+  update({ delta } = {}) 
   {
-    const speed = device.screenWidth * 0.2;
+    let speed = device.screenWidth * 0.2;
     this.sprite.x -= (speed * delta) / 1000;
   }
 
@@ -725,7 +703,6 @@ class Pickup
     this.sprite.destroy();
   }
 }
-
 
 ///////////////////////////////////////////////////////////
 // DATA MODELS
@@ -753,38 +730,14 @@ class LevelData
       pickupsType: 'LevelData Error: Pickups must be an array.',
     };
 
-    if(!typeChecker.check({ type: 'object', value: level })) 
-    {
-      console.error(this.#errors.invalidType);
-      return;
-    }
-
-    if(!typeChecker.check({ type: 'number', value: level.id })) 
-    {
-      console.error(this.#errors.idMissing);
-      return;
-    }
-
-    if(!typeChecker.check({ type: 'array', value: level.enemies }))
-    {
-      console.error(this.#errors.enemiesType);
-      return;
-    }
-
-    if(!typeChecker.check({ type: 'array', value: level.obstacles })) 
-    {
-      console.error(this.#errors.obstaclesType);
-      return;
-    }
-
-    if(!typeChecker.check({ type: 'array', value: level.pickups })) 
-    {
-      console.error(this.#errors.pickupsType);
-      return;
-    }
-
+    if(!typeChecker.check({ type: 'object', value: level })) console.error(this.#errors.invalidType);
+    if(!typeChecker.check({ type: 'number', value: level.id })) console.error(this.#errors.idMissing);
+    if(!typeChecker.check({ type: 'array', value: level.enemies })) console.error(this.#errors.enemiesType);
+    if(!typeChecker.check({ type: 'array', value: level.obstacles })) console.error(this.#errors.obstaclesType);
+    if(!typeChecker.check({ type: 'array', value: level.pickups })) console.error(this.#errors.pickupsType);
+   
     this.id = level.id;
-    this.background = level.background || '';
+    this.background = level.background;
     this.enemies = level.enemies;
     this.obstacles = level.obstacles;
     this.pickups = level.pickups;
@@ -829,9 +782,7 @@ class LevelManager
   /** Returns the singleton instance. */
   static getInstance() 
   {
-    if (!LevelManager.#instance) {
-      LevelManager.#instance = new LevelManager();
-    }
+    if(!LevelManager.#instance) LevelManager.#instance = new LevelManager();
     return LevelManager.#instance;
   }
 
@@ -841,12 +792,7 @@ class LevelManager
    */
   load({ levels } = {}) 
   {
-    if(!typeChecker.check({ type: 'array', value: levels })) 
-    {
-      console.error(this.#errors.levelsTypeError);
-      return;
-    }
-
+    if(!typeChecker.check({ type: 'array', value: levels })) console.error(this.#errors.levelsTypeError);
     this.#levels = [];
 
     for(const rawLevel of levels) 
@@ -865,19 +811,9 @@ class LevelManager
    */
   selectLevel({ id } = {}) 
   {
-    if(!typeChecker.check({ type: 'number', value: id })) 
-    {
-      console.error(this.#errors.levelIdTypeError);
-      return;
-    }
-
-    const level = this.#levels.find(level => level.id === id);
-    if(!level) 
-    {
-      console.error(this.#errors.levelNotFoundError);
-      return;
-    }
-
+    if(!typeChecker.check({ type: 'number', value: id })) console.error(this.#errors.levelIdTypeError);
+    let level = this.#levels.find(level => level.id === id);
+    if(!level) console.error(this.#errors.levelNotFoundError);
     this.#currentLevel = level;
   }
 
@@ -887,12 +823,7 @@ class LevelManager
    */
   get currentLevel() 
   {
-    if(!this.#currentLevel) 
-    {
-      console.warn(this.#errors.levelsNotLoadedError);
-      return null;
-    }
-
+    if(!this.#currentLevel) console.warn(this.#errors.levelsNotLoadedError);
     return this.#currentLevel;
   }
 
@@ -919,6 +850,7 @@ class LevelManager
 
 globalThis.levels = LevelManager.getInstance();
 typeChecker.register({ name: 'plane', constructor: Plane });
+typeChecker.register({ name: 'joystick', constructor: Joystick });
 
 const game = new ui.PhaserGame({ config: { scene: [ SplashScene, MainMenuScene, LevelSelectScene, LoadingScene, GameScene ] } });
 app.present({ root: game });
