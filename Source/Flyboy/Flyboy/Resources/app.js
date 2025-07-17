@@ -33,6 +33,10 @@ class LevelSelectScene extends Phaser.Scene
   {
     this.load.image('background', 'background.png');
     this.load.json('levels', `levels.json?v=${Date.now()}`);
+
+    this.load.image('block', 'block.png');
+    this.load.image('star', 'star.png');
+    this.load.image('star-filled', 'star-filled.png');
   }
 
   create() 
@@ -44,7 +48,8 @@ class LevelSelectScene extends Phaser.Scene
     const data = this.cache.json.get('levels');
     levels.load({ levels: data.levels });
     levels.selectLevel({ id: 1 });
-    setTimeout(() => { this.scene.start('LoadingScene'); }, 2000);
+
+    let block = new LevelSelectBlock(this, this.cameras.main.centerX, this.cameras.main.centerY, 2);
   }
 }
 
@@ -836,6 +841,48 @@ class Enemy
     this.sprite.destroy();
   }
 } 
+
+/////////////////////////////////////////////////
+
+class LevelSelectBlock extends Phaser.GameObjects.Container 
+{
+  constructor(scene, x, y, levelNumber, starCount = 0) 
+  {
+    super(scene, x, y);
+
+    let blockSize = device.screenWidth / 6;
+    let block = scene.add.sprite(0, 0, 'block');
+    block.setScale(blockSize / block.width);
+    block.setOrigin(0.5);
+    this.add(block);
+
+    let textYOffset = -blockSize * 0.2;
+    let levelText = scene.add.text(0, textYOffset, ` ${levelNumber} `, 
+    {
+      fontFamily: 'BulgariaDreams',
+      fontSize: `${blockSize / 3.5}px`,
+      color: '#ffffff',
+      align: 'center'
+    }).setOrigin(0.5);
+    this.add(levelText);
+
+    let starSize = blockSize / 5;
+    let totalStarWidth = starSize * 3 + 2 * 4;
+    let starYOffset = blockSize * 0.2;
+
+    for(let i = 0; i < 3; i++) 
+    {
+      let starX = -totalStarWidth / 2 + i * (starSize + 4) + starSize / 2;
+      let star = scene.add.sprite(starX, starYOffset, 'star');
+      let starScale = starSize / star.width;
+      star.setScale(starScale);
+      star.setOrigin(0.5);
+      this.add(star);
+    }
+
+    scene.add.existing(this);
+  }
+}
 
 ///////////////////////////////////////////////////////////
 // DATA MODELS
