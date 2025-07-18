@@ -900,46 +900,6 @@ class LevelSelectBlock extends Phaser.GameObjects.Container
 }
 
 ///////////////////////////////////////////////////////////
-// DATA MODELS
-///////////////////////////////////////////////////////////
-
-/**
- * Class representing the data for a single level.
- */
-class LevelData
-{
-  #errors;
-
-  /**
-   * Creates a new LevelData object.
-   * @param {object} level - The level object from the JSON file.
-   */
-  constructor(level = {}) 
-  {
-    this.#errors = 
-    {
-      invalidType: 'LevelData Error: Expected an object for level.',
-      idMissing: 'LevelData Error: Level ID is required and must be a number.',
-      enemiesType: 'LevelData Error: Enemies must be an array.',
-      obstaclesType: 'LevelData Error: Obstacles must be an array.',
-      pickupsType: 'LevelData Error: Pickups must be an array.',
-    };
-
-    if(!typeChecker.check({ type: 'object', value: level })) console.error(this.#errors.invalidType);
-    if(!typeChecker.check({ type: 'number', value: level.id })) console.error(this.#errors.idMissing);
-    if(!typeChecker.check({ type: 'array', value: level.enemies })) console.error(this.#errors.enemiesType);
-    if(!typeChecker.check({ type: 'array', value: level.obstacles })) console.error(this.#errors.obstaclesType);
-    if(!typeChecker.check({ type: 'array', value: level.pickups })) console.error(this.#errors.pickupsType);
-   
-    this.id = level.id;
-    this.background = level.background;
-    this.enemies = level.enemies;
-    this.obstacles = level.obstacles;
-    this.pickups = level.pickups;
-  }
-}
-
-///////////////////////////////////////////////////////////
 // LEVELS MODULE
 ///////////////////////////////////////////////////////////
 
@@ -993,8 +953,7 @@ class LevelManager
     for(const rawLevel of levels) 
     {
       if(!typeChecker.check({ type: 'object', value: rawLevel })) continue;
-      const level = new LevelData(rawLevel);
-      if(level?.id != null) this.#levels.push(level);
+      if(rawLevel?.id != null) this.#levels.push(rawLevel);
     }
 
     this.#currentLevel = null;
