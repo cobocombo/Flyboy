@@ -196,9 +196,9 @@ class GameScene extends Phaser.Scene
     this.load.image('bullet-5', 'bullet-5.png');
     this.load.image('pause-button', 'pause-button.png');
 
-    this.loadEnemyData();
-    this.loadPlaneData();
-    this.loadPickupData();
+    this.loadEnemyImages();
+    this.loadPlaneImages();
+    this.loadPickupImages();
   }
 
   create() 
@@ -211,29 +211,6 @@ class GameScene extends Phaser.Scene
     this.background2.setOrigin(0, 0);
     this.background1.setPosition(0, 0);
     this.background2.setPosition(device.screenHeight - 3, 0);
-
-    if(this.planeData && typeChecker.check({ type: 'array', value: this.planeData.planes })) 
-    {
-      this.planeData.planes.forEach(plane => 
-      {
-        if(plane.name && plane.sprite && plane.animations) 
-        {
-          plane.animations.forEach((animation) => 
-          {
-            const frames = animation.frames.map((frame) => { return { key: frame.key }; });
-            if(!this.anims.exists(animation.key)) 
-            {
-              this.anims.create({
-                key: animation.key,
-                frames: frames,
-                frameRate: animation.frameRate || 12,
-                repeat: animation.repeat ?? -1
-              });
-            }
-          });
-        }
-      });
-    }
 
     if(!this.anims.exists('bullet-anim')) 
     {
@@ -251,31 +228,9 @@ class GameScene extends Phaser.Scene
       });
     };
 
-    if(this.enemyData && typeChecker.check({ type: 'array', value: this.enemyData.enemies })) 
-    {
-      this.enemyData.enemies.forEach(enemy => 
-      {
-        if(enemy.name && enemy.sprite && enemy.animations) 
-        {
-          enemy.animations.forEach((animation) => 
-          {
-            const frames = animation.frames.map((frame) => {
-              return { key: frame.key };
-            });
-
-            if(!this.anims.exists(animation.key)) 
-            {
-              this.anims.create({
-                key: animation.key,
-                frames: frames,
-                frameRate: animation.frameRate || 12,
-                repeat: animation.repeat ?? -1
-              });
-            }
-          });
-        }
-      });
-    }
+    this.loadEnemyAnimations();
+    this.loadPlaneAnimations();
+    this.loadPickupAnimations();
 
     this.plane = new Plane({ scene: this, data: this.planeData, type: this.planeType });
     this.plane.setPosition({ x: 20 + (this.plane.sprite.displayWidth / 2), y: (device.screenWidth / 2) - (device.screenWidth / 12) });
@@ -309,7 +264,32 @@ class GameScene extends Phaser.Scene
     if(levels.currentLevel && levels.currentLevel.enemies) this.enemySpawnQueue = [...levels.currentLevel.enemies].sort((a, b) => a.spawnTime - b.spawnTime);
   }
 
-  loadEnemyData() 
+  loadEnemyAnimations()
+  {
+    this.enemyData.enemies
+    .filter(enemy => this.enemyTypes.includes(enemy.name))
+    .forEach(enemy => 
+    {
+      if(enemy.animations) 
+      {
+        enemy.animations.forEach(animation => 
+        {
+          const frames = animation.frames.map(frame => ({ key: frame.key }));
+          if(!this.anims.exists(animation.key)) 
+          {
+            this.anims.create({
+              key: animation.key,
+              frames: frames,
+              frameRate: animation.frameRate || 12,
+              repeat: animation.repeat ?? -1
+            });
+          }
+        });
+      }
+    });
+  }
+
+  loadEnemyImages() 
   {
     this.enemyTypes = [...new Set((levels.currentLevel?.enemies || []).map(e => e.type))];
     this.enemyData = this.cache.json.get('enemies');
@@ -331,12 +311,32 @@ class GameScene extends Phaser.Scene
     });
   }
 
-  loadPlaneData() 
+  loadPlaneAnimations() 
+  {
+    let selectedPlane = this.planeData.planes.find(plane => plane.name === this.planeType);
+    if(selectedPlane && selectedPlane.animations) 
+    {
+      selectedPlane.animations.forEach(animation => 
+      {
+        let frames = animation.frames.map(frame => ({ key: frame.key }));
+        if(!this.anims.exists(animation.key)) 
+        {
+          this.anims.create({
+            key: animation.key,
+            frames: frames,
+            frameRate: animation.frameRate || 12,
+            repeat: animation.repeat ?? -1
+          });
+        }
+      });
+    }
+  }
+
+  loadPlaneImages() 
   {
     this.planeType = 'green-plane';
-    this.pickupTypes = [...new Set((levels.currentLevel?.pickups || []).map(p => p.type))];
     this.planeData = this.cache.json.get('planes');
-    const selectedPlane = this.planeData.planes.find(plane => plane.name === this.planeType);
+    let selectedPlane = this.planeData.planes.find(plane => plane.name === this.planeType);
     if(selectedPlane && selectedPlane.name && selectedPlane.sprite && selectedPlane.animations) 
     {
       this.load.image(selectedPlane.name, selectedPlane.sprite);
@@ -350,9 +350,35 @@ class GameScene extends Phaser.Scene
     }
   }
 
-  loadPickupData() 
+  loadPickupAnimations() 
+  {
+    this.pickupData.pickups
+    .filter(pickup => this.pickupTypes.includes(pickup.name))
+    .forEach(pickup => 
+    {
+      if(pickup.animations && Array.isArray(pickup.animations)) 
+      {
+        pickup.animations.forEach(animation => 
+        {
+          let frames = animation.frames.map(frame => ({ key: frame.key }));
+          if(!this.anims.exists(animation.key)) 
+          {
+            this.anims.create({
+              key: animation.key,
+              frames: frames,
+              frameRate: animation.frameRate || 12,
+              repeat: animation.repeat ?? -1
+            });
+          }
+        });
+      }
+    });
+  }
+
+  loadPickupImages() 
   {
     this.pickupData = this.cache.json.get('pickups');
+    this.pickupTypes = [...new Set((levels.currentLevel?.pickups || []).map(p => p.type))];
     this.pickupData.pickups
     .filter(pickup => this.pickupTypes.includes(pickup.name))
     .forEach(pickup => { if(pickup.name && pickup.sprite) this.load.image(pickup.name, pickup.sprite); });
