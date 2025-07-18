@@ -1,0 +1,40 @@
+{
+  "planes": 
+  [
+    {
+      "name": "green-plane",
+      "sprite": "green-plane-fly-1.png",
+      "heightScale": 6,
+      "flipX": false,
+      "animations": 
+      [
+        { 
+          "key": "green-plane-fly",
+          "frames":
+          [
+            { "key": "green-plane-fly-1", "sprite": "green-plane-fly-1.png" },
+            { "key": "green-plane-fly-2", "sprite": "green-plane-fly-2.png" }
+          ],
+          "frameRate": 12,
+          "repeat": -1
+        },
+        { 
+          "key": "green-plane-shoot",
+          "frames":
+          [
+            { "key": "green-plane-shoot-1", "sprite": "green-plane-shoot-1.png" },
+            { "key": "green-plane-shoot-2", "sprite": "green-plane-shoot-2.png" },
+            { "key": "green-plane-shoot-3", "sprite": "green-plane-shoot-3.png" },
+            { "key": "green-plane-shoot-4", "sprite": "green-plane-shoot-4.png" },
+            { "key": "green-plane-shoot-5", "sprite": "green-plane-shoot-5.png" }
+          ],
+          "frameRate": 15,
+          "repeat": -1
+        }
+      ],
+      "startingAnimation": "green-plane-fly",
+      "idleAnimation": "green-plane-fly",
+      "shootingAnimation": "green-plane-shoot"
+    }
+  ]
+}

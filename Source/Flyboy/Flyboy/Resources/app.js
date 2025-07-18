@@ -116,10 +116,11 @@ class LoadingScene extends Phaser.Scene
 
   preload() 
   {
-    let font = new FontFace('BulgariaDreams', 'url("Bulgaria Dreams Regular.ttf")');
-    font.load().then((loadedFace) => { document.fonts.add(loadedFace);})
-      .catch((err) => { console.warn('Font failed to load', err); });
+    // let font = new FontFace('BulgariaDreams', 'url("Bulgaria Dreams Regular.ttf")');
+    // font.load().then((loadedFace) => { document.fonts.add(loadedFace);})
+    //   .catch((err) => { console.warn('Font failed to load', err); });
 
+    this.load.json('planes', `planes.json?v=${Date.now()}`);
     this.load.json('pickups', `pickups.json?v=${Date.now()}`);
     this.load.json('enemies', `enemies.json?v=${Date.now()}`);
   }
@@ -192,13 +193,6 @@ class GameScene extends Phaser.Scene
   preload() 
   {
     this.load.image('background', levels.currentLevel.background);
-    this.load.image('plane-fly-1', 'plane-fly-1.png');
-    this.load.image('plane-fly-2', 'plane-fly-2.png');
-    this.load.image('plane-shoot-1', 'plane-shoot-1.png');
-    this.load.image('plane-shoot-2', 'plane-shoot-2.png');
-    this.load.image('plane-shoot-3', 'plane-shoot-3.png');
-    this.load.image('plane-shoot-4', 'plane-shoot-4.png');
-    this.load.image('plane-shoot-5', 'plane-shoot-5.png');
     this.load.image('joystick-base', 'joystick-base.png');
     this.load.image('joystick', 'joystick.png');
     this.load.image('shoot-button', 'shoot-button.png');
@@ -208,6 +202,26 @@ class GameScene extends Phaser.Scene
     this.load.image('bullet-4', 'bullet-4.png');
     this.load.image('bullet-5', 'bullet-5.png');
     this.load.image('pause-button', 'pause-button.png');
+
+    // Load plane data and load all images.
+    this.planeData = this.cache.json.get('planes');
+    if(this.planeData && typeChecker.check({ type: 'array', value: this.planeData.planes }))
+    {
+      this.planeData.planes.forEach(plane => 
+      {
+        if(plane.name && plane.sprite && plane.animations)
+        {
+          this.load.image(plane.name, plane.sprite);
+          plane.animations.forEach((animation) => 
+          {
+            animation.frames.forEach((frame) => 
+            {
+              this.load.image(frame.key, frame.sprite);
+            });
+          });
+        }
+      });
+    }
 
     // Load pickups data and load all images.
     this.pickupData = this.cache.json.get('pickups');
@@ -251,34 +265,28 @@ class GameScene extends Phaser.Scene
     this.background1.setPosition(0, 0);
     this.background2.setPosition(device.screenHeight - 3, 0);
 
-    if(!this.anims.exists('plane-fly')) 
+    if(this.planeData && typeChecker.check({ type: 'array', value: this.planeData.planes })) 
     {
-      this.anims.create({
-        key: 'plane-fly',
-        frames: [
-          { key: 'plane-fly-1' },
-          { key: 'plane-fly-2' }
-        ],
-        frameRate: 12,
-        repeat: -1
+      this.planeData.planes.forEach(plane => 
+      {
+        if(plane.name && plane.sprite && plane.animations) 
+        {
+          plane.animations.forEach((animation) => 
+          {
+            const frames = animation.frames.map((frame) => { return { key: frame.key }; });
+            if(!this.anims.exists(animation.key)) 
+            {
+              this.anims.create({
+                key: animation.key,
+                frames: frames,
+                frameRate: animation.frameRate || 12,
+                repeat: animation.repeat ?? -1
+              });
+            }
+          });
+        }
       });
-    };
-
-    if(!this.anims.exists('plane-shoot')) 
-    {
-      this.anims.create({
-        key: 'plane-shoot',
-        frames: [
-          { key: 'plane-shoot-1' },
-          { key: 'plane-shoot-2' },
-          { key: 'plane-shoot-3' },
-          { key: 'plane-shoot-4' },
-          { key: 'plane-shoot-5' }
-        ],
-        frameRate: 15,
-        repeat: -1
-      });
-    };
+    }
 
     if(!this.anims.exists('bullet-anim')) 
     {
@@ -322,7 +330,7 @@ class GameScene extends Phaser.Scene
       });
     }
 
-    this.plane = new Plane({ scene: this });
+    this.plane = new Plane({ scene: this, data: this.planeData, type: 'green-plane' });
     this.plane.setPosition({ x: 20 + (this.plane.sprite.displayWidth / 2), y: (device.screenWidth / 2) - (device.screenWidth / 12) });
 
     this.joystick = new Joystick({ scene: this });
@@ -471,10 +479,12 @@ class Plane
   bobTween;
   currentAnim;
   errors;
+  idleAnimation;
   scene;
+  shootingAnimation;
   sprite;
   
-  constructor({ scene } = {}) 
+  constructor({ scene, data, type } = {}) 
   {
     this.errors = 
     {
@@ -487,12 +497,17 @@ class Plane
     };
 
     if(!scene) console.error(this.errors.sceneError);
+
+    let planeDef = data.planes.find(p => p.name === type);
+    if(!planeDef) console.error(`Plane Error: No pickup definition found for type "${type}".`);
   
     this.scene = scene;
-    this.sprite = scene.add.sprite(0, 0, 'plane-fly-1');
-    this.sprite.setScale((device.screenWidth / 6) / (this.sprite.height));
-    this.sprite.play('plane-fly');
-    this.currentAnim = 'plane-fly';
+    this.sprite = scene.add.sprite(0, 0, planeDef.name);
+    this.sprite.setScale((device.screenWidth / planeDef.heightScale) / (this.sprite.height));
+    this.sprite.play(planeDef.startingAnimation);
+    this.currentAnim = planeDef.startingAnimation;
+    this.idleAnimation = planeDef.idleAnimation;
+    this.shootingAnimation = planeDef.shootingAnimation;
   }
 
   setPosition({ x, y } = {}) 
@@ -689,7 +704,7 @@ class ShootButton
       if(!this.isHeld) 
       {
         this.isHeld = true;
-        this.plane?.setAnimation({ name: 'plane-shoot' });
+        this.plane?.setAnimation({ name: this.plane.shootingAnimation });
 
         const x = this.plane.sprite.x + this.plane.sprite.displayWidth / 2;
         const y = this.plane.sprite.y + this.plane.sprite.displayHeight / 4;
@@ -704,7 +719,7 @@ class ShootButton
       if(this.isHeld) 
       {
         this.isHeld = false;
-        this.plane?.setAnimation({ name: 'plane-fly' });
+        this.plane?.setAnimation({ name: this.plane.idleAnimation });
       }
     };
 
