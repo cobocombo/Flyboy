@@ -33,7 +33,6 @@ class LevelSelectScene extends Phaser.Scene
   {
     this.load.image('background', 'blue-sky-clear.png');
     this.load.json('levels', `levels.json?v=${Date.now()}`);
-
     this.load.image('block', 'block.png');
     this.load.image('star', 'star.png');
     this.load.image('star-filled', 'star-filled.png');
@@ -67,9 +66,6 @@ class MainMenuScene extends Phaser.Scene
   {
     this.load.image('background', 'blue-sky-clear.png');
     this.load.image('start-button', 'start-button.png');
-    const font = new FontFace('BulgariaDreams', 'url("Bulgaria Dreams Regular.ttf")');
-    font.load().then((loadedFace) => { document.fonts.add(loadedFace);})
-      .catch((err) => { console.warn('Font failed to load', err); });
   }
 
   create() 
@@ -116,10 +112,6 @@ class LoadingScene extends Phaser.Scene
 
   preload() 
   {
-    // let font = new FontFace('BulgariaDreams', 'url("Bulgaria Dreams Regular.ttf")');
-    // font.load().then((loadedFace) => { document.fonts.add(loadedFace);})
-    //   .catch((err) => { console.warn('Font failed to load', err); });
-
     this.load.json('planes', `planes.json?v=${Date.now()}`);
     this.load.json('pickups', `pickups.json?v=${Date.now()}`);
     this.load.json('enemies', `enemies.json?v=${Date.now()}`);
@@ -178,6 +170,7 @@ class GameScene extends Phaser.Scene
   pickupData;
   pickupSpawnQueue;
   plane;
+  planeType;
   shootButton;
 
   constructor() 
@@ -203,55 +196,9 @@ class GameScene extends Phaser.Scene
     this.load.image('bullet-5', 'bullet-5.png');
     this.load.image('pause-button', 'pause-button.png');
 
-    // Load plane data and load all images.
-    this.planeData = this.cache.json.get('planes');
-    if(this.planeData && typeChecker.check({ type: 'array', value: this.planeData.planes }))
-    {
-      this.planeData.planes.forEach(plane => 
-      {
-        if(plane.name && plane.sprite && plane.animations)
-        {
-          this.load.image(plane.name, plane.sprite);
-          plane.animations.forEach((animation) => 
-          {
-            animation.frames.forEach((frame) => 
-            {
-              this.load.image(frame.key, frame.sprite);
-            });
-          });
-        }
-      });
-    }
-
-    // Load pickups data and load all images.
-    this.pickupData = this.cache.json.get('pickups');
-    if(this.pickupData && typeChecker.check({ type: 'array', value: this.pickupData.pickups }))
-    {
-      this.pickupData.pickups.forEach(pickup => 
-      {
-        if(pickup.name && pickup.sprite) this.load.image(pickup.name, pickup.sprite);
-      });
-    }
-
-    // Load enemy data and load all images.
-    this.enemyData = this.cache.json.get('enemies');
-    if(this.enemyData && typeChecker.check({ type: 'array', value: this.enemyData.enemies }))
-    {
-      this.enemyData.enemies.forEach(enemy => 
-      {
-        if(enemy.name && enemy.sprite && enemy.animations)
-        {
-          this.load.image(enemy.name, enemy.sprite);
-          enemy.animations.forEach((animation) => 
-          {
-            animation.frames.forEach((frame) => 
-            {
-              this.load.image(frame.key, frame.sprite);
-            });
-          });
-        }
-      });
-    }
+    this.loadEnemyData();
+    this.loadPlaneData();
+    this.loadPickupData();
   }
 
   create() 
@@ -330,7 +277,7 @@ class GameScene extends Phaser.Scene
       });
     }
 
-    this.plane = new Plane({ scene: this, data: this.planeData, type: 'green-plane' });
+    this.plane = new Plane({ scene: this, data: this.planeData, type: this.planeType });
     this.plane.setPosition({ x: 20 + (this.plane.sprite.displayWidth / 2), y: (device.screenWidth / 2) - (device.screenWidth / 12) });
 
     this.joystick = new Joystick({ scene: this });
@@ -360,6 +307,55 @@ class GameScene extends Phaser.Scene
   
     if(levels.currentLevel && levels.currentLevel.pickups) this.pickupSpawnQueue = [...levels.currentLevel.pickups].sort((a, b) => a.spawnTime - b.spawnTime);
     if(levels.currentLevel && levels.currentLevel.enemies) this.enemySpawnQueue = [...levels.currentLevel.enemies].sort((a, b) => a.spawnTime - b.spawnTime);
+  }
+
+  loadEnemyData() 
+  {
+    this.enemyTypes = [...new Set((levels.currentLevel?.enemies || []).map(e => e.type))];
+    this.enemyData = this.cache.json.get('enemies');
+    this.enemyData.enemies
+    .filter(enemy => this.enemyTypes.includes(enemy.name))
+    .forEach(enemy => 
+    {
+      if(enemy.name && enemy.sprite && enemy.animations) 
+      {
+        this.load.image(enemy.name, enemy.sprite);
+        enemy.animations.forEach(animation => 
+        {
+          animation.frames.forEach(frame => 
+          {
+            this.load.image(frame.key, frame.sprite);
+          });
+        });
+      }
+    });
+  }
+
+  loadPlaneData() 
+  {
+    this.planeType = 'green-plane';
+    this.pickupTypes = [...new Set((levels.currentLevel?.pickups || []).map(p => p.type))];
+    this.planeData = this.cache.json.get('planes');
+    const selectedPlane = this.planeData.planes.find(plane => plane.name === this.planeType);
+    if(selectedPlane && selectedPlane.name && selectedPlane.sprite && selectedPlane.animations) 
+    {
+      this.load.image(selectedPlane.name, selectedPlane.sprite);
+      selectedPlane.animations.forEach(animation => 
+      {
+        animation.frames.forEach(frame => 
+        {
+          this.load.image(frame.key, frame.sprite);
+        });
+      });
+    }
+  }
+
+  loadPickupData() 
+  {
+    this.pickupData = this.cache.json.get('pickups');
+    this.pickupData.pickups
+    .filter(pickup => this.pickupTypes.includes(pickup.name))
+    .forEach(pickup => { if(pickup.name && pickup.sprite) this.load.image(pickup.name, pickup.sprite); });
   }
 
   update(_time, delta) 
@@ -1001,6 +997,10 @@ class LevelManager
 }
 
 ///////////////////////////////////////////////////////////
+
+let font = new FontFace('BulgariaDreams', 'url("Bulgaria Dreams Regular.ttf")');
+font.load().then((loadedFace) => { document.fonts.add(loadedFace);})
+.catch((err) => { console.warn('Font failed to load', err); });
 
 globalThis.levels = LevelManager.getInstance();
 typeChecker.register({ name: 'plane', constructor: Plane });
