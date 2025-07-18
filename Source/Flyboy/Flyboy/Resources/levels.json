@@ -3,7 +3,7 @@
   [
     {
       "id": 1,
-      "background": "",
+      "background": "blue-sky-clear.png",
       "enemies": 
       [
         { "type": "bird", "spawnPosition": 0.5, "spawnTime": 5000 },

@@ -16,7 +16,7 @@ class SplashScene extends Phaser.Scene
 
   create() 
   {
-    setTimeout(() => { this.scene.start('MainMenuScene'); }, 2000);
+    setTimeout(() => { this.scene.start('MainMenuScene'); }, 1000);
   }
 }
 
@@ -31,7 +31,7 @@ class LevelSelectScene extends Phaser.Scene
 
   preload()
   {
-    this.load.image('background', 'background.png');
+    this.load.image('background', 'blue-sky-clear.png');
     this.load.json('levels', `levels.json?v=${Date.now()}`);
 
     this.load.image('block', 'block.png');
@@ -49,7 +49,8 @@ class LevelSelectScene extends Phaser.Scene
     levels.load({ levels: data.levels });
     levels.selectLevel({ id: 1 });
 
-    let block = new LevelSelectBlock(this, this.cameras.main.centerX, this.cameras.main.centerY, 2);
+    let block = new LevelSelectBlock(this, this.cameras.main.centerX, this.cameras.main.centerY, 1);
+    setTimeout(() => { this.scene.start('LoadingScene'); }, 3000);
   }
 }
 
@@ -64,7 +65,7 @@ class MainMenuScene extends Phaser.Scene
 
   preload()
   {
-    this.load.image('background', 'background.png');
+    this.load.image('background', 'blue-sky-clear.png');
     this.load.image('start-button', 'start-button.png');
     const font = new FontFace('BulgariaDreams', 'url("Bulgaria Dreams Regular.ttf")');
     font.load().then((loadedFace) => { document.fonts.add(loadedFace);})
@@ -190,7 +191,7 @@ class GameScene extends Phaser.Scene
 
   preload() 
   {
-    this.load.image('background', 'background.png');
+    this.load.image('background', levels.currentLevel.background);
     this.load.image('plane-fly-1', 'plane-fly-1.png');
     this.load.image('plane-fly-2', 'plane-fly-2.png');
     this.load.image('plane-shoot-1', 'plane-shoot-1.png');
@@ -348,10 +349,9 @@ class GameScene extends Phaser.Scene
 
     this.enemies = this.add.group();
     this.enemySpawnQueue = [];
-    
-    this.level = levels.currentLevel;
-    if(this.level && this.level.pickups) this.pickupSpawnQueue = [...this.level.pickups].sort((a, b) => a.spawnTime - b.spawnTime);
-    if(this.level && this.level.enemies) this.enemySpawnQueue = [...this.level.enemies].sort((a, b) => a.spawnTime - b.spawnTime);
+  
+    if(levels.currentLevel && levels.currentLevel.pickups) this.pickupSpawnQueue = [...levels.currentLevel.pickups].sort((a, b) => a.spawnTime - b.spawnTime);
+    if(levels.currentLevel && levels.currentLevel.enemies) this.enemySpawnQueue = [...levels.currentLevel.enemies].sort((a, b) => a.spawnTime - b.spawnTime);
   }
 
   update(_time, delta) 
