@@ -465,7 +465,7 @@ class GameScene extends Phaser.Scene
   updateBackground({ delta } = {})
   {
     if(!typeChecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
-    let backgroundScrollSpeed = device.screenWidth / 4;
+    let backgroundScrollSpeed = device.screenHeight / 8;
     this.background1.x -= (backgroundScrollSpeed * delta) / 1000;
     this.background2.x -= (backgroundScrollSpeed * delta) / 1000;
     if(this.background1.x <= -device.screenHeight) this.background1.x = this.background2.x + device.screenHeight - 5;
