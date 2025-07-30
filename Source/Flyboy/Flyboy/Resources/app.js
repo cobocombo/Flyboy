@@ -199,6 +199,7 @@ class GameScene extends Phaser.Scene
     this.load.image('bullet-4', 'bullet-4.png');
     this.load.image('bullet-5', 'bullet-5.png');
     this.load.image('pause-button', 'pause-button.png');
+    this.load.image('poof', 'poof.png'); 
 
     this.loadEnemyImages();
     this.loadPlaneImages();
@@ -442,7 +443,26 @@ class GameScene extends Phaser.Scene
 
       this.physics.add.overlap(this.plane.sprite, enemy.sprite, () => 
       {
-        console.log('Overlap detected between: plane and enemy');
+        if(enemy.sprite) 
+        {
+          const { x, y, displayHeight } = enemy.sprite;
+
+          enemy.destroy();
+          this.enemies.remove(enemy.sprite, true, true);
+
+          let poof = this.add.sprite(x, y, 'poof');
+          poof.setScale(displayHeight / (poof.height / 2));
+          poof.setDepth(10);
+
+          this.tweens.add({
+            targets: poof,
+            alpha: 0,
+            duration: 1000,
+            onComplete: () => {
+              poof.destroy();
+            }
+          });
+        }
       });
     }
 
