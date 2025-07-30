@@ -417,6 +417,12 @@ class GameScene extends Phaser.Scene
       let pickup = new Pickup({ scene: this, data: this.pickupData, type: pickupData.type, x: spawnX, y: spawnY });
       this.pickups.add(pickup.sprite);
       pickup.sprite.__pickup = pickup;
+
+      this.physics.add.existing(pickup.sprite);
+      this.physics.add.overlap(this.plane.sprite, pickup.sprite, () => 
+      {
+        console.log('Overlap detected between: plane and pickup');
+      });
     }
 
     while(this.enemySpawnQueue.length > 0 && this.elapsedTime >= this.enemySpawnQueue[0].spawnTime) 
