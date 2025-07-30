@@ -177,6 +177,10 @@ class GameScene extends Phaser.Scene
   {
     super('GameScene');
 
+    this.elapsedTime = 0;
+    this.pickupSpawnQueue = [];
+    this.enemySpawnQueue = [];
+
     this.errors = 
     {
       deltaTypeError: 'Game Scene Error: Expected type number for delta'
@@ -232,6 +236,12 @@ class GameScene extends Phaser.Scene
     this.loadPlaneAnimations();
     this.loadPickupAnimations();
 
+    this.enemies = this.add.group();
+    this.pickups = this.add.group();
+  
+    this.enemySpawnQueue = [...levels.currentLevel.enemies].sort((a, b) => a.spawnTime - b.spawnTime);
+    this.pickupSpawnQueue = [...levels.currentLevel.pickups].sort((a, b) => a.spawnTime - b.spawnTime);
+    
     this.plane = new Plane({ scene: this, data: this.planeData, type: this.planeType });
     this.plane.setPosition({ x: 20 + (this.plane.sprite.displayWidth / 2), y: (device.screenWidth / 2) - (device.screenWidth / 12) });
 
@@ -251,17 +261,6 @@ class GameScene extends Phaser.Scene
       this.scene.pause();
       this.pauseAlert.present();
     });
-
-    this.elapsedTime = 0;
-
-    this.pickups = this.add.group();
-    this.pickupSpawnQueue = [];
-
-    this.enemies = this.add.group();
-    this.enemySpawnQueue = [];
-  
-    if(levels.currentLevel && levels.currentLevel.pickups) this.pickupSpawnQueue = [...levels.currentLevel.pickups].sort((a, b) => a.spawnTime - b.spawnTime);
-    if(levels.currentLevel && levels.currentLevel.enemies) this.enemySpawnQueue = [...levels.currentLevel.enemies].sort((a, b) => a.spawnTime - b.spawnTime);
   }
 
   loadEnemyAnimations()
@@ -428,6 +427,12 @@ class GameScene extends Phaser.Scene
       let enemy = new Enemy({ scene: this, data: this.enemyData, type: enemyData.type, x: spawnX, y: spawnY });
       this.enemies.add(enemy.sprite);
       enemy.sprite.__enemy = enemy;
+      this.physics.add.existing(enemy.sprite);
+
+      this.physics.add.overlap(this.plane.sprite, enemy.sprite, () => 
+      {
+        console.log('Overlap detected between: plane and enemy');
+      });
     }
 
     Phaser.Actions.Call(this.pickups.getChildren(), sprite => 
@@ -527,6 +532,8 @@ class Plane
     this.sprite = scene.add.sprite(0, 0, planeDef.name);
     this.sprite.setScale((device.screenWidth / planeDef.heightScale) / (this.sprite.height));
     this.sprite.play(planeDef.startingAnimation);
+    this.scene.physics.add.existing(this.sprite);
+    
     this.currentAnim = planeDef.startingAnimation;
     this.idleAnimation = planeDef.idleAnimation;
     this.shootingAnimation = planeDef.shootingAnimation;
@@ -1032,7 +1039,21 @@ globalThis.levels = LevelManager.getInstance();
 typeChecker.register({ name: 'plane', constructor: Plane });
 typeChecker.register({ name: 'joystick', constructor: Joystick });
 
-const game = new ui.PhaserGame({ config: { scene: [ SplashScene, MainMenuScene, LevelSelectScene, LoadingScene, GameScene ] } });
+const game = new ui.PhaserGame({ 
+  config: 
+  { 
+    scene: [ SplashScene, MainMenuScene, LevelSelectScene, LoadingScene, GameScene ],
+    physics: 
+    { 
+      default: "arcade", 
+      arcade: 
+      { 
+        debug: false
+      }
+    } 
+  }
+}); 
+  
 app.present({ root: game });
 
 ///////////////////////////////////////////////////////////
