@@ -236,8 +236,8 @@ class GameScene extends Phaser.Scene
     this.loadPlaneAnimations();
     this.loadPickupAnimations();
 
-    this.enemies = this.add.group();
-    this.pickups = this.add.group();
+    this.enemies = this.physics.add.group();
+    this.pickups = this.physics.add.group();
   
     this.enemySpawnQueue = [...levels.currentLevel.enemies].sort((a, b) => a.spawnTime - b.spawnTime);
     this.pickupSpawnQueue = [...levels.currentLevel.pickups].sort((a, b) => a.spawnTime - b.spawnTime);
@@ -248,7 +248,7 @@ class GameScene extends Phaser.Scene
     this.joystick = new Joystick({ scene: this });
     this.shootButton = new ShootButton({ scene: this, plane: this.plane });
 
-    this.bullets = this.add.group();
+    this.bullets = this.physics.add.group();
     this.bulletTimer = 0;
 
     this.pauseAlert = new PauseAlertDialog({ scene: this.scene });
@@ -260,6 +260,11 @@ class GameScene extends Phaser.Scene
     {
       this.scene.pause();
       this.pauseAlert.present();
+    });
+
+    this.physics.add.overlap(this.bullets, this.enemies, (bulletSprite, enemySprite) => 
+    {
+      console.log('Overlap detected between: bullet and enemy');
     });
   }
 
@@ -743,7 +748,8 @@ class ShootButton
 
         const x = this.plane.sprite.x + this.plane.sprite.displayWidth / 2;
         const y = this.plane.sprite.y + this.plane.sprite.displayHeight / 4;
-        new Bullet({ scene: this.scene, x, y });
+        let bullet = new Bullet({ scene: this.scene, x, y });
+        this.scene.physics.add.existing(bullet.sprite);
 
         this.elapsed = -this.shootCooldown / 2;
       }
@@ -773,7 +779,8 @@ class ShootButton
       this.elapsed = 0;
       let x = this.plane.sprite.x + this.plane.sprite.displayWidth / 2;
       let y = this.plane.sprite.y + this.plane.sprite.displayHeight / 4;
-      new Bullet({ scene: this.scene, x: x, y: y });
+      let bullet = new Bullet({ scene: this.scene, x, y });
+      this.scene.physics.add.existing(bullet.sprite);
     }
   }
 }
