@@ -177,7 +177,6 @@ class GameScene extends Phaser.Scene
   {
     super('GameScene');
 
-    this.elapsedTime = 0;
     this.pickupSpawnQueue = [];
     this.enemySpawnQueue = [];
 
@@ -232,6 +231,8 @@ class GameScene extends Phaser.Scene
         repeat: -1
       });
     };
+
+    this.elapsedTime = 0;
 
     this.loadEnemyAnimations();
     this.loadPlaneAnimations();
