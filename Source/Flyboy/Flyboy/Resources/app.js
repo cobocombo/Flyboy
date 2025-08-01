@@ -393,11 +393,30 @@ class GameScene extends Phaser.Scene
   update(_time, delta) 
   {
     if(!typeChecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
-
     this.elapsedTime += delta;
+
     this.updateBackground({ delta: delta });
     this.plane.update({ joystick: this.joystick, delta: delta });
     this.shootButton.update({ delta: delta });
+
+    this.updateBullets({ delta: delta });
+    this.updateEnemies({ delta: delta });
+    this.updatePickups({ delta: delta });
+  }
+
+  updateBackground({ delta } = {})
+  {
+    if(!typeChecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
+    let backgroundScrollSpeed = device.screenHeight / 8;
+    this.background1.x -= (backgroundScrollSpeed * delta) / 1000;
+    this.background2.x -= (backgroundScrollSpeed * delta) / 1000;
+    if(this.background1.x <= -device.screenHeight) this.background1.x = this.background2.x + device.screenHeight - 5;
+    if(this.background2.x <= -device.screenHeight) this.background2.x = this.background1.x + device.screenHeight - 5;
+  }
+
+  updateBullets({ delta } = {})
+  {
+    if(!typeChecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
 
     Phaser.Actions.Call(this.bullets.getChildren(), bulletSprite => 
     {
@@ -414,23 +433,12 @@ class GameScene extends Phaser.Scene
         bullet.destroy();
         this.bullets.remove(bulletSprite, true, true);
       }
-    });
+    }); 
+  }
 
-    while(this.pickupSpawnQueue.length > 0 && this.elapsedTime >= this.pickupSpawnQueue[0].spawnTime) 
-    {
-      let pickupData = this.pickupSpawnQueue.shift();
-      let spawnX = device.screenHeight;
-      let spawnY = device.screenWidth * pickupData.spawnPosition;
-      let pickup = new Pickup({ scene: this, data: this.pickupData, type: pickupData.type, x: spawnX, y: spawnY });
-      this.pickups.add(pickup.sprite);
-      pickup.sprite.__pickup = pickup;
-
-      this.physics.add.existing(pickup.sprite);
-      this.physics.add.overlap(this.plane.sprite, pickup.sprite, () => 
-      {
-        console.log('Overlap detected between: plane and pickup');
-      });
-    }
+  updateEnemies({ delta } = {})
+  {
+    if(!typeChecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
 
     while(this.enemySpawnQueue.length > 0 && this.elapsedTime >= this.enemySpawnQueue[0].spawnTime) 
     {
@@ -467,19 +475,6 @@ class GameScene extends Phaser.Scene
       });
     }
 
-    Phaser.Actions.Call(this.pickups.getChildren(), sprite => 
-    {
-      let pickup = sprite.__pickup;
-      if(!pickup) return;
-      pickup.update({ delta: delta });
-
-      if(pickup.isOffScreen()) 
-      {
-        pickup.destroy();
-        this.pickups.remove(sprite, true, true);
-      }
-    });
-
     Phaser.Actions.Call(this.enemies.getChildren(), sprite => 
     {
       let enemy = sprite.__enemy;
@@ -494,14 +489,38 @@ class GameScene extends Phaser.Scene
     });
   }
 
-  updateBackground({ delta } = {})
+  updatePickups({ delta } = {})
   {
     if(!typeChecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
-    let backgroundScrollSpeed = device.screenHeight / 8;
-    this.background1.x -= (backgroundScrollSpeed * delta) / 1000;
-    this.background2.x -= (backgroundScrollSpeed * delta) / 1000;
-    if(this.background1.x <= -device.screenHeight) this.background1.x = this.background2.x + device.screenHeight - 5;
-    if(this.background2.x <= -device.screenHeight) this.background2.x = this.background1.x + device.screenHeight - 5;
+
+    while(this.pickupSpawnQueue.length > 0 && this.elapsedTime >= this.pickupSpawnQueue[0].spawnTime) 
+    {
+      let pickupData = this.pickupSpawnQueue.shift();
+      let spawnX = device.screenHeight;
+      let spawnY = device.screenWidth * pickupData.spawnPosition;
+      let pickup = new Pickup({ scene: this, data: this.pickupData, type: pickupData.type, x: spawnX, y: spawnY });
+      this.pickups.add(pickup.sprite);
+      pickup.sprite.__pickup = pickup;
+
+      this.physics.add.existing(pickup.sprite);
+      this.physics.add.overlap(this.plane.sprite, pickup.sprite, () => 
+      {
+        console.log('Overlap detected between: plane and pickup');
+      });
+    }
+
+    Phaser.Actions.Call(this.pickups.getChildren(), sprite => 
+    {
+      let pickup = sprite.__pickup;
+      if(!pickup) return;
+      pickup.update({ delta: delta });
+
+      if(pickup.isOffScreen()) 
+      {
+        pickup.destroy();
+        this.pickups.remove(sprite, true, true);
+      }
+    });
   }
 }
 
