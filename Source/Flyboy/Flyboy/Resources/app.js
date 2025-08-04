@@ -266,7 +266,34 @@ class GameScene extends Phaser.Scene
 
     this.physics.add.overlap(this.bullets, this.enemies, (bulletSprite, enemySprite) => 
     {
-      console.log('Overlap detected between: bullet and enemy');
+      if(bulletSprite && bulletSprite.destroy) 
+      {
+        bulletSprite.destroy();
+        this.bullets.remove(bulletSprite, true, true);
+      }
+
+      if(enemySprite && enemySprite.destroy) 
+      {
+        enemySprite.destroy();
+        this.enemies.remove(enemySprite, true, true);
+      }
+
+      const { x, y, displayHeight } = enemySprite;
+      let poof = this.add.sprite(x, y, 'poof');
+      poof.setScale(displayHeight / (poof.height / 2));
+      poof.setDepth(10);
+
+      this.tweens.add({
+        targets: poof,
+        alpha: 0,
+        scaleX: 0,
+        scaleY: 0,
+        duration: 500,
+        ease: 'Power1',
+        onComplete: () => {
+          poof.destroy();
+        }
+      });
     });
   }
 
@@ -466,7 +493,10 @@ class GameScene extends Phaser.Scene
           this.tweens.add({
             targets: poof,
             alpha: 0,
-            duration: 1000,
+            scaleX: 0,
+            scaleY: 0,
+            duration: 500,
+            ease: 'Power1',
             onComplete: () => {
               poof.destroy();
             }
