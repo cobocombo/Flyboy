@@ -198,6 +198,13 @@ class GameScene extends Phaser.Scene
     this.load.image('bullet-4', 'bullet-4.png');
     this.load.image('bullet-5', 'bullet-5.png');
     this.load.image('pause-button', 'pause-button.png');
+
+    this.load.image('explosion-1', 'explosion-1.png');
+    this.load.image('explosion-2', 'explosion-2.png');
+    this.load.image('explosion-3', 'explosion-3.png');
+    this.load.image('explosion-4', 'explosion-4.png');
+    this.load.image('explosion-5', 'explosion-5.png');
+
     this.load.image('poof', 'poof.png'); 
 
     this.loadEnemyImages();
