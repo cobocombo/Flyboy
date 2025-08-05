@@ -496,24 +496,16 @@ class GameScene extends Phaser.Scene
       this.physics.add.overlap(this.plane.sprite, enemy.sprite, () => 
       {
         const { x, y, displayHeight } = enemy.sprite;
-
         enemy.destroy();
         this.enemies.remove(enemy.sprite, true, true);
 
-        let poof = this.add.sprite(x, y, 'poof');
-        poof.setScale(displayHeight / (poof.height / 2));
-        poof.setDepth(10);
-
-        this.tweens.add({
-          targets: poof,
-          alpha: 0,
-          scaleX: 0,
-          scaleY: 0,
-          duration: 500,
-          ease: 'Power1',
-          onComplete: () => {
-            poof.destroy();
-          }
+        let explosion = this.add.sprite(x, y, 'explosion-1');
+        explosion.setScale(displayHeight / (explosion.height / 2));
+        explosion.setDepth(10);
+        explosion.play('explosion-anim');
+        explosion.on('animationcomplete', (animation, frame) => 
+        {
+          if(animation.key === 'explosion-anim') explosion.destroy();
         });
       });
     }
