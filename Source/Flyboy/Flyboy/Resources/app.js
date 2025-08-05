@@ -239,6 +239,21 @@ class GameScene extends Phaser.Scene
       });
     };
 
+    if(!this.anims.exists('explosion-anim')) 
+    {
+      this.anims.create({
+        key: 'explosion-anim',
+        frames: [
+          { key: 'explosion-1' },
+          { key: 'explosion-2' },
+          { key: 'explosion-3' },
+          { key: 'explosion-4' },
+          { key: 'explosion-5' }
+        ],
+        frameRate: 35
+      });
+    };
+
     this.elapsedTime = 0;
 
     this.loadEnemyAnimations();
@@ -286,21 +301,26 @@ class GameScene extends Phaser.Scene
       }
 
       const { x, y, displayHeight } = enemySprite;
-      let poof = this.add.sprite(x, y, 'poof');
-      poof.setScale(displayHeight / (poof.height / 2));
-      poof.setDepth(10);
-
-      this.tweens.add({
-        targets: poof,
-        alpha: 0,
-        scaleX: 0,
-        scaleY: 0,
-        duration: 500,
-        ease: 'Power1',
-        onComplete: () => {
-          poof.destroy();
-        }
+      let explosion = this.add.sprite(x, y, 'explosion-1');
+      explosion.setScale(displayHeight / (explosion.height / 2));
+      explosion.setDepth(10);
+      explosion.play('explosion-anim');
+      explosion.on('animationcomplete', (animation, frame) => 
+      {
+        if(animation.key === 'explosion-anim') explosion.destroy();
       });
+
+      // this.tweens.add({
+      //   targets: poof,
+      //   alpha: 0,
+      //   scaleX: 0,
+      //   scaleY: 0,
+      //   duration: 500,
+      //   ease: 'Power1',
+      //   onComplete: () => {
+      //     poof.destroy();
+      //   }
+      // });
     });
   }
 
