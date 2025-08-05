@@ -206,6 +206,7 @@ class GameScene extends Phaser.Scene
     this.load.image('explosion-5', 'explosion-5.png');
 
     this.load.image('poof', 'poof.png'); 
+    this.load.image('sparkle', 'sparkle.png'); 
 
     this.loadEnemyImages();
     this.loadPlaneImages();
@@ -309,18 +310,6 @@ class GameScene extends Phaser.Scene
       {
         if(animation.key === 'explosion-anim') explosion.destroy();
       });
-
-      // this.tweens.add({
-      //   targets: poof,
-      //   alpha: 0,
-      //   scaleX: 0,
-      //   scaleY: 0,
-      //   duration: 500,
-      //   ease: 'Power1',
-      //   onComplete: () => {
-      //     poof.destroy();
-      //   }
-      // });
     });
   }
 
@@ -506,29 +495,26 @@ class GameScene extends Phaser.Scene
 
       this.physics.add.overlap(this.plane.sprite, enemy.sprite, () => 
       {
-        if(enemy.sprite) 
-        {
-          const { x, y, displayHeight } = enemy.sprite;
+        const { x, y, displayHeight } = enemy.sprite;
 
-          enemy.destroy();
-          this.enemies.remove(enemy.sprite, true, true);
+        enemy.destroy();
+        this.enemies.remove(enemy.sprite, true, true);
 
-          let poof = this.add.sprite(x, y, 'poof');
-          poof.setScale(displayHeight / (poof.height / 2));
-          poof.setDepth(10);
+        let poof = this.add.sprite(x, y, 'poof');
+        poof.setScale(displayHeight / (poof.height / 2));
+        poof.setDepth(10);
 
-          this.tweens.add({
-            targets: poof,
-            alpha: 0,
-            scaleX: 0,
-            scaleY: 0,
-            duration: 500,
-            ease: 'Power1',
-            onComplete: () => {
-              poof.destroy();
-            }
-          });
-        }
+        this.tweens.add({
+          targets: poof,
+          alpha: 0,
+          scaleX: 0,
+          scaleY: 0,
+          duration: 500,
+          ease: 'Power1',
+          onComplete: () => {
+            poof.destroy();
+          }
+        });
       });
     }
 
@@ -562,7 +548,25 @@ class GameScene extends Phaser.Scene
       this.physics.add.existing(pickup.sprite);
       this.physics.add.overlap(this.plane.sprite, pickup.sprite, () => 
       {
-        console.log('Overlap detected between: plane and pickup');
+        const { x, y, displayHeight } = pickup.sprite;
+
+        pickup.destroy();
+        this.pickups.remove(pickup.sprite, true, true);
+
+        let sparkle = this.add.sprite(x, y, 'sparkle');
+        sparkle.setScale(displayHeight / (sparkle.height / 6));
+        sparkle.setDepth(10);
+
+        this.tweens.add
+        ({
+          targets: sparkle,
+          alpha: 0,
+          scaleX: 0,
+          scaleY: 0,
+          duration: 1000,
+          ease: 'Power1',
+          onComplete: () => { sparkle.destroy(); }
+        });
       });
     }
 
