@@ -211,6 +211,8 @@ class GameScene extends Phaser.Scene
     this.loadEnemyImages();
     this.loadPlaneImages();
     this.loadPickupImages();
+
+    console.log(levels.currentLevel.oneStarScore);
   }
 
   create() 
