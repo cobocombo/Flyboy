@@ -302,7 +302,9 @@ class GameScene extends Phaser.Scene
         this.enemies.remove(enemySprite, true, true);
       }
 
-      const { x, y, displayHeight } = enemySprite;
+      console.log(enemySprite.__enemy.score);
+
+      let { x, y, displayHeight } = enemySprite;
       let explosion = this.add.sprite(x, y, 'explosion-1');
       explosion.setScale(displayHeight / (explosion.height / 2));
       explosion.setDepth(10);
@@ -324,14 +326,14 @@ class GameScene extends Phaser.Scene
       {
         enemy.animations.forEach(animation => 
         {
-          const frames = animation.frames.map(frame => ({ key: frame.key }));
+          let frames = animation.frames.map(frame => ({ key: frame.key }));
           if(!this.anims.exists(animation.key)) 
           {
             this.anims.create({
               key: animation.key,
               frames: frames,
-              frameRate: animation.frameRate || 12,
-              repeat: animation.repeat ?? -1
+              frameRate: animation.frameRate,
+              repeat: animation.repeat
             });
           }
         });
@@ -374,8 +376,8 @@ class GameScene extends Phaser.Scene
           this.anims.create({
             key: animation.key,
             frames: frames,
-            frameRate: animation.frameRate || 12,
-            repeat: animation.repeat ?? -1
+            frameRate: animation.frameRate,
+            repeat: animation.repeat
           });
         }
       });
@@ -962,6 +964,7 @@ class Enemy
 {
   errors;
   scene;
+  score;
 
   constructor({ scene, data, type, x, y }) 
   {
@@ -975,7 +978,7 @@ class Enemy
     if(enemyDef.flipX) this.sprite.setFlipX(true);
     if(enemyDef.startingAnimation) this.sprite.play(enemyDef.startingAnimation);
 
-    console.log(enemyDef.score);
+    this.score = enemyDef.score;
   }
 
   update({ delta } = {}) 
