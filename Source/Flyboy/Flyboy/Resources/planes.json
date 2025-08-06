@@ -34,7 +34,8 @@
       ],
       "startingAnimation": "green-plane-fly",
       "idleAnimation": "green-plane-fly",
-      "shootingAnimation": "green-plane-shoot"
+      "shootingAnimation": "green-plane-shoot",
+      "numberOfHits": 3
     }
   ]
 }

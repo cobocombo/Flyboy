@@ -628,6 +628,7 @@ class Plane
   currentAnim;
   errors;
   idleAnimation;
+  numberOfHits;
   scene;
   shootingAnimation;
   sprite;
@@ -658,6 +659,7 @@ class Plane
     this.currentAnim = planeDef.startingAnimation;
     this.idleAnimation = planeDef.idleAnimation;
     this.shootingAnimation = planeDef.shootingAnimation;
+    this.numberOfHits = planeDef.numberOfHits;
   }
 
   setPosition({ x, y } = {}) 
