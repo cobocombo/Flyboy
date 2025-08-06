@@ -302,8 +302,6 @@ class GameScene extends Phaser.Scene
         this.enemies.remove(enemySprite, true, true);
       }
 
-      console.log(enemySprite.__enemy.score);
-
       let { x, y, displayHeight } = enemySprite;
       let explosion = this.add.sprite(x, y, 'explosion-1');
       explosion.setScale(displayHeight / (explosion.height / 2));
@@ -930,6 +928,7 @@ class Pickup
 {
   errors;
   scene;
+  score;
   
   constructor({ scene, data, type, x, y }) 
   {
@@ -939,6 +938,8 @@ class Pickup
     this.scene = scene;
     this.sprite = scene.add.sprite(x, y, pickupDef.name);
     this.sprite.setScale((device.screenWidth / pickupDef.heightScale) / this.sprite.height);
+
+    this.score = pickupDef.score;
   }
 
   update({ delta } = {}) 

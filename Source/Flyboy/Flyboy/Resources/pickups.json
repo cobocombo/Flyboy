@@ -4,7 +4,8 @@
     {
       "name": "coin",
       "sprite": "coin.png",
-      "heightScale": 18
+      "heightScale": 18,
+      "score": 100
     }
   ]
 }
