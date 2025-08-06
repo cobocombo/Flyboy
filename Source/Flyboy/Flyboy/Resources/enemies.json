@@ -19,7 +19,8 @@
           "repeat": -1
         }
       ],
-      "startingAnimation": "bird-fly"
+      "startingAnimation": "bird-fly",
+      "score": 50
     }
   ]
 }

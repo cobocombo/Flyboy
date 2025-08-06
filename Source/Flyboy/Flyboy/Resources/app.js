@@ -974,6 +974,8 @@ class Enemy
 
     if(enemyDef.flipX) this.sprite.setFlipX(true);
     if(enemyDef.startingAnimation) this.sprite.play(enemyDef.startingAnimation);
+
+    console.log(enemyDef.score);
   }
 
   update({ delta } = {}) 
