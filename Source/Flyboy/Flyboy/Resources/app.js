@@ -171,14 +171,12 @@ class GameScene extends Phaser.Scene
   pickupSpawnQueue;
   plane;
   planeType;
+  score;
   shootButton;
 
   constructor() 
   {
     super('GameScene');
-
-    this.pickupSpawnQueue = [];
-    this.enemySpawnQueue = [];
 
     this.errors = 
     {
@@ -211,8 +209,6 @@ class GameScene extends Phaser.Scene
     this.loadEnemyImages();
     this.loadPlaneImages();
     this.loadPickupImages();
-
-    console.log(levels.currentLevel.oneStarScore);
   }
 
   create() 
@@ -257,7 +253,10 @@ class GameScene extends Phaser.Scene
       });
     };
 
+    this.pickupSpawnQueue = [];
+    this.enemySpawnQueue = [];
     this.elapsedTime = 0;
+    this.score = 0;
 
     this.loadEnemyAnimations();
     this.loadPlaneAnimations();
