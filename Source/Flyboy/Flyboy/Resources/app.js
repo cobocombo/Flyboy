@@ -180,7 +180,8 @@ class GameScene extends Phaser.Scene
 
     this.errors = 
     {
-      deltaTypeError: 'Game Scene Error: Expected type number for delta'
+      amountTypeError: 'Game Scene Error: Expected type number for amount.',
+      deltaTypeError: 'Game Scene Error: Expected type number for delta.'
     }; 
   }
 
@@ -288,6 +289,10 @@ class GameScene extends Phaser.Scene
       this.pauseAlert.present();
     });
 
+    this.scoreText = this.add.text(0, 0, `Score: ${this.score}`, { fontSize: `${device.screenWidth / 12}px`, fill: '#000000', fontFamily: 'BulgariaDreams', align: 'center' });
+    this.scoreText.setOrigin(0.5);
+    this.scoreText.setPosition((this.pauseButton.x + this.joystick.base.x) / 2, this.pauseButton.y);
+
     this.physics.add.overlap(this.bullets, this.enemies, (bulletSprite, enemySprite) => 
     {
       if(bulletSprite && bulletSprite.destroy) 
@@ -301,6 +306,8 @@ class GameScene extends Phaser.Scene
         enemySprite.destroy();
         this.enemies.remove(enemySprite, true, true);
       }
+
+      this.updateScore({ amount: enemySprite.__enemy.score });
 
       let { x, y, displayHeight } = enemySprite;
       let explosion = this.add.sprite(x, y, 'explosion-1');
@@ -546,6 +553,8 @@ class GameScene extends Phaser.Scene
         pickup.destroy();
         this.pickups.remove(pickup.sprite, true, true);
 
+        this.updateScore({ amount: pickup.score });
+
         let sparkle = this.add.sprite(x, y, 'sparkle');
         sparkle.setScale(displayHeight / (sparkle.height / 6));
         sparkle.setDepth(10);
@@ -575,6 +584,13 @@ class GameScene extends Phaser.Scene
         this.pickups.remove(sprite, true, true);
       }
     });
+  }
+
+  updateScore({ amount } = {})
+  {
+    if(!typeChecker.check({ type: 'number', value: amount })) console.error(this.errors.amountTypeError);
+    this.score += amount;
+    this.scoreText.setText(`Score: ${this.score}`);
   }
 }
 
