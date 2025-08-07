@@ -44,7 +44,7 @@ class LevelSelectScene extends Phaser.Scene
     this.background.setOrigin(0, 0);
     this.background.setDisplaySize(device.screenHeight, device.screenWidth);
 
-    this.add.text(this.scale.width / 2, this.scale.height / 8, 'Select A Level', {
+    this.add.text(this.scale.width / 2, this.scale.height / 8, 'Select A Level ', {
       fontFamily: 'BulgariaDreams',
       fontSize: `${device.screenWidth / 10}px`,
       color: '#000000',
