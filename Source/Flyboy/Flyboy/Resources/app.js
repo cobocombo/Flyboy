@@ -500,7 +500,12 @@ class GameScene extends Phaser.Scene
     {
       let enemyData = this.enemySpawnQueue.shift();
       let spawnX = device.screenHeight;
-      let spawnY = device.screenWidth * enemyData.spawnPosition;
+      let spawnPosition = 0.5;
+
+      if(enemyData.spawnPosition === -1) spawnPosition = Math.floor((Math.random() * (0.75 - 0.1) + 0.1) * 100) / 100;
+      else spawnPosition = enemyData.spawnPosition;
+      let spawnY = device.screenWidth * spawnPosition;
+      
       let enemy = new Enemy({ scene: this, data: this.enemyData, type: enemyData.type, x: spawnX, y: spawnY });
       this.enemies.add(enemy.sprite);
       enemy.sprite.__enemy = enemy;
@@ -557,7 +562,12 @@ class GameScene extends Phaser.Scene
     {
       let pickupData = this.pickupSpawnQueue.shift();
       let spawnX = device.screenHeight;
-      let spawnY = device.screenWidth * pickupData.spawnPosition;
+      let spawnPosition = 0.5;
+
+      if(pickupData.spawnPosition === -1) spawnPosition = Math.floor((Math.random() * (0.75 - 0.1) + 0.1) * 100) / 100;
+      else spawnPosition = pickupData.spawnPosition;
+      let spawnY = device.screenWidth * spawnPosition;
+
       let pickup = new Pickup({ scene: this, data: this.pickupData, type: pickupData.type, x: spawnX, y: spawnY });
       this.pickups.add(pickup.sprite);
       pickup.sprite.__pickup = pickup;
@@ -621,16 +631,17 @@ class PauseAlertDialog extends ui.AlertDialog
   {
     super();
     this.cancelable = false;
-    this.addComponents({ components: [ new ui.Text({ type: 'header-3', text: 'Game Paused' }) ] });
+    this.title = 'Game Paused';
+    this.addComponents({ components: [ new ui.Text({ text: 'Select an option to continue' }) ] });
 
-    this.rowfooter = true;
+    this.rowfooter = false;
+    let resumeButton = new ui.AlertDialogButton({ text: 'Resume', onTap: () => { scene.resume(); } });
     let quitButton = new ui.AlertDialogButton({ text: 'Quit', textColor: 'red', onTap: () => 
     { 
       scene.stop('GameScene');
       scene.start('MainMenuScene'); 
     }});
-    let resumeButton = new ui.AlertDialogButton({ text: 'Resume', onTap: () => { scene.resume(); } });
-    this.buttons = [ quitButton, resumeButton ];
+    this.buttons = [ resumeButton, quitButton ];
   }
 }
 
