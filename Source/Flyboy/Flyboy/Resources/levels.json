@@ -7,10 +7,25 @@
       "enemies": 
       [
         { "type": "bird", "spawnPosition": 0.75, "spawnTime": 3000 },
+        { "type": "bird", "spawnPosition": 0.1, "spawnTime": 6000 }
+      ],
+      "obstacles": [{ }],
+      "pickups": 
+      [ 
+        { "type": "coin", "spawnPosition": -1, "spawnTime": 14000 }
+      ],
+      "oneStarScore": 50,
+      "twoStarScore": 100,
+      "threeStarScore": 200 
+    },
+    {
+      "id": 2,
+      "background": "blue-sky-clear.png",
+      "enemies": 
+      [
+        { "type": "bird", "spawnPosition": 0.75, "spawnTime": 3000 },
         { "type": "bird", "spawnPosition": 0.1, "spawnTime": 6000 },
-        { "type": "bird", "spawnPosition": 0.5, "spawnTime": 9000 },
-        { "type": "bird", "spawnPosition": 0.5, "spawnTime": 12000 },
-        { "type": "bird", "spawnPosition": -1, "spawnTime": 15000 }
+        { "type": "bird", "spawnPosition": 0.5, "spawnTime": 9000 }
       ],
       "obstacles": [{ }],
       "pickups": 

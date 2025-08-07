@@ -44,23 +44,44 @@ class LevelSelectScene extends Phaser.Scene
     this.background.setOrigin(0, 0);
     this.background.setDisplaySize(device.screenHeight, device.screenWidth);
 
-    setTimeout(() => 
+    this.add.text(this.scale.width / 2, this.scale.height / 8, 'Select A Level', {
+      fontFamily: 'BulgariaDreams',
+      fontSize: `${device.screenWidth / 10}px`,
+      color: '#000000',
+      align: 'center'
+    }).setOrigin(0.5);
+
+    const data = this.cache.json.get('levels');
+    const levelData = data.levels;
+    levels.load({ levels: levelData });
+
+    const blockSize = device.screenWidth / 8;
+    const spacing = blockSize * 0.5;
+    const columns = Math.floor((device.screenWidth - spacing) / (blockSize + spacing));
+    const startX = spacing;
+    const startY = this.scale.height / 4;
+
+    levelData.forEach((level, index) => 
     {
-      this.add.text(this.scale.width / 2, this.scale.height / 8, 'Select A Level ', 
-      {
-        fontFamily: 'BulgariaDreams',
-        fontSize: `${device.screenWidth / 12}px`,
-        color: '#000000',
-        align: 'center'
-      }).setOrigin(0.5);
-    },1);
+      const col = index % columns;
+      const row = Math.floor(index / columns);
 
-    let data = this.cache.json.get('levels');
-    levels.load({ levels: data.levels });
-    levels.selectLevel({ id: 1 });
+      const x = startX + col * (blockSize + spacing) + blockSize / 2;
+      const y = startY + row * (blockSize + spacing);
 
-    let block = new LevelSelectBlock({ scene: this, x: this.cameras.main.centerX, y: this.cameras.main.centerY, levelNumber: 1, starCount: 2 });
-    setTimeout(() => { this.scene.start('LoadingScene'); }, 3000);
+      const block = new LevelSelectBlock({
+        scene: this,
+        x,
+        y,
+        levelNumber: level.id,
+        starCount: level.stars || 0
+      });
+
+      block.setInteractive({ useHandCursor: true }).on('pointerup', () => {
+        levels.selectLevel({ id: level.id });
+        this.scene.start('LoadingScene');
+      });
+    });
   }
 }
 
@@ -1105,11 +1126,12 @@ class LevelSelectBlock extends Phaser.GameObjects.Container
   {
     super(scene, x, y);
 
-    let blockSize = device.screenWidth / 6;
+    let blockSize = device.screenWidth / 8;
     let block = scene.add.sprite(0, 0, 'block');
     block.setScale(blockSize / block.width);
     block.setOrigin(0.5);
     this.add(block);
+    this.setSize(blockSize, blockSize);
 
     let textYOffset = -blockSize * 0.2;
     let levelText = scene.add.text(0, textYOffset, ` ${levelNumber} `, 
