@@ -279,6 +279,8 @@ class GameScene extends Phaser.Scene
     this.bulletTimer = 0;
 
     this.pauseAlert = new PauseAlertDialog({ scene: this.scene });
+    this.levelfailedAlert = new LevelFailedDialog({ scene: this.scene });
+
     this.pauseButton = this.add.image(0, 0, 'pause-button');
     this.pauseButton.setScale((device.screenWidth / 8) / this.pauseButton.height);
     this.pauseButton.setPosition((this.joystick.base.x + this.shootButton.sprite.x) / 2, (this.joystick.base.y + this.shootButton.sprite.y) / 2);
@@ -531,6 +533,11 @@ class GameScene extends Phaser.Scene
         if(this.plane.numberOfHits === this.plane.maxNumberOfHits)
         {
           this.plane?.setAnimation({ name: this.plane.deathAnimation });
+          this.time.delayedCall(100, () => 
+          { 
+            this.scene.pause();
+            this.levelfailedAlert.present();
+          });
         }
         else
         {
@@ -631,10 +638,10 @@ class PauseAlertDialog extends ui.AlertDialog
   {
     super();
     this.cancelable = false;
+    this.rowfooter = false;
+
     this.title = 'Game Paused';
     this.addComponents({ components: [ new ui.Text({ text: 'Select an option to continue' }) ] });
-
-    this.rowfooter = false;
     let resumeButton = new ui.AlertDialogButton({ text: 'Resume', onTap: () => { scene.resume(); } });
     let quitButton = new ui.AlertDialogButton({ text: 'Quit', textColor: 'red', onTap: () => 
     { 
@@ -642,6 +649,30 @@ class PauseAlertDialog extends ui.AlertDialog
       scene.start('MainMenuScene'); 
     }});
     this.buttons = [ resumeButton, quitButton ];
+  }
+}
+
+class LevelFailedDialog extends ui.AlertDialog
+{
+  constructor({ scene } = {})
+  {
+    super();
+    this.cancelable = false;
+    this.rowfooter = false;
+
+    this.title = 'Level Failed';
+    this.addComponents({ components: [ new ui.Text({ text: 'Try better next time!' }) ] });
+    let mainMenuButton = new ui.AlertDialogButton({ text: 'Main Menu', onTap: () => 
+    { 
+      scene.stop('GameScene');
+      scene.start('MainMenuScene'); 
+    }});
+    let replayButton = new ui.AlertDialogButton({ text: 'Replay', onTap: () => 
+    { 
+      scene.stop('GameScene');
+      scene.start('LoadingScene'); 
+    }});
+    this.buttons = [ mainMenuButton, replayButton ];
   }
 }
 
