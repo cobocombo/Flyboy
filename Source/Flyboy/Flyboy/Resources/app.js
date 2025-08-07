@@ -34,8 +34,8 @@ class LevelSelectScene extends Phaser.Scene
     this.load.image('background', 'blue-sky-clear.png');
     this.load.json('levels', `levels.json?v=${Date.now()}`);
     this.load.image('block', 'block.png');
-    this.load.image('star', 'star.png');
-    this.load.image('star-filled', 'star-filled.png');
+    this.load.image('star-gold', 'star-gold.png');
+    this.load.image('star-silver', 'star-silver.png');
   }
 
   create() 
@@ -44,11 +44,15 @@ class LevelSelectScene extends Phaser.Scene
     this.background.setOrigin(0, 0);
     this.background.setDisplaySize(device.screenHeight, device.screenWidth);
 
-    const data = this.cache.json.get('levels');
+    let data = this.cache.json.get('levels');
     levels.load({ levels: data.levels });
     levels.selectLevel({ id: 1 });
 
-    let block = new LevelSelectBlock(this, this.cameras.main.centerX, this.cameras.main.centerY, 1);
+    console.log(data);
+    console.log(data.levels);
+    console.log(data.levels.length);
+
+    let block = new LevelSelectBlock({ scene: this, x: this.cameras.main.centerX, y: this.cameras.main.centerY, levelNumber: 1, starCount: 2 });
     setTimeout(() => { this.scene.start('LoadingScene'); }, 3000);
   }
 }
@@ -652,6 +656,8 @@ class PauseAlertDialog extends ui.AlertDialog
   }
 }
 
+/////////////////////////////////////////////////
+
 class LevelFailedDialog extends ui.AlertDialog
 {
   constructor({ scene } = {})
@@ -1088,7 +1094,7 @@ class Enemy
 
 class LevelSelectBlock extends Phaser.GameObjects.Container 
 {
-  constructor(scene, x, y, levelNumber, starCount = 0) 
+  constructor({ scene, x, y, levelNumber, starCount = 0 } = {}) 
   {
     super(scene, x, y);
 
@@ -1112,10 +1118,11 @@ class LevelSelectBlock extends Phaser.GameObjects.Container
     let totalStarWidth = starSize * 3 + 2 * 4;
     let starYOffset = blockSize * 0.2;
 
-    for(let i = 0; i < 3; i++) 
+    for (let i = 0; i < 3; i++) 
     {
       let starX = -totalStarWidth / 2 + i * (starSize + 4) + starSize / 2;
-      let star = scene.add.sprite(starX, starYOffset, 'star');
+      let starKey = i < starCount ? 'star-gold' : 'star-silver';
+      let star = scene.add.sprite(starX, starYOffset, starKey);
       let starScale = starSize / star.width;
       star.setScale(starScale);
       star.setOrigin(0.5);
