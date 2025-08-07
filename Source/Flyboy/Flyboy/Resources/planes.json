@@ -30,12 +30,22 @@
           ],
           "frameRate": 15,
           "repeat": -1
+        },
+        { 
+          "key": "green-plane-dead",
+          "frames":
+          [
+            { "key": "green-plane-dead", "sprite": "green-plane-dead.png" }
+          ],
+          "frameRate": 1,
+          "repeat": -1
         }
       ],
       "startingAnimation": "green-plane-fly",
       "idleAnimation": "green-plane-fly",
       "shootingAnimation": "green-plane-shoot",
-      "numberOfHits": 3
+      "deathAnimation": "green-plane-dead",
+      "maxNumberOfHits": 3
     }
   ]
 }

@@ -295,29 +295,34 @@ class GameScene extends Phaser.Scene
 
     this.physics.add.overlap(this.bullets, this.enemies, (bulletSprite, enemySprite) => 
     {
-      if(bulletSprite && bulletSprite.destroy) 
-      {
-        bulletSprite.destroy();
-        this.bullets.remove(bulletSprite, true, true);
-      }
+      let enemyData = enemySprite.__enemy;
 
-      if(enemySprite && enemySprite.destroy) 
+      enemyData.numberOfHits += 1;
+
+      bulletSprite.destroy();
+      this.bullets.remove(bulletSprite, true, true);
+
+      if(enemyData.numberOfHits === enemyData.maxNumberOfHits)
       {
         enemySprite.destroy();
         this.enemies.remove(enemySprite, true, true);
+
+        let { x, y, displayHeight } = enemySprite;
+        let explosion = this.add.sprite(x, y, 'explosion-1');
+        explosion.setScale(displayHeight / (explosion.height / 2));
+        explosion.setDepth(10);
+        explosion.play('explosion-anim');
+        explosion.on('animationcomplete', (animation, frame) => 
+        {
+          if(animation.key === 'explosion-anim') explosion.destroy();
+          this.updateScore({ amount: enemySprite.__enemy.score });
+        });
       }
-
-      this.updateScore({ amount: enemySprite.__enemy.score });
-
-      let { x, y, displayHeight } = enemySprite;
-      let explosion = this.add.sprite(x, y, 'explosion-1');
-      explosion.setScale(displayHeight / (explosion.height / 2));
-      explosion.setDepth(10);
-      explosion.play('explosion-anim');
-      explosion.on('animationcomplete', (animation, frame) => 
+      else
       {
-        if(animation.key === 'explosion-anim') explosion.destroy();
-      });
+        enemySprite.setTint(0xff0000);
+        this.time.delayedCall(100, () => { enemySprite.clearTint(); });
+      }
     });
   }
 
@@ -503,6 +508,8 @@ class GameScene extends Phaser.Scene
 
       this.physics.add.overlap(this.plane.sprite, enemy.sprite, () => 
       {
+        this.plane.numberOfHits += 1;
+
         const { x, y, displayHeight } = enemy.sprite;
         enemy.destroy();
         this.enemies.remove(enemy.sprite, true, true);
@@ -515,6 +522,16 @@ class GameScene extends Phaser.Scene
         {
           if(animation.key === 'explosion-anim') explosion.destroy();
         });
+
+        if(this.plane.numberOfHits === this.plane.maxNumberOfHits)
+        {
+          this.plane?.setAnimation({ name: this.plane.deathAnimation });
+        }
+        else
+        {
+          this.plane.sprite.setTint(0xff0000);
+          this.time.delayedCall(100, () => { this.plane.sprite.clearTint(); });
+        }
       });
     }
 
@@ -626,8 +643,10 @@ class Plane
   baseY;
   bobTween;
   currentAnim;
+  deathAnim;
   errors;
   idleAnimation;
+  maxNumberOfHits;
   numberOfHits;
   scene;
   shootingAnimation;
@@ -639,7 +658,7 @@ class Plane
     {
       deltaTypeError: 'Plane Error: Expected type number for delta',
       joystickTypeError: 'Plane Error: Expected type Joystick for joystick.',
-      nameTypeError: 'Expected type string for name',
+      nameTypeError: 'Expected type string for name.',
       sceneError: 'Plane Error: A valid phaser scene is required.',
       xTypeError: 'Plane Error: Expected type number for x when setting position of plane.',
       yTypeError: 'Plane Error: Expected type number for y when setting position of plane.'
@@ -659,7 +678,9 @@ class Plane
     this.currentAnim = planeDef.startingAnimation;
     this.idleAnimation = planeDef.idleAnimation;
     this.shootingAnimation = planeDef.shootingAnimation;
-    this.numberOfHits = planeDef.numberOfHits;
+    this.deathAnimation = planeDef.deathAnimation;
+    this.numberOfHits = 0;
+    this.maxNumberOfHits = planeDef.maxNumberOfHits;
   }
 
   setPosition({ x, y } = {}) 
@@ -982,6 +1003,8 @@ class Pickup
 class Enemy
 {
   errors;
+  maxNumberOfHits;
+  numberOfHits;
   scene;
   score;
 
@@ -998,6 +1021,8 @@ class Enemy
     if(enemyDef.startingAnimation) this.sprite.play(enemyDef.startingAnimation);
 
     this.score = enemyDef.score;
+    this.numberOfHits = 0;
+    this.maxNumberOfHits = enemyDef.maxNumberOfHits;
   }
 
   update({ delta } = {}) 
@@ -1173,6 +1198,7 @@ typeChecker.register({ name: 'joystick', constructor: Joystick });
 const game = new ui.PhaserGame({ 
   config: 
   { 
+    type: Phaser.WEBGL,
     scene: [ SplashScene, MainMenuScene, LevelSelectScene, LoadingScene, GameScene ],
     physics: 
     { 
