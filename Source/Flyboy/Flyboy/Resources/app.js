@@ -44,13 +44,20 @@ class LevelSelectScene extends Phaser.Scene
     this.background.setOrigin(0, 0);
     this.background.setDisplaySize(device.screenHeight, device.screenWidth);
 
+    setTimeout(() => 
+    {
+      this.add.text(this.scale.width / 2, this.scale.height / 8, 'Select A Level ', 
+      {
+        fontFamily: 'BulgariaDreams',
+        fontSize: `${device.screenWidth / 12}px`,
+        color: '#000000',
+        align: 'center'
+      }).setOrigin(0.5);
+    },1);
+
     let data = this.cache.json.get('levels');
     levels.load({ levels: data.levels });
     levels.selectLevel({ id: 1 });
-
-    console.log(data);
-    console.log(data.levels);
-    console.log(data.levels.length);
 
     let block = new LevelSelectBlock({ scene: this, x: this.cameras.main.centerX, y: this.cameras.main.centerY, levelNumber: 1, starCount: 2 });
     setTimeout(() => { this.scene.start('LoadingScene'); }, 3000);
