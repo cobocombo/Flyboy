@@ -197,6 +197,7 @@ class GameScene extends Phaser.Scene
   enemyData;
   enemySpawnQueue;
   joystick;
+  levelComplete;
   pauseButton;
   pickups;
   pickupData;
@@ -290,6 +291,7 @@ class GameScene extends Phaser.Scene
     this.enemySpawnQueue = [];
     this.elapsedTime = 0;
     this.score = 0;
+    this.levelComplete = false;
 
     this.loadEnemyAnimations();
     this.loadPlaneAnimations();
@@ -358,6 +360,16 @@ class GameScene extends Phaser.Scene
         this.time.delayedCall(100, () => { enemySprite.clearTint(); });
       }
     });
+  }
+
+  checkForLevelComplete() 
+  {
+    let queuesEmpty = this.enemySpawnQueue.length === 0 && this.pickupSpawnQueue.length === 0;
+    let noEnemiesLeft = this.enemies.countActive(true) === 0;
+    let noPickupsLeft = this.pickups.countActive(true) === 0;
+    let planeAlive = this.plane.currentAnimation !== this.plane.deathAnimation;
+    if(queuesEmpty && noEnemiesLeft && noPickupsLeft && planeAlive) return true;
+    return false;
   }
 
   loadEnemyAnimations()
@@ -492,6 +504,18 @@ class GameScene extends Phaser.Scene
     this.updateBullets({ delta: delta });
     this.updateEnemies({ delta: delta });
     this.updatePickups({ delta: delta });
+
+    if(this.checkForLevelComplete() === true && this.levelComplete === false)
+    {
+      this.levelComplete = true;
+      this.time.delayedCall(1000, () => 
+      { 
+        this.scene.pause();
+        let levelCompleteAlert = new LevelCompleteDialog({ scene: this.scene, score: this.score });
+        levelCompleteAlert.present();
+        confetti.start();
+      });
+    }
   }
 
   updateBackground({ delta } = {})
@@ -710,6 +734,40 @@ class LevelFailedDialog extends ui.AlertDialog
   }
 }
 
+/////////////////////////////////////////////////
+
+class LevelCompleteDialog extends ui.AlertDialog
+{
+  constructor({ scene, score, starCount = 0 } = {})
+  {
+    super();
+    this.cancelable = false;
+    this.rowfooter = false;
+
+    this.title = 'Level Complete!';
+    this.addComponents({ components: [ new ui.Text({ text: `Score: ${score}` }) ] });
+    let newLevelButton = new ui.AlertDialogButton({ text: 'New Level', onTap: () => 
+    { 
+      scene.stop('GameScene');
+      scene.start('LevelSelectScene');
+      confetti.remove(); 
+    }});
+    let mainMenuButton = new ui.AlertDialogButton({ text: 'Main Menu', onTap: () => 
+    { 
+      scene.stop('GameScene');
+      scene.start('MainMenuScene');
+      confetti.remove();   
+    }});
+    let replayButton = new ui.AlertDialogButton({ text: 'Replay', onTap: () => 
+    { 
+      scene.stop('GameScene');
+      scene.start('LoadingScene');
+      confetti.remove(); 
+    }});
+    this.buttons = [ newLevelButton, mainMenuButton, replayButton ];
+  }
+}
+
 ///////////////////////////////////////////////////////////
 // ENTITIES
 ///////////////////////////////////////////////////////////
@@ -718,7 +776,7 @@ class Plane
 {
   baseY;
   bobTween;
-  currentAnim;
+  currentAnimation;
   deathAnim;
   errors;
   idleAnimation;
@@ -751,7 +809,7 @@ class Plane
     this.sprite.play(planeDef.startingAnimation);
     this.scene.physics.add.existing(this.sprite);
     
-    this.currentAnim = planeDef.startingAnimation;
+    this.currentAnimation = planeDef.startingAnimation;
     this.idleAnimation = planeDef.idleAnimation;
     this.shootingAnimation = planeDef.shootingAnimation;
     this.deathAnimation = planeDef.deathAnimation;
@@ -770,10 +828,10 @@ class Plane
   setAnimation({ name } = {}) 
   {
     if(!typeChecker.check({ type: 'string', value: name })) console.error(this.errors.nameTypeError);
-    if(this.currentAnim !== name) 
+    if(this.currentAnimation !== name) 
     {
       this.sprite.play(name);
-      this.currentAnim = name;
+      this.currentAnimation = name;
     }
   }
 
