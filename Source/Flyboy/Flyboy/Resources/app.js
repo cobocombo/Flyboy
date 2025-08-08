@@ -243,6 +243,8 @@ class GameScene extends Phaser.Scene
     this.loadEnemyImages();
     this.loadPlaneImages();
     this.loadPickupImages();
+
+    this.loadPickupSounds();
   }
 
   create() 
@@ -492,6 +494,13 @@ class GameScene extends Phaser.Scene
     .forEach(pickup => { if(pickup.name && pickup.sprite) this.load.image(pickup.name, pickup.sprite); });
   }
 
+  loadPickupSounds()
+  {
+    this.pickupData.pickups
+    .filter(pickup => this.pickupTypes.includes(pickup.name))
+    .forEach(pickup => { this.load.audio(pickup.name, pickup.soundEffect); });
+  }
+
   update(_time, delta) 
   {
     if(!typeChecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
@@ -651,6 +660,8 @@ class GameScene extends Phaser.Scene
         this.pickups.remove(pickup.sprite, true, true);
 
         this.updateScore({ amount: pickup.score });
+
+        this.sound.play(pickup.name, { volume: 0.5 });
 
         let sparkle = this.add.sprite(x, y, 'sparkle');
         sparkle.setScale(displayHeight / (sparkle.height / 6));
@@ -1115,8 +1126,10 @@ class Bullet
 class Pickup 
 {
   errors;
+  name;
   scene;
   score;
+  soundEffect;
   
   constructor({ scene, data, type, x, y }) 
   {
@@ -1127,7 +1140,9 @@ class Pickup
     this.sprite = scene.add.sprite(x, y, pickupDef.name);
     this.sprite.setScale((device.screenWidth / pickupDef.heightScale) / this.sprite.height);
 
+    this.name = pickupDef.name;
     this.score = pickupDef.score;
+    this.soundEffect = pickupDef.soundEffect;
   }
 
   update({ delta } = {}) 

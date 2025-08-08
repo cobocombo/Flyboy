@@ -36,6 +36,8 @@ class ScriptitCoreController: UIViewController, WKScriptMessageHandler
     
     let webViewConfiguration = WKWebViewConfiguration();
     webViewConfiguration.preferences = preferences;
+    webViewConfiguration.allowsInlineMediaPlayback = true;
+    webViewConfiguration.mediaTypesRequiringUserActionForPlayback = [];
     webViewConfiguration.userContentController = userContentController;
     
     self.webView = WKWebView(frame: view.bounds, configuration: webViewConfiguration);

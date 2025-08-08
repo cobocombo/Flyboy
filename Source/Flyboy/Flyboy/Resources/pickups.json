@@ -5,7 +5,8 @@
       "name": "coin",
       "sprite": "coin.png",
       "heightScale": 18,
-      "score": 100
+      "score": 100,
+      "soundEffect": "coin.mp3"
     }
   ]
 }
