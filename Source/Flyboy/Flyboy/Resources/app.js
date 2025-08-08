@@ -249,6 +249,8 @@ class GameScene extends Phaser.Scene
 
   create() 
   {
+    this.input.addPointer(2);
+    
     this.background1 = this.add.image(0, 0, 'background');
     this.background2 = this.add.image(0, 0, 'background');
     this.background1.setDisplaySize(device.screenHeight, device.screenWidth);
