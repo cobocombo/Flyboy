@@ -508,10 +508,17 @@ class GameScene extends Phaser.Scene
     if(this.checkForLevelComplete() === true && this.levelComplete === false)
     {
       this.levelComplete = true;
-      this.time.delayedCall(1000, () => 
+      this.time.delayedCall(2000, () => 
       { 
         this.scene.pause();
-        let levelCompleteAlert = new LevelCompleteDialog({ scene: this.scene, score: this.score });
+
+        let starCount = 0;
+        if(this.score >= levels.currentLevel.threeStarScore) starCount = 3;
+        else if(this.score >= levels.currentLevel.twoStarScore) starCount = 2;
+        else if(this.score >= levels.currentLevel.oneStarScore) starCount = 1;
+        else starCount = 0;
+        
+        let levelCompleteAlert = new LevelCompleteDialog({ scene: this.scene, score: this.score, starCount: starCount });
         levelCompleteAlert.present();
         confetti.start();
       });
@@ -746,6 +753,14 @@ class LevelCompleteDialog extends ui.AlertDialog
 
     this.title = 'Level Complete!';
     this.addComponents({ components: [ new ui.Text({ text: `Score: ${score}` }) ] });
+
+    for(let i = 0; i < 3; i++) 
+    {
+      let starKey = i < starCount ? 'star-gold.png' : 'star-silver.png';
+      let star = new ImageV2({ source: starKey, width: '44px', height: '44px' })
+      this.addComponents({ components: [ star ] });
+    }
+
     let newLevelButton = new ui.AlertDialogButton({ text: 'New Level', onTap: () => 
     { 
       scene.stop('GameScene');
@@ -1205,7 +1220,7 @@ class LevelSelectBlock extends Phaser.GameObjects.Container
     let totalStarWidth = starSize * 3 + 2 * 4;
     let starYOffset = blockSize * 0.2;
 
-    for (let i = 0; i < 3; i++) 
+    for(let i = 0; i < 3; i++) 
     {
       let starX = -totalStarWidth / 2 + i * (starSize + 4) + starSize / 2;
       let starKey = i < starCount ? 'star-gold' : 'star-silver';
