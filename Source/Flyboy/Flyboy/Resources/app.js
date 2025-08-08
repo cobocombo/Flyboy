@@ -244,13 +244,14 @@ class GameScene extends Phaser.Scene
     this.loadPlaneImages();
     this.loadPickupImages();
 
+    this.loadEnemySounds();
     this.loadPickupSounds();
   }
 
   create() 
   {
     this.input.addPointer(2);
-    
+
     this.background1 = this.add.image(0, 0, 'background');
     this.background2 = this.add.image(0, 0, 'background');
     this.background1.setDisplaySize(device.screenHeight, device.screenWidth);
@@ -342,6 +343,8 @@ class GameScene extends Phaser.Scene
       bulletSprite.destroy();
       this.bullets.remove(bulletSprite, true, true);
 
+      this.sound.play(enemyData.name, { volume: 0.5 });
+
       if(enemyData.numberOfHits === enemyData.maxNumberOfHits)
       {
         enemySprite.destroy();
@@ -421,6 +424,13 @@ class GameScene extends Phaser.Scene
         });
       }
     });
+  }
+
+  loadEnemySounds()
+  {
+    this.enemyData.enemies
+    .filter(enemy => this.enemyTypes.includes(enemy.name))
+    .forEach(enemy => { this.load.audio(enemy.name, enemy.soundEffect); });
   }
 
   loadPlaneAnimations() 
@@ -603,6 +613,8 @@ class GameScene extends Phaser.Scene
         {
           if(animation.key === 'explosion-anim') explosion.destroy();
         });
+
+        this.sound.play(enemy.name, { volume: 0.5 });
 
         if(this.plane.numberOfHits === this.plane.maxNumberOfHits)
         {
@@ -1170,9 +1182,11 @@ class Enemy
 {
   errors;
   maxNumberOfHits;
+  name;
   numberOfHits;
   scene;
   score;
+  soundEffect;
 
   constructor({ scene, data, type, x, y }) 
   {
@@ -1186,9 +1200,11 @@ class Enemy
     if(enemyDef.flipX) this.sprite.setFlipX(true);
     if(enemyDef.startingAnimation) this.sprite.play(enemyDef.startingAnimation);
 
+    this.name = enemyDef.name;
     this.score = enemyDef.score;
     this.numberOfHits = 0;
     this.maxNumberOfHits = enemyDef.maxNumberOfHits;
+    this.soundEffect = enemyDef.soundEffect;
   }
 
   update({ delta } = {}) 

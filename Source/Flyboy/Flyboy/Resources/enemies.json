@@ -20,8 +20,9 @@
         }
       ],
       "startingAnimation": "bird-fly",
-      "maxNumberOfHits": 1,
-      "score": 50
+      "maxNumberOfHits": 2,
+      "score": 50,
+      "soundEffect": "hit.mp3"
     }
   ]
 }
