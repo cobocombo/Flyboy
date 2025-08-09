@@ -573,24 +573,31 @@ class GameScene extends Phaser.Scene
       { 
         this.scene.pause();
 
-        let starCount = 0;
-        if(this.score >= levels.currentLevel.threeStarScore) starCount = 3;
-        else if(this.score >= levels.currentLevel.twoStarScore) starCount = 2;
-        else if(this.score >= levels.currentLevel.oneStarScore) starCount = 1;
-        else starCount = 0;
-
         let planeIdleSoundEffect = this.sound.get(this.plane.idleSoundEffect.key);
         if(planeIdleSoundEffect)
         {
           planeIdleSoundEffect.stop();
           planeIdleSoundEffect.destroy();
         }
-        
-        this.sound.play('level-complete', { volume: 0.7, loop: false });
-          
-        let levelCompleteAlert = new LevelCompleteDialog({ scene: this.scene, score: this.score, starCount: starCount });
-        levelCompleteAlert.present();
-        confetti.start();
+
+        let starCount = 0;
+        if(this.score >= levels.currentLevel.threeStarScore) starCount = 3;
+        else if(this.score >= levels.currentLevel.twoStarScore) starCount = 2;
+        else if(this.score >= levels.currentLevel.oneStarScore) starCount = 1;
+        else starCount = 0;
+
+        if(starCount === 0)
+        {
+          this.levelfailedAlert.present();
+          this.sound.play('level-failed', { volume: 0.7, loop: false });
+        }
+        else
+        {
+          this.sound.play('level-complete', { volume: 0.7, loop: false });
+          let levelCompleteAlert = new LevelCompleteDialog({ scene: this.scene, score: this.score, starCount: starCount });
+          levelCompleteAlert.present();
+          confetti.start();
+        }
       });
     }
   }
@@ -814,6 +821,7 @@ class LevelFailedDialog extends ui.AlertDialog
 
     this.title = 'Level Failed';
     this.addComponents({ components: [ new ui.Text({ text: 'Try better next time!' }) ] });
+    this.addComponents({ components: [ new ImageV2({ source: 'x.png', width: '50px', height: '50px' }) ] });
     let mainMenuButton = new ui.AlertDialogButton({ text: 'Main Menu', onTap: () => 
     { 
       scene.stop('GameScene');
