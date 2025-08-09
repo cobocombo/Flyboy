@@ -665,6 +665,13 @@ class GameScene extends Phaser.Scene
           this.plane?.setAnimation({ name: this.plane.deathAnimation });
           this.time.delayedCall(100, () => 
           { 
+            let planeIdleSoundEffect = this.sound.get(this.plane.idleSoundEffect.key);
+            if(planeIdleSoundEffect)
+            {
+              planeIdleSoundEffect.stop();
+              planeIdleSoundEffect.destroy();
+            } 
+            this.sound.play(this.plane.deathSoundEffect.key, { volume: this.plane.deathSoundEffect.volume, loop: this.plane.deathSoundEffect.loop });
             this.scene.pause();
             this.levelfailedAlert.present();
           });
@@ -866,7 +873,8 @@ class Plane
   baseY;
   bobTween;
   currentAnimation;
-  deathAnim;
+  deathAnimation;
+  deathSoundEffect;
   errors;
   idleAnimation;
   idleSoundEffect;
@@ -911,6 +919,7 @@ class Plane
     this.soundEffects = planeDef.soundEffects;
     this.idleSoundEffect = this.soundEffects.find(obj => obj.key === "idle");
     this.shootingSoundEffect = this.soundEffects.find(obj => obj.key === "shoot");
+    this.deathSoundEffect = this.soundEffects.find(obj => obj.key === "death");
   }
 
   setPosition({ x, y } = {}) 
