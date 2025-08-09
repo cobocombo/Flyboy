@@ -266,7 +266,7 @@ class GameScene extends Phaser.Scene
     this.loadPickupSounds();
 
     this.load.audio('level-failed', 'level-failed.mp3');
-    this.load.audio('level-failed', 'level-failed.mp3');
+    this.load.audio('level-complete', 'level-complete.mp3');
   }
 
   create() 
@@ -584,7 +584,9 @@ class GameScene extends Phaser.Scene
         {
           planeIdleSoundEffect.stop();
           planeIdleSoundEffect.destroy();
-        } 
+        }
+        
+        this.sound.play('level-complete', { volume: 0.7, loop: false });
           
         let levelCompleteAlert = new LevelCompleteDialog({ scene: this.scene, score: this.score, starCount: starCount });
         levelCompleteAlert.present();
