@@ -264,6 +264,9 @@ class GameScene extends Phaser.Scene
     this.loadEnemySounds();
     this.loadPlaneSounds();
     this.loadPickupSounds();
+
+    this.load.audio('level-failed', 'level-failed.mp3');
+    this.load.audio('level-failed', 'level-failed.mp3');
   }
 
   create() 
@@ -674,6 +677,7 @@ class GameScene extends Phaser.Scene
             this.sound.play(this.plane.deathSoundEffect.key, { volume: this.plane.deathSoundEffect.volume, loop: this.plane.deathSoundEffect.loop });
             this.scene.pause();
             this.levelfailedAlert.present();
+            this.sound.play('level-failed', { volume: 0.7, loop: false });
           });
         }
         else
