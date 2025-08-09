@@ -262,6 +262,7 @@ class GameScene extends Phaser.Scene
     this.loadPickupImages();
 
     this.loadEnemySounds();
+    this.loadPlaneSounds();
     this.loadPickupSounds();
   }
 
@@ -360,7 +361,7 @@ class GameScene extends Phaser.Scene
       bulletSprite.destroy();
       this.bullets.remove(bulletSprite, true, true);
 
-      this.sound.play(enemyData.name, { volume: 0.5 });
+      this.sound.play(enemyData.hitSoundEffect.key, { volume: enemyData.hitSoundEffect.volume });
 
       if(enemyData.numberOfHits === enemyData.maxNumberOfHits)
       {
@@ -447,7 +448,13 @@ class GameScene extends Phaser.Scene
   {
     this.enemyData.enemies
     .filter(enemy => this.enemyTypes.includes(enemy.name))
-    .forEach(enemy => { this.load.audio(enemy.name, enemy.soundEffect); });
+    .forEach(enemy => 
+    { 
+      enemy.soundEffects.forEach(effect =>
+      {
+        this.load.audio(effect.key, effect.sound); 
+      });
+    });
   }
 
   loadPlaneAnimations() 
@@ -489,6 +496,15 @@ class GameScene extends Phaser.Scene
     }
   }
 
+  loadPlaneSounds()
+  {
+    let selectedPlane = this.planeData.planes.find(plane => plane.name === this.planeType);
+    selectedPlane.soundEffects.forEach(effect => 
+    {
+      this.load.audio(effect.key, effect.sound);
+    });
+  }
+
   loadPickupAnimations() 
   {
     this.pickupData.pickups
@@ -527,7 +543,7 @@ class GameScene extends Phaser.Scene
   {
     this.pickupData.pickups
     .filter(pickup => this.pickupTypes.includes(pickup.name))
-    .forEach(pickup => { this.load.audio(pickup.name, pickup.soundEffect); });
+    .forEach(pickup => { this.load.audio(pickup.soundEffect.key, pickup.soundEffect.sound); });
   }
 
   update(_time, delta) 
@@ -631,7 +647,7 @@ class GameScene extends Phaser.Scene
           if(animation.key === 'explosion-anim') explosion.destroy();
         });
 
-        this.sound.play(enemy.name, { volume: 0.5 });
+        this.sound.play(enemy.hitSoundEffect.key, { volume: enemy.hitSoundEffect.volume });
 
         if(this.plane.numberOfHits === this.plane.maxNumberOfHits)
         {
@@ -692,7 +708,7 @@ class GameScene extends Phaser.Scene
 
         this.updateScore({ amount: pickup.score });
 
-        this.sound.play(pickup.name, { volume: 0.5 });
+        this.sound.play(pickup.soundEffect.key, { volume: pickup.soundEffect.volume });
 
         let sparkle = this.add.sprite(x, y, 'sparkle');
         sparkle.setScale(displayHeight / (sparkle.height / 6));
@@ -841,6 +857,8 @@ class Plane
   numberOfHits;
   scene;
   shootingAnimation;
+  shootingSoundEffect;
+  soundEffects;
   sprite;
   
   constructor({ scene, data, type } = {}) 
@@ -872,6 +890,9 @@ class Plane
     this.deathAnimation = planeDef.deathAnimation;
     this.numberOfHits = 0;
     this.maxNumberOfHits = planeDef.maxNumberOfHits;
+
+    this.soundEffects = planeDef.soundEffects;
+    this.shootingSoundEffect = this.soundEffects.find(obj => obj.key === "shoot");
   }
 
   setPosition({ x, y } = {}) 
@@ -1074,7 +1095,7 @@ class ShootButton
         const y = this.plane.sprite.y + this.plane.sprite.displayHeight / 4;
         let bullet = new Bullet({ scene: this.scene, x, y });
         this.scene.physics.add.existing(bullet.sprite);
-
+        this.scene.sound.play(this.plane.shootingSoundEffect.key, { volume: this.plane.shootingSoundEffect.volume })
         this.elapsed = -this.shootCooldown / 2;
       }
     });
@@ -1104,6 +1125,7 @@ class ShootButton
       let x = this.plane.sprite.x + this.plane.sprite.displayWidth / 2;
       let y = this.plane.sprite.y + this.plane.sprite.displayHeight / 4;
       let bullet = new Bullet({ scene: this.scene, x, y });
+      this.scene.sound.play(this.plane.shootingSoundEffect.key, { volume: this.plane.shootingSoundEffect.volume });
       this.scene.physics.add.existing(bullet.sprite);
     }
   }
@@ -1198,12 +1220,13 @@ class Pickup
 class Enemy
 {
   errors;
+  hitSoundEffect;
   maxNumberOfHits;
   name;
   numberOfHits;
   scene;
   score;
-  soundEffect;
+  soundEffects;
 
   constructor({ scene, data, type, x, y }) 
   {
@@ -1221,7 +1244,9 @@ class Enemy
     this.score = enemyDef.score;
     this.numberOfHits = 0;
     this.maxNumberOfHits = enemyDef.maxNumberOfHits;
-    this.soundEffect = enemyDef.soundEffect;
+    this.soundEffects = enemyDef.soundEffects;
+
+    this.hitSoundEffect = this.soundEffects.find(obj => obj.key === "hit");
   }
 
   update({ delta } = {}) 

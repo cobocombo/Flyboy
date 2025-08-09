@@ -19,6 +19,10 @@
           "repeat": -1
         }
       ],
+      "soundEffects":
+      [
+        { "key": "hit", "sound": "hit.mp3", "volume": 1.0 }
+      ],
       "startingAnimation": "bird-fly",
       "maxNumberOfHits": 2,
       "score": 50,

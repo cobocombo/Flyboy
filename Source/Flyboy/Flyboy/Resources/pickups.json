@@ -6,7 +6,7 @@
       "sprite": "coin.png",
       "heightScale": 18,
       "score": 100,
-      "soundEffect": "coin.mp3"
+      "soundEffect": { "key": "coin", "sound": "coin.mp3", "volume": 0.5 }
     }
   ]
 }
