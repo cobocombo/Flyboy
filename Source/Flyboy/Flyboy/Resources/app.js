@@ -11,7 +11,7 @@ class SplashScene extends Phaser.Scene
 
   preload()
   {
-    
+    this.load.audio('menu-music', 'menu-music.mp3');
   }
 
   create() 
@@ -82,6 +82,9 @@ class LevelSelectScene extends Phaser.Scene
         this.scene.start('LoadingScene');
       });
     });
+
+    let menuMusic = this.sound.get('menu-music');
+    if(menuMusic && !menuMusic.isPlaying) menuMusic.play();
   }
 }
 
@@ -130,6 +133,17 @@ class MainMenuScene extends Phaser.Scene
     startButton.on('pointerdown', () => {
       this.scene.start('LevelSelectScene');
     });
+
+    if(!this.sound.get('menu-music')) 
+    {
+      this.menuMusic = this.sound.add('menu-music', { loop: true, volume: 0.5 });
+      this.menuMusic.play();
+    } 
+    else 
+    {
+      this.menuMusic = this.sound.get('menu-music');
+      if(!this.menuMusic.isPlaying) this.menuMusic.play();
+    }
   }
 }
 
@@ -181,6 +195,9 @@ class LoadingScene extends Phaser.Scene
         loadingText.on('pointerdown', () => { this.scene.start('GameScene'); });
       });
     },1);
+
+    let menuMusic = this.sound.get('menu-music');
+    if(menuMusic) menuMusic.stop();
   }
 }
 
