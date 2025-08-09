@@ -36,6 +36,8 @@ class LevelSelectScene extends Phaser.Scene
     this.load.image('block', 'block.png');
     this.load.image('star-gold', 'star-gold.png');
     this.load.image('star-silver', 'star-silver.png');
+
+    this.load.image('back-button', 'back-button.png');
   }
 
   create() 
@@ -85,6 +87,24 @@ class LevelSelectScene extends Phaser.Scene
 
     let menuMusic = this.sound.get('menu-music');
     if(menuMusic && !menuMusic.isPlaying) menuMusic.play();
+
+    const padding = 20;
+    const btnSize = device.screenWidth / 12;
+
+    const backBtn = this.add.image(
+      padding + btnSize / 2,
+      this.scale.height - padding - btnSize / 2, // bottom instead of top
+      'back-button'
+    );
+
+    backBtn.setDisplaySize(btnSize, btnSize);
+    backBtn.setOrigin(0.5);
+    backBtn.setInteractive({ useHandCursor: true });
+
+    backBtn.on('pointerup', () => {
+      this.scene.start('MainMenuScene'); // Go back to Main Menu
+    });
+
   }
 }
 
