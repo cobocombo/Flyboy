@@ -329,13 +329,15 @@ class GameScene extends Phaser.Scene
     this.plane = new Plane({ scene: this, data: this.planeData, type: this.planeType });
     this.plane.setPosition({ x: 20 + (this.plane.sprite.displayWidth / 2), y: (device.screenWidth / 2) - (device.screenWidth / 12) });
 
+    this.sound.play(this.plane.idleSoundEffect.key, { volume: this.plane.idleSoundEffect.volume, loop: this.plane.idleSoundEffect.loop });
+
     this.joystick = new Joystick({ scene: this });
     this.shootButton = new ShootButton({ scene: this, plane: this.plane });
 
     this.bullets = this.physics.add.group();
     this.bulletTimer = 0;
 
-    this.pauseAlert = new PauseAlertDialog({ scene: this.scene });
+    this.pauseAlert = new PauseAlertDialog({ scene: this });
     this.levelfailedAlert = new LevelFailedDialog({ scene: this.scene });
 
     this.pauseButton = this.add.image(0, 0, 'pause-button');
@@ -344,6 +346,8 @@ class GameScene extends Phaser.Scene
     this.pauseButton.setInteractive();
     this.pauseButton.on('pointerdown', () => 
     {
+      let planeIdleSoundEffect = this.sound.get(this.plane.idleSoundEffect.key);
+      if(planeIdleSoundEffect) planeIdleSoundEffect.stop();
       this.scene.pause();
       this.pauseAlert.present();
     });
@@ -571,7 +575,14 @@ class GameScene extends Phaser.Scene
         else if(this.score >= levels.currentLevel.twoStarScore) starCount = 2;
         else if(this.score >= levels.currentLevel.oneStarScore) starCount = 1;
         else starCount = 0;
-        
+
+        let planeIdleSoundEffect = this.sound.get(this.plane.idleSoundEffect.key);
+        if(planeIdleSoundEffect)
+        {
+          planeIdleSoundEffect.stop();
+          planeIdleSoundEffect.destroy();
+        } 
+          
         let levelCompleteAlert = new LevelCompleteDialog({ scene: this.scene, score: this.score, starCount: starCount });
         levelCompleteAlert.present();
         confetti.start();
@@ -755,7 +766,7 @@ class GameScene extends Phaser.Scene
 
 class PauseAlertDialog extends ui.AlertDialog
 {
-  constructor({ scene } = {})
+  constructor({ scene, soundEffects } = {})
   {
     super();
     this.cancelable = false;
@@ -763,11 +774,16 @@ class PauseAlertDialog extends ui.AlertDialog
 
     this.title = 'Game Paused';
     this.addComponents({ components: [ new ui.Text({ text: 'Select an option to continue' }) ] });
-    let resumeButton = new ui.AlertDialogButton({ text: 'Resume', onTap: () => { scene.resume(); } });
+    let resumeButton = new ui.AlertDialogButton({ text: 'Resume', onTap: () => 
+    { 
+      let planeIdleSoundEffect = scene.sound.get('idle');
+      if(planeIdleSoundEffect) planeIdleSoundEffect.play();
+      scene.scene.resume(); 
+    }});
     let quitButton = new ui.AlertDialogButton({ text: 'Quit', textColor: 'red', onTap: () => 
     { 
-      scene.stop('GameScene');
-      scene.start('MainMenuScene'); 
+      scene.scene.stop('GameScene');
+      scene.scene.start('MainMenuScene'); 
     }});
     this.buttons = [ resumeButton, quitButton ];
   }
@@ -853,6 +869,7 @@ class Plane
   deathAnim;
   errors;
   idleAnimation;
+  idleSoundEffect;
   maxNumberOfHits;
   numberOfHits;
   scene;
@@ -892,6 +909,7 @@ class Plane
     this.maxNumberOfHits = planeDef.maxNumberOfHits;
 
     this.soundEffects = planeDef.soundEffects;
+    this.idleSoundEffect = this.soundEffects.find(obj => obj.key === "idle");
     this.shootingSoundEffect = this.soundEffects.find(obj => obj.key === "shoot");
   }
 

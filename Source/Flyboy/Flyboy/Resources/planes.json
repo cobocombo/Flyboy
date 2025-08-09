@@ -43,7 +43,8 @@
       ],
       "soundEffects":
       [
-        { "key": "shoot", "sound": "shoot.mp3", "volume": 0.4 }
+        { "key": "idle", "sound": "plane-idle.mp3", "volume": 0.3, "loop": true },
+        { "key": "shoot", "sound": "shoot.mp3", "volume": 0.5, "loop": false }
       ],
       "startingAnimation": "green-plane-fly",
       "idleAnimation": "green-plane-fly",
