@@ -52,7 +52,7 @@
       "shootingAnimation": "green-plane-shoot",
       "deathAnimation": "green-plane-dead",
       "maxNumberOfHits": 3,
-      "shootingSound": "shoot.mp3"
+      "shootingRate": 300
     }
   ]
 }

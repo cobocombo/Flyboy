@@ -916,6 +916,7 @@ class Plane
   numberOfHits;
   scene;
   shootingAnimation;
+  shootingRate;
   shootingSoundEffect;
   soundEffects;
   sprite;
@@ -954,6 +955,8 @@ class Plane
     this.idleSoundEffect = this.soundEffects.find(obj => obj.key === "idle");
     this.shootingSoundEffect = this.soundEffects.find(obj => obj.key === "shoot");
     this.deathSoundEffect = this.soundEffects.find(obj => obj.key === "death");
+
+    this.shootingRate = planeDef.shootingRate;
   }
 
   setPosition({ x, y } = {}) 
@@ -1137,7 +1140,7 @@ class ShootButton
     this.sprite = scene.add.image(0, 0, 'shoot-button');
     this.sprite.setScale((device.screenWidth / 5) / (this.sprite.height));
 
-    this.shootCooldown = 250;
+    this.shootCooldown = this.plane.shootingRate;
     this.elapsed = 0;
 
     let x = device.screenHeight - 20 - (this.sprite.displayWidth / 2);
