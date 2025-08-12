@@ -12,6 +12,7 @@ class SplashScene extends Phaser.Scene
   preload()
   {
     this.load.audio('menu-music', 'menu-music.mp3');
+    if(app.isFirstLaunch === true ) saveData.addLevelProgress({ id: 1, stars: 0, completed: true });
   }
 
   create() 
@@ -629,6 +630,7 @@ class GameScene extends Phaser.Scene
           let levelCompleteAlert = new LevelCompleteDialog({ scene: this.scene, score: this.score, starCount: starCount });
           levelCompleteAlert.present();
           confetti.start();
+          saveData.addLevelProgress({ id: levels.currentLevel.id, stars: starCount, completed: true });
         }
       });
     }
@@ -1503,12 +1505,149 @@ class LevelManager
 }
 
 ///////////////////////////////////////////////////////////
+// SAVE DATA MODULE
+///////////////////////////////////////////////////////////
+
+/** Singleton class representing the global SaveDataManager. */
+class SaveDataManager 
+{
+  #storageKeys;
+  #errors;
+  static #instance = null;
+
+  /** Initializes the LevelManager singleton. */
+  constructor() 
+  {
+    this.#storageKeys = 
+    {
+      levelProgress: 'level-progress'
+    };
+
+    this.#errors = 
+    {
+      completedTypeError: 'Save Data Manager Error: Expected type boolean for completed',
+      dataTypeError: 'Save Data Manager Error: Expected type object for data.',
+      idTypeError: 'Save Data Manager Error: Expected type number for id.',
+      keyTypeError: 'Save Data Manager Error: Expected type string for key.',
+      loadingError: 'Save Data Manager Error: There was an issue loading data.',
+      removingError: 'Save Data Manager Error: There was an issue removing data.',
+      singleInstanceError: 'Save Data Manager Error: Only one SaveDataManager instance can exist.',
+      starsTypeError: 'Save Data Manager Error: Expected type number for stars.',
+      savingError: 'Save Data Manager Error: There was an issue saving data.',
+      wrongKeyProvidedError: 'Save Data Manager Error: Wrong key was provided when attempting to retrieve stored data.'
+    };
+
+    if(SaveDataManager.#instance) 
+    {
+      console.error(this.#errors.singleInstanceError);
+      return SaveDataManager.#instance;
+    }
+
+    SaveDataManager.#instance = this;
+  }
+
+  /** Returns the singleton instance. */
+  static getInstance() 
+  {
+    if(!SaveDataManager.#instance) SaveDataManager.#instance = new SaveDataManager();
+    return SaveDataManager.#instance;
+  }
+
+  /**
+   * Add or update a level entry in the save data.
+   * @param {string} key - The storage key for the save data.
+   * @param {number} id - The level ID to add or update.
+   * @param {number} stars - The number of stars for this level.
+   */
+  addLevelProgress({ id, stars, completed } = {}) 
+  {
+    if(!typeChecker.check({ type: 'number', value: id })) console.error(this.#errors.idTypeError);
+    if(!typeChecker.check({ type: 'number', value: stars })) console.error(this.#errors.starsTypeError);
+    if(!typeChecker.check({ type: 'boolean', value: completed })) console.error(this.#errors.completedTypeError);
+
+    let data = this.load({ key: this.#storageKeys.levelProgress });
+    if(!data) data = { levels: [] };
+
+    let existingLevel = data.levels.find(level => level.id === id);
+    if(existingLevel)
+    {
+      existingLevel.stars = Math.max(existingLevel.stars, stars);
+      if(completed === true) existingLevel.completed = true;
+    } 
+    else data.levels.push({ id, stars, completed });
+    this.save({ key: this.#storageKeys.levelProgress, data: data });
+  }
+
+  /**
+   * Check if a specific level is completed.
+   * @param {number} id - The level ID to check.
+   * @returns {boolean} True if completed, false otherwise.
+   */
+  isLevelComplete({ id } = {}) 
+  {
+    if(!typeChecker.check({ type: 'number', value: id })) console.error(this.#errors.idTypeError);
+  
+    let data = this.load({ key: this.#storageKeys.levelProgress });
+    if(!data) return false;
+
+    let level = data.levels.find(level => level.id === id);
+    return level ? level.completed === true : false;
+  }
+
+  /**
+   * Save JSON-serializable data to local storage.
+   * @param {string} key - The storage key.
+   * @param {object} data - The data object to store.
+   */
+  save({ key, data } = {}) 
+  {
+    if(!typeChecker.check({ type: 'string', value: key })) console.error(this.#errors.keyTypeError);
+    if(!typeChecker.check({ type: 'object', value: data })) console.error(this.#errors.dataTypeError);
+    try 
+    {
+      let json = JSON.stringify(data);
+      localStorage.setItem(key, json);
+    } 
+    catch { console.error(this.#errors.savingError); }
+  }
+
+  /**
+   * Load JSON data from local storage.
+   * @param {string} key - The storage key.
+   */
+  load({ key } = {}) 
+  {
+    if(!typeChecker.check({ type: 'string', value: key })) console.error(this.#errors.keyTypeError);
+    try 
+    {
+      let json = localStorage.getItem(key);
+      if(json === null) return null;
+      return JSON.parse(json);
+    } 
+    catch { console.error(this.#errors.loadingError); }
+  }
+
+  /**
+   * Remove saved data.
+   * @param {string} key - The storage key.
+   */
+  remove({ key } = {}) 
+  {
+    if(!typeChecker.check({ type: 'string', value: key })) console.error(this.#errors.keyTypeError);
+    try { localStorage.removeItem(key); } 
+    catch { console.error(this.#errors.removingError); }
+  }
+}
+
+///////////////////////////////////////////////////////////
 
 let font = new FontFace('BulgariaDreams', 'url("Bulgaria Dreams Regular.ttf")');
 font.load().then((loadedFace) => { document.fonts.add(loadedFace);})
 .catch((err) => { console.warn('Font failed to load', err); });
 
 globalThis.levels = LevelManager.getInstance();
+globalThis.saveData = SaveDataManager.getInstance();
+
 typeChecker.register({ name: 'plane', constructor: Plane });
 typeChecker.register({ name: 'joystick', constructor: Joystick });
 
