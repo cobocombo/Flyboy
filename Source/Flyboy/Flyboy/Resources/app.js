@@ -1247,6 +1247,7 @@ class Pickup
   scene;
   score;
   soundEffect;
+  speed;
   
   constructor({ scene, data, type, x, y }) 
   {
@@ -1260,12 +1261,13 @@ class Pickup
     this.name = pickupDef.name;
     this.score = pickupDef.score;
     this.soundEffect = pickupDef.soundEffect;
+
+    this.speed = device.screenWidth / pickupDef.speed;
   }
 
   update({ delta } = {}) 
   {
-    let speed = device.screenWidth * 0.2;
-    this.sprite.x -= (speed * delta) / 1000;
+    this.sprite.x -= (this.speed * delta) / 1000;
   }
 
   isOffScreen() 
