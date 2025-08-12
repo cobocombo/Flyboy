@@ -1058,7 +1058,7 @@ class Joystick
     this.scene = scene;
     this.currentState = this.states.idle;
 
-    const targetHeight = device.screenWidth / 6;
+    const targetHeight = device.screenWidth / 5;
     this.base = scene.add.image(0, 0, 'joystick-base');
     const baseScale = targetHeight / this.base.height;
     this.base.setScale(baseScale);
@@ -1135,7 +1135,7 @@ class ShootButton
     this.isHeld = false;
 
     this.sprite = scene.add.image(0, 0, 'shoot-button');
-    this.sprite.setScale((device.screenWidth / 6) / (this.sprite.height));
+    this.sprite.setScale((device.screenWidth / 5) / (this.sprite.height));
 
     this.shootCooldown = 250;
     this.elapsed = 0;
