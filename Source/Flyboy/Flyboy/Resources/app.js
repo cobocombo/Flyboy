@@ -1313,12 +1313,13 @@ class Enemy
     this.soundEffects = enemyDef.soundEffects;
 
     this.hitSoundEffect = this.soundEffects.find(obj => obj.key === "hit");
+
+    this.speed = device.screenWidth / enemyDef.speed;
   }
 
   update({ delta } = {}) 
   {
-    let speed = device.screenWidth * 0.2;
-    this.sprite.x -= (speed * delta) / 1000;
+    this.sprite.x -= (this.speed * delta) / 1000;
   }
 
   isOffScreen() 
