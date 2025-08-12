@@ -300,7 +300,7 @@ class GameScene extends Phaser.Scene
     this.background1.setOrigin(0, 0);
     this.background2.setOrigin(0, 0);
     this.background1.setPosition(0, 0);
-    this.background2.setPosition(device.screenHeight - 3, 0);
+    this.background2.setPosition(device.screenHeight-2, 0);
 
     if(!this.anims.exists('bullet-anim')) 
     {
@@ -628,8 +628,8 @@ class GameScene extends Phaser.Scene
     let backgroundScrollSpeed = device.screenHeight / 8;
     this.background1.x -= (backgroundScrollSpeed * delta) / 1000;
     this.background2.x -= (backgroundScrollSpeed * delta) / 1000;
-    if(this.background1.x <= -device.screenHeight) this.background1.x = this.background2.x + device.screenHeight - 5;
-    if(this.background2.x <= -device.screenHeight) this.background2.x = this.background1.x + device.screenHeight - 5;
+    if(this.background1.x <= -device.screenHeight) this.background1.x = (this.background2.x + device.screenHeight)-2;
+    if(this.background2.x <= -device.screenHeight) this.background2.x = (this.background1.x + device.screenHeight)-2;
   }
 
   updateBullets({ delta } = {})
