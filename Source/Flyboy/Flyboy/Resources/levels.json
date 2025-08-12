@@ -4,6 +4,7 @@
     {
       "id": 1,
       "background": "blue-sky-clear.png",
+      "backgroundMusic": "blue-sky.mp3",
       "enemies": 
       [
         { "type": "bird", "spawnPosition": 0.75, "spawnTime": 2000 },
@@ -21,6 +22,7 @@
     {
       "id": 2,
       "background": "blue-sky-clear.png",
+      "backgroundMusic": "blue-sky.mp3",
       "enemies": 
       [
         { "type": "bird", "spawnPosition": 0.75, "spawnTime": 3000 },

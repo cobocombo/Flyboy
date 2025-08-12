@@ -287,6 +287,7 @@ class GameScene extends Phaser.Scene
 
     this.load.audio('level-failed', 'level-failed.mp3');
     this.load.audio('level-complete', 'level-complete.mp3');
+    this.load.audio('background-music', levels.currentLevel.backgroundMusic);
   }
 
   create() 
@@ -301,6 +302,8 @@ class GameScene extends Phaser.Scene
     this.background2.setOrigin(0, 0);
     this.background1.setPosition(0, 0);
     this.background2.setPosition(device.screenHeight-2, 0);
+
+    this.sound.play('background-music', { volume: 0.1, loop: true });
 
     if(!this.anims.exists('bullet-anim')) 
     {
@@ -371,6 +374,8 @@ class GameScene extends Phaser.Scene
     {
       let planeIdleSoundEffect = this.sound.get(this.plane.idleSoundEffect.key);
       if(planeIdleSoundEffect) planeIdleSoundEffect.stop();
+      let backgroundMusic = this.sound.get('background-music');
+      if(backgroundMusic) backgroundMusic.stop();
       this.scene.pause();
       this.pauseAlert.present();
     });
@@ -600,6 +605,13 @@ class GameScene extends Phaser.Scene
           planeIdleSoundEffect.destroy();
         }
 
+        let backgroundMusic = this.sound.get('background-music');
+        if(backgroundMusic)
+        {
+          backgroundMusic.stop();
+          backgroundMusic.destroy();
+        } 
+          
         let starCount = 0;
         if(this.score >= levels.currentLevel.threeStarScore) starCount = 3;
         else if(this.score >= levels.currentLevel.twoStarScore) starCount = 2;
@@ -703,6 +715,14 @@ class GameScene extends Phaser.Scene
               planeIdleSoundEffect.stop();
               planeIdleSoundEffect.destroy();
             } 
+
+            let backgroundMusic = this.sound.get('background-music');
+            if(backgroundMusic)
+            {
+              backgroundMusic.stop();
+              backgroundMusic.destroy();
+            } 
+
             this.sound.play(this.plane.deathSoundEffect.key, { volume: this.plane.deathSoundEffect.volume, loop: this.plane.deathSoundEffect.loop });
             this.scene.pause();
             this.levelfailedAlert.present();
@@ -806,7 +826,7 @@ class GameScene extends Phaser.Scene
 
 class PauseAlertDialog extends ui.AlertDialog
 {
-  constructor({ scene, soundEffects } = {})
+  constructor({ scene } = {})
   {
     super();
     this.cancelable = false;
@@ -818,6 +838,10 @@ class PauseAlertDialog extends ui.AlertDialog
     { 
       let planeIdleSoundEffect = scene.sound.get('idle');
       if(planeIdleSoundEffect) planeIdleSoundEffect.play();
+
+      let backgroundMusic = scene.sound.get('background-music');
+      if(backgroundMusic) backgroundMusic.play();
+
       scene.scene.resume(); 
     }});
     let quitButton = new ui.AlertDialogButton({ text: 'Quit', textColor: 'red', onTap: () => 
