@@ -142,6 +142,14 @@ class MainMenuScene extends Phaser.Scene
   {
     this.settingsTapped = false;
 
+    this.settingsDialog = new ui.Dialog({ id: 'settings-dialog' });
+    this.settingsDialog.cancelable = false;
+    this.settingsDialog.addEventListener({ event: 'posthide', handler: () => 
+    {
+      this.settingsTapped = false;
+      this.toggleInteractive(true);
+      }});
+
     this.background = this.add.image(0, 0, 'background');
     this.background.setOrigin(0, 0);
     this.background.setDisplaySize(device.screenHeight, device.screenWidth);
@@ -157,37 +165,36 @@ class MainMenuScene extends Phaser.Scene
       }).setOrigin(0.5);
     },1);
 
-    const startButton = this.add.image(0, 0, 'start-button');
+    this.startButton = this.add.image(0, 0, 'start-button');
     const targetHeight = device.screenWidth / 8;
-    const scale = targetHeight / startButton.height;
-    startButton.setScale(scale);
+    const scale = targetHeight / this.startButton.height;
+    this.startButton.setScale(scale);
 
     const x = this.cameras.main.centerX;
     const y = this.cameras.main.height * 0.55;
-    startButton.setPosition(x, y);
+    this.startButton.setPosition(x, y);
 
-    startButton.setInteractive();
-    startButton.on('pointerdown', () => {
+    this.startButton.setInteractive();
+    this.startButton.on('pointerdown', () => {
       this.scene.start('LevelSelectScene');
     });
 
     const padding = 20;
-    const settingsButton = this.add.image(
+    this.settingsButton = this.add.image(
       this.scale.width - padding,
       this.scale.height - padding,
       'settings-button'
     );
-    settingsButton.setOrigin(1, 1);
-    const settingsScale = (device.screenWidth / 10) / settingsButton.height;
-    settingsButton.setScale(settingsScale);
-    settingsButton.setInteractive();
-    settingsButton.on('pointerdown', () => 
+    this.settingsButton.setOrigin(1, 1);
+    const settingsScale = (device.screenWidth / 10) / this.settingsButton.height;
+    this.settingsButton.setScale(settingsScale);
+    this.settingsButton.setInteractive();
+    this.settingsButton.on('pointerdown', () => 
     {
-      if(this.settingsTapped === false)
+      if(this.settingsTapped === false) 
       {
         this.settingsTapped = true;
-        this.settingsDialog = new ui.Dialog({ id: 'settings-dialog' });
-        this.settingsDialog.cancelable = false;
+        this.toggleInteractive(false);
         this.settingsDialog.present({ root: new SettingsPage() });
       }
     });
@@ -201,6 +208,17 @@ class MainMenuScene extends Phaser.Scene
     {
       this.menuMusic = this.sound.get('menu-music');
       if(!this.menuMusic.isPlaying) this.menuMusic.play();
+    }
+  }
+
+  toggleInteractive(enable) 
+  {
+    if(enable) {
+      this.startButton.setInteractive();
+      this.settingsButton.setInteractive();
+    } else {
+      this.startButton.disableInteractive();
+      this.settingsButton.disableInteractive();
     }
   }
 }
