@@ -185,11 +185,10 @@ class MainMenuScene extends Phaser.Scene
     {
       if(this.settingsTapped === false)
       {
-        let settingsPage = new SettingsPage();
         this.settingsTapped = true;
-        this.settingsDialog = new ui.Dialog();
+        this.settingsDialog = new ui.Dialog({ id: 'settings-dialog' });
         this.settingsDialog.cancelable = false;
-        this.settingsDialog.present({ root: settingsPage });
+        this.settingsDialog.present({ root: new SettingsPage() });
       }
     });
 
@@ -1516,8 +1515,10 @@ class SettingsPage extends ui.Page
   /** Public method called when the page is initialized. */
   onInit()
   {
+    let dialog = app.getComponentById({ id: 'settings-dialog' });
+
     this.navigationBarTitle = 'Settings';
-    this.doneButton = new ui.BarButton({ text: 'Done' });
+    this.doneButton = new ui.BarButton({ text: 'Done', onTap: () => { dialog.dismiss(); } });
     this.navigationBarButtonsRight = [ this.doneButton ];
   }
 }
