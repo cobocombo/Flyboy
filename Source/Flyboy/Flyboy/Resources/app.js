@@ -133,6 +133,7 @@ class MainMenuScene extends Phaser.Scene
   {
     this.load.image('background', 'blue-sky-clear.png');
     this.load.image('start-button', 'start-button.png');
+    this.load.image('settings-button', 'settings-button.png');
   }
 
   create() 
@@ -158,12 +159,27 @@ class MainMenuScene extends Phaser.Scene
     startButton.setScale(scale);
 
     const x = this.cameras.main.centerX;
-    const y = this.cameras.main.height * 0.75;
+    const y = this.cameras.main.height * 0.55;
     startButton.setPosition(x, y);
 
     startButton.setInteractive();
     startButton.on('pointerdown', () => {
       this.scene.start('LevelSelectScene');
+    });
+
+    const padding = 20; // pixels from edge
+    const settingsButton = this.add.image(
+      this.scale.width - padding,
+      this.scale.height - padding,
+      'settings-button'
+    );
+    settingsButton.setOrigin(1, 1); // align bottom-right corner
+    const settingsScale = (device.screenWidth / 10) / settingsButton.height;
+    settingsButton.setScale(settingsScale);
+    settingsButton.setInteractive();
+    settingsButton.on('pointerdown', () => {
+      console.log('Settings button clicked');
+      // this.scene.start('SettingsScene'); // If you have one
     });
 
     if(!this.sound.get('menu-music')) 
