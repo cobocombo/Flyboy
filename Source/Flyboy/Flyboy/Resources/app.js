@@ -12,7 +12,7 @@ class SplashScene extends Phaser.Scene
   preload()
   {
     this.load.audio('menu-music', 'menu-music.mp3');
-    if(app.isFirstLaunch === true ) saveData.addLevelProgress({ id: 1, stars: 0, completed: true });
+    if(app.isFirstLaunch === true ) saveData.addLevelProgress({ id: 1, stars: 0, unlocked: true });
   }
 
   create() 
@@ -37,6 +37,7 @@ class LevelSelectScene extends Phaser.Scene
     this.load.image('block', 'block.png');
     this.load.image('star-gold', 'star-gold.png');
     this.load.image('star-silver', 'star-silver.png');
+    this.load.image('lock', 'lock.png');
 
     this.load.image('back-button', 'back-button.png');
   }
@@ -72,18 +73,35 @@ class LevelSelectScene extends Phaser.Scene
       const x = startX + col * (blockSize + spacing) + blockSize / 2;
       const y = startY + row * (blockSize + spacing);
 
-      const block = new LevelSelectBlock({
-        scene: this,
-        x,
-        y,
-        levelNumber: level.id,
-        starCount: level.stars || 0
-      });
+      const unlocked = saveData.isLevelUnlocked({ id: level.id });
 
-      block.setInteractive({ useHandCursor: true }).on('pointerup', () => {
-        levels.selectLevel({ id: level.id });
-        this.scene.start('LoadingScene');
-      });
+      if (unlocked) 
+      {
+        const block = new LevelSelectBlock({
+          scene: this,
+          x,
+          y,
+          levelNumber: level.id,
+          starCount: level.stars || 0
+        });
+
+        block.setInteractive({ useHandCursor: true }).on('pointerup', () => 
+        {
+          levels.selectLevel({ id: level.id });
+          this.scene.start('LoadingScene');
+        });
+      } 
+      else 
+      {
+        let lock = this.add.image(x, y, 'lock');
+        lock.setDisplaySize(blockSize, blockSize);
+        lock.setOrigin(0.5);
+        lock.setInteractive({ useHandCursor: true });
+        lock.on('pointerup', () => {
+          // maybe play a "locked" sound or show message
+          //this.sound.play('locked-sound'); // assuming you have it loaded
+        });
+      }
     });
 
     let menuMusic = this.sound.get('menu-music');
@@ -630,7 +648,11 @@ class GameScene extends Phaser.Scene
           let levelCompleteAlert = new LevelCompleteDialog({ scene: this.scene, score: this.score, starCount: starCount });
           levelCompleteAlert.present();
           confetti.start();
-          saveData.addLevelProgress({ id: levels.currentLevel.id, stars: starCount, completed: true });
+          saveData.addLevelProgress({ id: levels.currentLevel.id, stars: starCount, unlocked: true });
+
+          let levelCount = levels.levelCount;
+          let nextLevelId = levels.currentLevel.id + 1;
+          if(levelCount && nextLevelId <= levelCount) saveData.addLevelProgress({ id: nextLevelId, stars: 0, completed: false, unlocked: true });
         }
       });
     }
@@ -1494,6 +1516,11 @@ class LevelManager
     return this.#levels;
   }
 
+  get levelCount()
+  {
+    return this.#levels.length;
+  }
+
   /**
    * Clears all loaded levels and the current level.
    */
@@ -1525,7 +1552,7 @@ class SaveDataManager
 
     this.#errors = 
     {
-      completedTypeError: 'Save Data Manager Error: Expected type boolean for completed',
+      unlockedTypeError: 'Save Data Manager Error: Expected type boolean for unlocked',
       dataTypeError: 'Save Data Manager Error: Expected type object for data.',
       idTypeError: 'Save Data Manager Error: Expected type number for id.',
       keyTypeError: 'Save Data Manager Error: Expected type string for key.',
@@ -1558,12 +1585,13 @@ class SaveDataManager
    * @param {string} key - The storage key for the save data.
    * @param {number} id - The level ID to add or update.
    * @param {number} stars - The number of stars for this level.
+   * @param {boolean} unlocked - Flag status on if the level is unlocked or not.
    */
-  addLevelProgress({ id, stars, completed } = {}) 
+  addLevelProgress({ id, stars, unlocked } = {}) 
   {
     if(!typeChecker.check({ type: 'number', value: id })) console.error(this.#errors.idTypeError);
     if(!typeChecker.check({ type: 'number', value: stars })) console.error(this.#errors.starsTypeError);
-    if(!typeChecker.check({ type: 'boolean', value: completed })) console.error(this.#errors.completedTypeError);
+    if(!typeChecker.check({ type: 'boolean', value: unlocked })) console.error(this.#errors.unlockedTypeError);
 
     let data = this.load({ key: this.#storageKeys.levelProgress });
     if(!data) data = { levels: [] };
@@ -1572,9 +1600,9 @@ class SaveDataManager
     if(existingLevel)
     {
       existingLevel.stars = Math.max(existingLevel.stars, stars);
-      if(completed === true) existingLevel.completed = true;
+      if(unlocked === true) existingLevel.unlocked = true;
     } 
-    else data.levels.push({ id, stars, completed });
+    else data.levels.push({ id, stars, unlocked });
     this.save({ key: this.#storageKeys.levelProgress, data: data });
   }
 
@@ -1583,7 +1611,7 @@ class SaveDataManager
    * @param {number} id - The level ID to check.
    * @returns {boolean} True if completed, false otherwise.
    */
-  isLevelComplete({ id } = {}) 
+  isLevelUnlocked({ id } = {}) 
   {
     if(!typeChecker.check({ type: 'number', value: id })) console.error(this.#errors.idTypeError);
   
@@ -1591,7 +1619,7 @@ class SaveDataManager
     if(!data) return false;
 
     let level = data.levels.find(level => level.id === id);
-    return level ? level.completed === true : false;
+    return level ? level.unlocked === true : false;
   }
 
   /**
