@@ -288,6 +288,7 @@ class GameScene extends Phaser.Scene
 
     this.load.image('poof', 'poof.png'); 
     this.load.image('sparkle', 'sparkle.png'); 
+    this.load.image('heart', 'heart.png'); 
 
     this.loadEnemyImages();
     this.loadPlaneImages();
@@ -382,6 +383,7 @@ class GameScene extends Phaser.Scene
     this.pauseButton.setScale((device.screenWidth / 8) / this.pauseButton.height);
     this.pauseButton.setPosition((this.joystick.base.x + this.shootButton.sprite.x) / 2, (this.joystick.base.y + this.shootButton.sprite.y) / 2);
     this.pauseButton.setInteractive();
+    this.pauseButton.setOrigin(0.5);
     this.pauseButton.on('pointerdown', () => 
     {
       let planeIdleSoundEffect = this.sound.get(this.plane.idleSoundEffect.key);
@@ -395,6 +397,64 @@ class GameScene extends Phaser.Scene
     this.scoreText = this.add.text(0, 0, `Score: ${this.score}`, { fontSize: `${device.screenWidth / 12}px`, fill: '#000000', fontFamily: 'BulgariaDreams', align: 'center' });
     this.scoreText.setOrigin(0.5);
     this.scoreText.setPosition((this.pauseButton.x + this.joystick.base.x) / 2, this.pauseButton.y);
+
+    this.heartsGroup = this.add.group();
+
+    this.updateHeartsHUD = () => 
+    {
+      const maxHits = this.plane.maxNumberOfHits;
+      const hitsTaken = this.plane.numberOfHits; // hits taken so far
+      const heartsLeft = maxHits - hitsTaken;
+
+      this.heartsGroup.getChildren().forEach((heart, i) => {
+        if(i < heartsLeft) {
+          heart.clearTint();
+          heart.setAlpha(1);
+        } else {
+          heart.setTint(0x555555);
+          heart.setAlpha(0.5);
+        }
+      });
+    };
+
+    const createHearts = () => 
+    {
+      this.heartsGroup.clear(true, true);
+
+      const maxHits = this.plane.maxNumberOfHits;
+
+      const leftX = this.pauseButton.x + (this.pauseButton.displayWidth / 2);
+      const rightX = this.shootButton.sprite.x - (this.shootButton.sprite.displayWidth / 2);
+      const availableWidth = rightX - leftX;
+
+      const maxHeartSize = device.screenWidth / 20;
+      const totalSpacing = maxHits > 1 ? availableWidth / (maxHits - 1) : 0;
+      const heartSpacing = Math.min(totalSpacing, maxHeartSize * 1.2);
+      const heartSize = Math.min(maxHeartSize, heartSpacing);
+
+      const totalHeartsWidth = heartSize + (maxHits - 1) * heartSpacing;
+      const midX = (leftX + rightX) / 2;
+      const horizontalPadding = device.screenWidth / 25;
+      let startX = midX - (totalHeartsWidth / 2) + horizontalPadding;
+
+      const heartY = this.pauseButton.y;
+
+      for(let i = 0; i < maxHits; i++) 
+      {
+        const heart = this.add.image(startX + i * heartSpacing, heartY, 'heart');
+        heart.setDisplaySize(heartSize, heartSize);
+        heart.setOrigin(0.5);
+
+        // Initially, all hearts are fully visible (alpha=1)
+        heart.clearTint();
+        heart.setAlpha(1);
+
+        this.heartsGroup.add(heart);
+      }
+    };
+
+    createHearts();
+    this.updateHeartsHUD();
 
     this.physics.add.overlap(this.bullets, this.enemies, (bulletSprite, enemySprite) => 
     {
@@ -720,6 +780,7 @@ class GameScene extends Phaser.Scene
         });
 
         this.sound.play(enemy.hitSoundEffect.key, { volume: enemy.hitSoundEffect.volume });
+        this.updateHeartsHUD();
 
         if(this.plane.numberOfHits === this.plane.maxNumberOfHits)
         {
@@ -1180,6 +1241,7 @@ class ShootButton
 
     this.sprite = scene.add.image(0, 0, 'shoot-button');
     this.sprite.setScale((device.screenWidth / 5) / (this.sprite.height));
+    this.sprite.setOrigin(0.5);
 
     this.shootCooldown = this.plane.shootingRate;
     this.elapsed = 0;
