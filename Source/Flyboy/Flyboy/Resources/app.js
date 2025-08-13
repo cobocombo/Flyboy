@@ -12,7 +12,15 @@ class SplashScene extends Phaser.Scene
   preload()
   {
     this.load.audio('menu-music', 'menu-music.mp3');
-    if(app.isFirstLaunch === true ) saveData.addLevelProgress({ id: 1, stars: 0, unlocked: true, score: 0 });
+    if(app.isFirstLaunch === true ) 
+    {
+      saveData.addLevelProgress({ id: 1, stars: 0, unlocked: true, score: 0 });
+      saveData.addSettings({ soundOn: true });
+    }
+
+    let settings = saveData.getSettings();
+    if(settings.soundOn === true) this.sound.mute = false;
+    else this.sound.mute = true;
   }
 
   create() 
@@ -195,7 +203,7 @@ class MainMenuScene extends Phaser.Scene
       {
         this.settingsTapped = true;
         this.toggleInteractive(false);
-        this.settingsDialog.present({ root: new SettingsPage() });
+        this.settingsDialog.present({ root: new SettingsPage({ sound: this.sound }) });
       }
     });
 
@@ -213,10 +221,13 @@ class MainMenuScene extends Phaser.Scene
 
   toggleInteractive(enable) 
   {
-    if(enable) {
+    if(enable) 
+    {
       this.startButton.setInteractive();
       this.settingsButton.setInteractive();
-    } else {
+    } 
+    else 
+    {
       this.startButton.disableInteractive();
       this.settingsButton.disableInteractive();
     }
@@ -447,7 +458,7 @@ class GameScene extends Phaser.Scene
     this.updateHeartsHUD = () => 
     {
       const maxHits = this.plane.maxNumberOfHits;
-      const hitsTaken = this.plane.numberOfHits; // hits taken so far
+      const hitsTaken = this.plane.numberOfHits;
       const heartsLeft = maxHits - hitsTaken;
 
       this.heartsGroup.getChildren().forEach((heart, i) => {
@@ -1530,23 +1541,45 @@ class LevelSelectBlock extends Phaser.GameObjects.Container
 
 class SettingsPage extends ui.Page
 {
+  sound;
+
+  constructor({ sound } = {})
+  {
+    super();
+    this.sound = sound;
+  }
+
   /** Public method called when the page is initialized. */
   onInit()
   {
     let dialog = app.getComponentById({ id: 'settings-dialog' });
-
     this.navigationBarTitle = 'Settings';
-    this.doneButton = new ui.BarButton({ text: 'Done', onTap: () => { dialog.dismiss(); } });
-    this.navigationBarButtonsRight = [ this.doneButton ];
-
+    this.saveButton = new ui.BarButton({ text: 'Save', onTap: () => 
+    { 
+      this.saveSettings();
+      dialog.dismiss(); 
+    }});
+    this.navigationBarButtonsRight = [ this.saveButton ];
     this.setupBody();
   }
 
   setupBody()
   {
+    let settings = saveData.getSettings();
+    this.soundSwitch = new ui.Switch({ checked: settings.soundOn });
+
     let settingsList = new ui.List();
-    settingsList.addItem({ item: new ui.ListItem({ left: new ui.Icon({ icon: 'ion-ios-information-circle', size: '32px' }), center: 'Version: 1.0' }) });
+    settingsList.addItem({ item: new ui.ListItem({ left: new ui.Icon({ icon: 'ion-ios-musical-notes', size: '32px' }), center: 'Sound', right: this.soundSwitch }) });
+    settingsList.addItem({ item: new ui.ListItem({ left: new ui.Icon({ icon: 'ion-ios-information-circle', size: '30px' }), center: 'Version: 1.0' }) });
     this.addComponents({ components: [ settingsList ]});
+  }
+
+  saveSettings()
+  {
+    saveData.addSettings({ soundOn: this.soundSwitch.checked });
+
+    if(this.soundSwitch.checked === true) this.sound.mute = false;
+    else this.sound.mute = true;
   }
 }
 
@@ -1672,7 +1705,8 @@ class SaveDataManager
   {
     this.#storageKeys = 
     {
-      levelProgress: 'level-progress'
+      levelProgress: 'level-progress',
+      settings: 'settings'
     };
 
     this.#errors = 
@@ -1685,6 +1719,7 @@ class SaveDataManager
       removingError: 'Save Data Manager Error: There was an issue removing data.',
       scoreTypeError: 'Save Data Manager Error: Expected type number for score.',
       singleInstanceError: 'Save Data Manager Error: Only one SaveDataManager instance can exist.',
+      soundOnTypeError: 'Save Data Manager Error: Expected type boolean for soundOn.',
       starsTypeError: 'Save Data Manager Error: Expected type number for stars.',
       savingError: 'Save Data Manager Error: There was an issue saving data.',
       wrongKeyProvidedError: 'Save Data Manager Error: Wrong key was provided when attempting to retrieve stored data.'
@@ -1733,6 +1768,22 @@ class SaveDataManager
     } 
     else data.levels.push({ id, stars, unlocked, score });
     this.save({ key: this.#storageKeys.levelProgress, data: data });
+  }
+
+  addSettings({ soundOn } = {})
+  {
+    if(!typeChecker.check({ type: 'boolean', value: soundOn })) console.error(this.#errors.soundOnTypeError);
+    let data = this.load({ key: this.#storageKeys.settings });
+    if(!data) data = { soundOn: true };
+    else data = { soundOn: soundOn };
+    this.save({ key: this.#storageKeys.settings, data: data });
+  }
+
+  getSettings()
+  {
+    let data = this.load({ key: this.#storageKeys.settings });
+    if(!data) data = { soundOn: false };
+    return data;
   }
 
   /**
