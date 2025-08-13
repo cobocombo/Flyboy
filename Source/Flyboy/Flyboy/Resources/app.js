@@ -185,9 +185,11 @@ class MainMenuScene extends Phaser.Scene
     {
       if(this.settingsTapped === false)
       {
+        let settingsPage = new SettingsPage();
         this.settingsTapped = true;
         this.settingsDialog = new ui.Dialog();
-        this.settingsDialog.present({ root: new SettingsPage() });
+        this.settingsDialog.cancelable = false;
+        this.settingsDialog.present({ root: settingsPage });
       }
     });
 
@@ -1515,6 +1517,8 @@ class SettingsPage extends ui.Page
   onInit()
   {
     this.navigationBarTitle = 'Settings';
+    this.doneButton = new ui.BarButton({ text: 'Done' });
+    this.navigationBarButtonsRight = [ this.doneButton ];
   }
 }
 
