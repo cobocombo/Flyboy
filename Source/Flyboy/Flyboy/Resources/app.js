@@ -73,17 +73,10 @@ class LevelSelectScene extends Phaser.Scene
       const x = startX + col * (blockSize + spacing) + blockSize / 2;
       const y = startY + row * (blockSize + spacing);
 
-      const unlocked = saveData.isLevelUnlocked({ id: level.id });
-
-      if (unlocked) 
+      let unlocked = saveData.isLevelUnlocked({ id: level.id });
+      if(unlocked === true) 
       {
-        const block = new LevelSelectBlock({
-          scene: this,
-          x,
-          y,
-          levelNumber: level.id,
-          starCount: level.stars || 0
-        });
+        let block = new LevelSelectBlock({ scene: this, x, y, levelNumber: level.id, starCount: saveData.getStarsForLevel({ id: level.id }) || 0});
 
         block.setInteractive({ useHandCursor: true }).on('pointerup', () => 
         {
@@ -1620,6 +1613,20 @@ class SaveDataManager
 
     let level = data.levels.find(level => level.id === id);
     return level ? level.unlocked === true : false;
+  }
+
+  /**
+   * Get the number of stars saved for a specific level.
+   * @param {number} id - The level ID to query.
+   * @returns {number} Number of stars for the level, or 0 if not found.
+   */
+  getStarsForLevel({ id } = {}) 
+  {
+    if(!typeChecker.check({ type: 'number', value: id })) console.error(this.#errors.idTypeError);
+    let data = this.load({ key: this.#storageKeys.levelProgress });
+    if (!data) return 0;
+    let level = data.levels.find(level => level.id === id);
+    return level ? level.stars || 0 : 0;
   }
 
   /**
