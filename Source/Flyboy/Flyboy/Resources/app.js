@@ -12,7 +12,7 @@ class SplashScene extends Phaser.Scene
   preload()
   {
     this.load.audio('menu-music', 'menu-music.mp3');
-    if(app.isFirstLaunch === true ) saveData.addLevelProgress({ id: 1, stars: 0, unlocked: true });
+    if(app.isFirstLaunch === true ) saveData.addLevelProgress({ id: 1, stars: 0, unlocked: true, score: 0 });
   }
 
   create() 
@@ -701,11 +701,11 @@ class GameScene extends Phaser.Scene
           let levelCompleteAlert = new LevelCompleteDialog({ scene: this.scene, score: this.score, starCount: starCount });
           levelCompleteAlert.present();
           confetti.start();
-          saveData.addLevelProgress({ id: levels.currentLevel.id, stars: starCount, unlocked: true });
+          saveData.addLevelProgress({ id: levels.currentLevel.id, stars: starCount, unlocked: true, score: this.score });
 
           let levelCount = levels.levelCount;
           let nextLevelId = levels.currentLevel.id + 1;
-          if(levelCount && nextLevelId <= levelCount) saveData.addLevelProgress({ id: nextLevelId, stars: 0, completed: false, unlocked: true });
+          if(levelCount && nextLevelId <= levelCount) saveData.addLevelProgress({ id: nextLevelId, stars: 0, completed: false, unlocked: true, score: 0 });
         }
       });
     }
@@ -1613,6 +1613,7 @@ class SaveDataManager
       keyTypeError: 'Save Data Manager Error: Expected type string for key.',
       loadingError: 'Save Data Manager Error: There was an issue loading data.',
       removingError: 'Save Data Manager Error: There was an issue removing data.',
+      scoreTypeError: 'Save Data Manager Error: Expected type number for score.',
       singleInstanceError: 'Save Data Manager Error: Only one SaveDataManager instance can exist.',
       starsTypeError: 'Save Data Manager Error: Expected type number for stars.',
       savingError: 'Save Data Manager Error: There was an issue saving data.',
@@ -1641,12 +1642,14 @@ class SaveDataManager
    * @param {number} id - The level ID to add or update.
    * @param {number} stars - The number of stars for this level.
    * @param {boolean} unlocked - Flag status on if the level is unlocked or not.
+   * @param {number} score - Highest score the user earned for the level.
    */
-  addLevelProgress({ id, stars, unlocked } = {}) 
+  addLevelProgress({ id, stars, unlocked, score } = {}) 
   {
     if(!typeChecker.check({ type: 'number', value: id })) console.error(this.#errors.idTypeError);
     if(!typeChecker.check({ type: 'number', value: stars })) console.error(this.#errors.starsTypeError);
     if(!typeChecker.check({ type: 'boolean', value: unlocked })) console.error(this.#errors.unlockedTypeError);
+    if(!typeChecker.check({ type: 'number', value: score })) console.error(this.#errors.scoreTypeError);
 
     let data = this.load({ key: this.#storageKeys.levelProgress });
     if(!data) data = { levels: [] };
@@ -1656,8 +1659,9 @@ class SaveDataManager
     {
       existingLevel.stars = Math.max(existingLevel.stars, stars);
       if(unlocked === true) existingLevel.unlocked = true;
+      existingLevel.score = Math.max(existingLevel.score, score);
     } 
-    else data.levels.push({ id, stars, unlocked });
+    else data.levels.push({ id, stars, unlocked, score });
     this.save({ key: this.#storageKeys.levelProgress, data: data });
   }
 
