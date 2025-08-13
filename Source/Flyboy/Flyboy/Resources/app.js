@@ -124,6 +124,8 @@ class LevelSelectScene extends Phaser.Scene
 
 class MainMenuScene extends Phaser.Scene 
 {
+  settingsTapped;
+
   constructor() 
   {
     super('MainMenuScene');
@@ -138,6 +140,8 @@ class MainMenuScene extends Phaser.Scene
 
   create() 
   {
+    this.settingsTapped = false;
+
     this.background = this.add.image(0, 0, 'background');
     this.background.setOrigin(0, 0);
     this.background.setDisplaySize(device.screenHeight, device.screenWidth);
@@ -167,19 +171,24 @@ class MainMenuScene extends Phaser.Scene
       this.scene.start('LevelSelectScene');
     });
 
-    const padding = 20; // pixels from edge
+    const padding = 20;
     const settingsButton = this.add.image(
       this.scale.width - padding,
       this.scale.height - padding,
       'settings-button'
     );
-    settingsButton.setOrigin(1, 1); // align bottom-right corner
+    settingsButton.setOrigin(1, 1);
     const settingsScale = (device.screenWidth / 10) / settingsButton.height;
     settingsButton.setScale(settingsScale);
     settingsButton.setInteractive();
-    settingsButton.on('pointerdown', () => {
-      console.log('Settings button clicked');
-      // this.scene.start('SettingsScene'); // If you have one
+    settingsButton.on('pointerdown', () => 
+    {
+      if(this.settingsTapped === false)
+      {
+        this.settingsTapped = true;
+        this.settingsDialog = new ui.Dialog();
+        this.settingsDialog.present({ root: new SettingsPage() });
+      }
     });
 
     if(!this.sound.get('menu-music')) 
@@ -1497,6 +1506,19 @@ class LevelSelectBlock extends Phaser.GameObjects.Container
 }
 
 ///////////////////////////////////////////////////////////
+// PAGES
+///////////////////////////////////////////////////////////
+
+class SettingsPage extends ui.Page
+{
+  /** Public method called when the page is initialized. */
+  onInit()
+  {
+    this.navigationBarTitle = 'Settings';
+  }
+}
+
+///////////////////////////////////////////////////////////
 // LEVELS MODULE
 ///////////////////////////////////////////////////////////
 
@@ -1783,7 +1805,7 @@ const game = new ui.PhaserGame({
     } 
   }
 }); 
-  
+
 app.present({ root: game });
 
 ///////////////////////////////////////////////////////////
