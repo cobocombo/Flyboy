@@ -1538,6 +1538,15 @@ class SettingsPage extends ui.Page
     this.navigationBarTitle = 'Settings';
     this.doneButton = new ui.BarButton({ text: 'Done', onTap: () => { dialog.dismiss(); } });
     this.navigationBarButtonsRight = [ this.doneButton ];
+
+    this.setupBody();
+  }
+
+  setupBody()
+  {
+    let settingsList = new ui.List();
+    settingsList.addItem({ item: new ui.ListItem({ left: new ui.Icon({ icon: 'ion-ios-information-circle', size: '32px' }), center: 'Version: 1.0' }) });
+    this.addComponents({ components: [ settingsList ]});
   }
 }
 
