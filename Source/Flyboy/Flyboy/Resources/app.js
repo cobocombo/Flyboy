@@ -12,6 +12,8 @@ class SplashScene extends Phaser.Scene
   preload()
   {
     this.load.audio('menu-music', 'menu-music.mp3');
+    this.load.image('logo', 'scriptit-logo.png')
+
     if(app.isFirstLaunch === true ) 
     {
       saveData.addLevelProgress({ id: 1, stars: 0, unlocked: true, score: 0 });
@@ -25,7 +27,17 @@ class SplashScene extends Phaser.Scene
 
   create() 
   {
-    setTimeout(() => { this.scene.start('MainMenuScene'); }, 1000);
+    this.cameras.main.setBackgroundColor('#F0DB4F');
+
+    let logo = this.add.image(this.scale.width / 2, this.scale.height / 2, 'logo');
+    logo.setOrigin(0.5);
+
+    let maxLogoWidth = this.scale.width * 0.6;
+    let scaleFactor = Math.min(maxLogoWidth / logo.width, 1);
+    logo.setScale(scaleFactor);
+
+    this.tweens.add({ targets: logo, alpha: 0, duration: 2000, delay: 1000,ease: 'Linear' });
+    setTimeout(() => { this.scene.start('MainMenuScene'); }, 3000);
   }
 }
 
