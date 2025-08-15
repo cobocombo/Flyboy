@@ -11,7 +11,7 @@ class SplashScene extends Phaser.Scene
     super('SplashScene');
   }
 
-  /** Public method called to pre-load any assets for the scene. */
+  /** Public method called to pre-load any assets for the scene or upcoming scenes. */
   preload()
   {
     let font = new FontFace('BulgariaDreams', 'url("Bulgaria Dreams Regular.ttf")');
@@ -20,6 +20,7 @@ class SplashScene extends Phaser.Scene
 
     this.load.audio('menu-music', 'menu-music.mp3');
     this.load.image('logo', 'scriptit-logo.png');
+    this.load.json('levels', `levels.json?v=${Date.now()}`);
   }
 
   /** Public method called to create logic and assets for the scene. */
@@ -58,8 +59,6 @@ class LevelSelectScene extends Phaser.Scene
 
   preload()
   {
-    this.load.image('background', 'blue-sky-clear.png');
-    this.load.json('levels', `levels.json?v=${Date.now()}`);
     this.load.image('block', 'block.png');
     this.load.image('star-gold', 'star-gold.png');
     this.load.image('star-silver', 'star-silver.png');
@@ -69,11 +68,12 @@ class LevelSelectScene extends Phaser.Scene
 
   create() 
   {
-    this.background = this.add.image(0, 0, 'background');
+    this.background = this.add.image(0, 0, 'main-menu-background');
     this.background.setOrigin(0, 0);
     this.background.setDisplaySize(device.screenHeight, device.screenWidth);
 
-    this.add.text(this.scale.width / 2, this.scale.height / 8, 'Select A Level ', {
+    this.add.text(this.scale.width / 2, this.scale.height / 8, 'Select A Level ', 
+    {
       fontFamily: 'BulgariaDreams',
       fontSize: `${device.screenWidth / 10}px`,
       color: '#000000',
@@ -158,7 +158,7 @@ class MainMenuScene extends Phaser.Scene
 
   preload()
   {
-    this.load.image('background', 'blue-sky-clear.png');
+    this.load.image('main-menu-background', 'blue-sky-clear.png');
     this.load.image('start-button', 'start-button.png');
     this.load.image('settings-button', 'settings-button.png');
   }
@@ -175,7 +175,7 @@ class MainMenuScene extends Phaser.Scene
       this.toggleInteractive(true);
       }});
 
-    this.background = this.add.image(0, 0, 'background');
+    this.background = this.add.image(0, 0, 'main-menu-background');
     this.background.setOrigin(0, 0);
     this.background.setDisplaySize(device.screenHeight, device.screenWidth);
 
@@ -298,7 +298,7 @@ class LoadingScene extends Phaser.Scene
     if(menuMusic) menuMusic.stop();
   }
 
-  /** Public method called to pre-load any assets for the scene. */
+  /** Public method called to pre-load any assets for the scene or upcoming scenes. */
   preload() 
   {
     this.load.json('planes', `planes.json?v=${Date.now()}`);
