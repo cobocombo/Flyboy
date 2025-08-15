@@ -11,6 +11,10 @@ class SplashScene extends Phaser.Scene
 
   preload()
   {
+    let font = new FontFace('BulgariaDreams', 'url("Bulgaria Dreams Regular.ttf")');
+    font.load().then((loadedFace) => { document.fonts.add(loadedFace);})
+    .catch((err) => { console.warn('Font failed to load', err); });
+    
     this.load.audio('menu-music', 'menu-music.mp3');
     this.load.image('logo', 'scriptit-logo.png')
 
@@ -32,17 +36,18 @@ class SplashScene extends Phaser.Scene
     let logo = this.add.image(this.scale.width / 2, this.scale.height / 2, 'logo');
     logo.setOrigin(0.5);
 
-    let maxLogoWidth = this.scale.width * 0.6;
+    let maxLogoWidth = this.scale.width * 0.4;
     let scaleFactor = Math.min(maxLogoWidth / logo.width, 1);
     logo.setScale(scaleFactor);
 
-    this.tweens.add({ targets: logo, alpha: 0, duration: 2000, delay: 1000,ease: 'Linear' });
+    this.tweens.add({ targets: logo, alpha: 0, duration: 2000, delay: 1000, ease: 'Linear' });
     setTimeout(() => { this.scene.start('MainMenuScene'); }, 3000);
   }
 }
 
 /////////////////////////////////////////////////
 
+/** Class representing the level select scene of Flyboy. */
 class LevelSelectScene extends Phaser.Scene 
 {
   constructor() 
@@ -248,24 +253,21 @@ class MainMenuScene extends Phaser.Scene
 
 /////////////////////////////////////////////////
 
+/** Class representing the loading scene of Flyboy. */
 class LoadingScene extends Phaser.Scene 
 {
+
+  /** Public constructor. */
   constructor() 
   {
     super('LoadingScene');
   }
 
-  preload() 
-  {
-    this.load.json('planes', `planes.json?v=${Date.now()}`);
-    this.load.json('pickups', `pickups.json?v=${Date.now()}`);
-    this.load.json('enemies', `enemies.json?v=${Date.now()}`);
-  }
-
+  /** Public method called to create logic and assets for the scene. */
   create() 
   {
     this.cameras.main.setBackgroundColor('#000000');
-    setTimeout(() => 
+    this.time.delayedCall(1, () => 
     {
       let loadingText = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, 'Loading', 
       {
@@ -276,15 +278,12 @@ class LoadingScene extends Phaser.Scene
 
       let dots = ['', '.', '..', '...'];
       let dotIndex = 0;
-      let interval = this.time.addEvent({
-        delay: 400,
-        loop: true,
-        callback: () => 
-        {
-          loadingText.setText('Loading' + dots[dotIndex]);
-          dotIndex = (dotIndex + 1) % dots.length;
-        }
-      });
+      let interval = this.time.addEvent({ delay: 400, loop: true,
+      callback: () => 
+      {
+        loadingText.setText('Loading' + dots[dotIndex]);
+        dotIndex = (dotIndex + 1) % dots.length;
+      }});
 
       this.time.delayedCall(3500, () => 
       {
@@ -293,11 +292,19 @@ class LoadingScene extends Phaser.Scene
         loadingText.setInteractive({ useHandCursor: true });
         loadingText.on('pointerdown', () => { this.scene.start('GameScene'); });
       });
-    },1);
+    });
 
     let menuMusic = this.sound.get('menu-music');
     if(menuMusic) menuMusic.stop();
   }
+
+  /** Public method called to pre-load any assets for the scene. */
+  preload() 
+  {
+    this.load.json('planes', `planes.json?v=${Date.now()}`);
+    this.load.json('pickups', `pickups.json?v=${Date.now()}`);
+    this.load.json('enemies', `enemies.json?v=${Date.now()}`);
+  } 
 }
 
 /////////////////////////////////////////////////
@@ -1874,10 +1881,6 @@ class SaveDataManager
 }
 
 ///////////////////////////////////////////////////////////
-
-let font = new FontFace('BulgariaDreams', 'url("Bulgaria Dreams Regular.ttf")');
-font.load().then((loadedFace) => { document.fonts.add(loadedFace);})
-.catch((err) => { console.warn('Font failed to load', err); });
 
 globalThis.levels = LevelManager.getInstance();
 globalThis.saveData = SaveDataManager.getInstance();
