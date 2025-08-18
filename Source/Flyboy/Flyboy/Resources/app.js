@@ -137,39 +137,25 @@ class LevelSelectScene extends Phaser.Scene
 
 /////////////////////////////////////////////////
 
+/** Class representing the main menu scene of Flyboy. */
 class MainMenuScene extends Phaser.Scene 
 {
   settingsTapped;
 
+  /** Public constructor. */
   constructor() 
   {
     super('MainMenuScene');
   }
 
-  preload()
-  {
-    this.load.image('main-menu-background', 'blue-sky-clear.png');
-    this.load.image('start-button', 'start-button.png');
-    this.load.image('settings-button', 'settings-button.png');
-  }
-
+  /** Public method called to create logic and assets for the scene. */
   create() 
   {
-    this.settingsTapped = false;
-
-    this.settingsDialog = new ui.Dialog({ id: 'settings-dialog', width: `400px`, height: `200px` });
-    this.settingsDialog.cancelable = false;
-    this.settingsDialog.addEventListener({ event: 'posthide', handler: () => 
-    {
-      this.settingsTapped = false;
-      this.toggleInteractive(true);
-      }});
-
     this.background = this.add.image(0, 0, 'main-menu-background');
     this.background.setOrigin(0, 0);
     this.background.setDisplaySize(device.screenHeight, device.screenWidth);
 
-    setTimeout(() => 
+    this.time.delayedCall(1, () => 
     {
       this.add.text(this.scale.width / 2, this.scale.height / 4, 'Flyboy', 
       {
@@ -178,38 +164,33 @@ class MainMenuScene extends Phaser.Scene
         color: '#000000',
         align: 'center'
       }).setOrigin(0.5);
-    },1);
-
-    this.startButton = this.add.image(0, 0, 'start-button');
-    const targetHeight = device.screenWidth / 8;
-    const scale = targetHeight / this.startButton.height;
-    this.startButton.setScale(scale);
-
-    const x = this.cameras.main.centerX;
-    const y = this.cameras.main.height * 0.55;
-    this.startButton.setPosition(x, y);
-
-    this.startButton.setInteractive();
-    this.startButton.on('pointerdown', () => {
-      this.scene.start('LevelSelectScene');
     });
 
-    const padding = 20;
-    this.settingsButton = this.add.image(
-      this.scale.width - padding,
-      this.scale.height - padding,
-      'settings-button'
-    );
+    this.startButton = this.add.image(0, 0, 'start-button');
+    this.startButton.setScale((device.screenWidth / 8) / this.startButton.height);
+    this.startButton.setPosition(this.cameras.main.centerX, this.cameras.main.height * 0.55);
+    this.startButton.setInteractive();
+    this.startButton.on('pointerdown', () => { this.scene.start('LevelSelectScene'); });
+
+    this.settingsTapped = false;
+    this.settingsDialog = new ui.Dialog({ id: 'settings-dialog', width: `400px`, height: `200px` });
+    this.settingsDialog.cancelable = false;
+    this.settingsDialog.addEventListener({ event: 'posthide', handler: () => 
+    {
+      this.settingsTapped = false;
+      this.toggleInteractive({ enable: true });
+    }});
+
+    this.settingsButton = this.add.image(this.scale.width - 20, this.scale.height - 20, 'settings-button');
     this.settingsButton.setOrigin(1, 1);
-    const settingsScale = (device.screenWidth / 10) / this.settingsButton.height;
-    this.settingsButton.setScale(settingsScale);
+    this.settingsButton.setScale((device.screenWidth / 10) / this.settingsButton.height);
     this.settingsButton.setInteractive();
     this.settingsButton.on('pointerdown', () => 
     {
       if(this.settingsTapped === false) 
       {
         this.settingsTapped = true;
-        this.toggleInteractive(false);
+        this.toggleInteractive({ enable: false });
         this.settingsDialog.present({ root: new SettingsPage({ sound: this.sound }) });
       }
     });
@@ -226,9 +207,18 @@ class MainMenuScene extends Phaser.Scene
     }
   }
 
-  toggleInteractive(enable) 
+  /** Public method called to pre-load any assets for the scene or upcoming scenes. */
+  preload()
   {
-    if(enable) 
+    this.load.image('main-menu-background', 'blue-sky-clear.png');
+    this.load.image('start-button', 'start-button.png');
+    this.load.image('settings-button', 'settings-button.png');
+  }
+
+  /** Public method called to toggle the interactive events of buttons in the scene. This is so no touch events in a dialog bleed into the scene touches. */
+  toggleInteractive({ enable } = {}) 
+  {
+    if(enable === true) 
     {
       this.startButton.setInteractive();
       this.settingsButton.setInteractive();
