@@ -94,7 +94,7 @@ class LevelSelectScene extends Phaser.Scene
       let unlocked = saveData.isLevelUnlocked({ id: level.id });
       if(unlocked === true) 
       {
-        let block = new LevelSelectBlock({ scene: this, x, y, levelNumber: level.id, starCount: saveData.getStarsForLevel({ id: level.id }) || 0 });
+        let block = new LevelSelectBlock({ scene: this, x, y, level: level.id, starCount: saveData.getStarsForLevel({ id: level.id }) || 0 });
         block.setInteractive({ useHandCursor: true }).on('pointerup', () => 
         {
           levels.selectLevel({ id: level.id });
@@ -1539,11 +1539,37 @@ class Enemy
 
 /////////////////////////////////////////////////
 
+/** Class representing a level select block object. */
 class LevelSelectBlock extends Phaser.GameObjects.Container 
 {
-  constructor({ scene, x, y, levelNumber, starCount = 0 } = {}) 
+  errors;
+
+  /**
+   * Creates the level select block object. 
+   * @param {Phaser.Scene} scene - Scene instance.
+   * @param {number} x - X-coordinate postion.
+   * @param {number} y - Y-coordinate postion.
+   * @param {number} level - Level number.
+   * @param {number} starCount - The number of stars earned from the level previously.
+   */
+  constructor({ scene, x, y, level, starCount = 0 } = {}) 
   {
     super(scene, x, y);
+
+    this.errors = 
+    {
+      levelTypeError: 'Level Select Block Error: Expected type number for level.',
+      sceneError: 'Level Select Block Error: A valid phaser scene is required.',
+      starCountTypeError: 'Level Select Block Error: Expected type number for starCount.',
+      xTypeError: 'Level Select Block Error: Expected type number for x.',
+      yTypeError: 'Level Select Block Error: Expected type number for y.'
+    };
+
+    if(!scene) console.error(this.errors.sceneError);
+    if(!typeChecker.check({ type: 'number', value: x })) console.error(this.errors.xTypeError);
+    if(!typeChecker.check({ type: 'number', value: y })) console.error(this.errors.yTypeError);
+    if(!typeChecker.check({ type: 'number', value: level })) console.error(this.errors.levelTypeError);
+    if(!typeChecker.check({ type: 'number', value: starCount })) console.error(this.errors.starCountTypeError);
 
     let blockSize = device.screenWidth / 8;
     let block = scene.add.sprite(0, 0, 'block');
@@ -1553,7 +1579,7 @@ class LevelSelectBlock extends Phaser.GameObjects.Container
     this.setSize(blockSize, blockSize);
 
     let textYOffset = -blockSize * 0.2;
-    let levelText = scene.add.text(0, textYOffset, ` ${levelNumber} `, 
+    let levelText = scene.add.text(0, textYOffset, ` ${level} `, 
     {
       fontFamily: 'BulgariaDreams',
       fontSize: `${blockSize / 3.5}px`,
