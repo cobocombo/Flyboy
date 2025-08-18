@@ -11,18 +11,6 @@ class SplashScene extends Phaser.Scene
     super('SplashScene');
   }
 
-  /** Public method called to pre-load any assets for the scene or upcoming scenes. */
-  preload()
-  {
-    let font = new FontFace('BulgariaDreams', 'url("Bulgaria Dreams Regular.ttf")');
-    font.load().then((loadedFace) => { document.fonts.add(loadedFace);})
-    .catch((err) => { console.warn('Font failed to load', err); });
-
-    this.load.audio('menu-music', 'menu-music.mp3');
-    this.load.image('logo', 'scriptit-logo.png');
-    this.load.json('levels', `levels.json?v=${Date.now()}`);
-  }
-
   /** Public method called to create logic and assets for the scene. */
   create() 
   {
@@ -45,6 +33,18 @@ class SplashScene extends Phaser.Scene
     this.tweens.add({ targets: logo, alpha: 0, duration: 2000, delay: 1000, ease: 'Linear' });
     setTimeout(() => { this.scene.start('MainMenuScene'); }, 3000);
   }
+
+  /** Public method called to pre-load any assets for the scene or upcoming scenes. */
+  preload()
+  {
+    let font = new FontFace('BulgariaDreams', 'url("Bulgaria Dreams Regular.ttf")');
+    font.load().then((loadedFace) => { document.fonts.add(loadedFace);})
+    .catch((err) => { console.warn('Font failed to load', err); });
+
+    this.load.audio('menu-music', 'menu-music.mp3');
+    this.load.image('logo', 'scriptit-logo.png');
+    this.load.json('levels', `levels.json?v=${Date.now()}`);
+  }
 }
 
 /////////////////////////////////////////////////
@@ -52,20 +52,13 @@ class SplashScene extends Phaser.Scene
 /** Class representing the level select scene of Flyboy. */
 class LevelSelectScene extends Phaser.Scene 
 {
+  /** Public constructor. */
   constructor() 
   {
     super('LevelSelectScene');
   }
 
-  preload()
-  {
-    this.load.image('block', 'block.png');
-    this.load.image('star-gold', 'star-gold.png');
-    this.load.image('star-silver', 'star-silver.png');
-    this.load.image('lock', 'lock.png');
-    this.load.image('back-button', 'back-button.png');
-  }
-
+  /** Public method called to create logic and assets for the scene. */
   create() 
   {
     this.background = this.add.image(0, 0, 'main-menu-background');
@@ -80,29 +73,28 @@ class LevelSelectScene extends Phaser.Scene
       align: 'center'
     }).setOrigin(0.5);
 
-    const data = this.cache.json.get('levels');
-    const levelData = data.levels;
+    let data = this.cache.json.get('levels');
+    let levelData = data.levels;
     levels.load({ levels: levelData });
 
-    const blockSize = device.screenWidth / 8;
-    const spacing = blockSize * 0.5;
-    const columns = Math.floor((device.screenWidth - spacing) / (blockSize + spacing));
-    const startX = spacing;
-    const startY = this.scale.height / 4;
+    let blockSize = device.screenWidth / 8;
+    let spacing = blockSize * 0.5;
+    let columns = Math.floor((device.screenWidth - spacing) / (blockSize + spacing));
+    let startX = spacing;
+    let startY = this.scale.height / 4;
 
     levelData.forEach((level, index) => 
     {
-      const col = index % columns;
-      const row = Math.floor(index / columns);
+      let col = index % columns;
+      let row = Math.floor(index / columns);
 
-      const x = startX + col * (blockSize + spacing) + blockSize / 2;
-      const y = startY + row * (blockSize + spacing);
+      let x = startX + col * (blockSize + spacing) + blockSize / 2;
+      let y = startY + row * (blockSize + spacing);
 
       let unlocked = saveData.isLevelUnlocked({ id: level.id });
       if(unlocked === true) 
       {
-        let block = new LevelSelectBlock({ scene: this, x, y, levelNumber: level.id, starCount: saveData.getStarsForLevel({ id: level.id }) || 0});
-
+        let block = new LevelSelectBlock({ scene: this, x, y, levelNumber: level.id, starCount: saveData.getStarsForLevel({ id: level.id }) || 0 });
         block.setInteractive({ useHandCursor: true }).on('pointerup', () => 
         {
           levels.selectLevel({ id: level.id });
@@ -115,9 +107,9 @@ class LevelSelectScene extends Phaser.Scene
         lock.setDisplaySize(blockSize, blockSize);
         lock.setOrigin(0.5);
         lock.setInteractive({ useHandCursor: true });
-        lock.on('pointerup', () => {
-          // maybe play a "locked" sound or show message
-          //this.sound.play('locked-sound'); // assuming you have it loaded
+        lock.on('pointerup', () => 
+        {
+
         });
       }
     });
@@ -125,23 +117,21 @@ class LevelSelectScene extends Phaser.Scene
     let menuMusic = this.sound.get('menu-music');
     if(menuMusic && !menuMusic.isPlaying) menuMusic.play();
 
-    const padding = 20;
-    const btnSize = device.screenWidth / 12;
+    let backButton = this.add.image(20 + (device.screenWidth) / 2, this.scale.height - padding - (device.screenWidth / 12) / 2, 'back-button');
+    backButton.setDisplaySize(btnSize, btnSize);
+    backButton.setOrigin(0.5);
+    backButton.setInteractive({ useHandCursor: true });
+    backButton.on('pointerup', () => { this.scene.start('MainMenuScene'); });
+  }
 
-    const backBtn = this.add.image(
-      padding + btnSize / 2,
-      this.scale.height - padding - btnSize / 2, // bottom instead of top
-      'back-button'
-    );
-
-    backBtn.setDisplaySize(btnSize, btnSize);
-    backBtn.setOrigin(0.5);
-    backBtn.setInteractive({ useHandCursor: true });
-
-    backBtn.on('pointerup', () => {
-      this.scene.start('MainMenuScene'); // Go back to Main Menu
-    });
-
+  /** Public method called to pre-load any assets for the scene or upcoming scenes. */
+  preload()
+  {
+    this.load.image('block', 'block.png');
+    this.load.image('star-gold', 'star-gold.png');
+    this.load.image('star-silver', 'star-silver.png');
+    this.load.image('lock', 'lock.png');
+    this.load.image('back-button', 'back-button.png');
   }
 }
 
