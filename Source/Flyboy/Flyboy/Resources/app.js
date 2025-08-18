@@ -5,7 +5,7 @@
 /** Class representing the splash scene of Flyboy. */
 class SplashScene extends Phaser.Scene 
 {
-  /** Public constructor. */
+  /** Creates the splash scene object. */
   constructor() 
   {
     super('SplashScene');
@@ -52,7 +52,7 @@ class SplashScene extends Phaser.Scene
 /** Class representing the level select scene of Flyboy. */
 class LevelSelectScene extends Phaser.Scene 
 {
-  /** Public constructor. */
+  /** Creates the level select scene object. */
   constructor() 
   {
     super('LevelSelectScene');
@@ -142,7 +142,7 @@ class MainMenuScene extends Phaser.Scene
 {
   settingsTapped;
 
-  /** Public constructor. */
+  /** Creates the main menu scene object. */
   constructor() 
   {
     super('MainMenuScene');
@@ -215,7 +215,10 @@ class MainMenuScene extends Phaser.Scene
     this.load.image('settings-button', 'settings-button.png');
   }
 
-  /** Public method called to toggle the interactive events of buttons in the scene. This is so no touch events in a dialog bleed into the scene touches. */
+  /**
+   * Public method called to toggle the interactive events of buttons in the scene. This is so no touch events in a dialog bleed into the scene touches. 
+   * * @param {boolean} enable - Value determining if the buttons in main menu scene should be interactive or not.
+   */
   toggleInteractive({ enable } = {}) 
   {
     if(enable === true) 
@@ -237,7 +240,7 @@ class MainMenuScene extends Phaser.Scene
 class LoadingScene extends Phaser.Scene 
 {
 
-  /** Public constructor. */
+  /** Creates the loading scene object. */
   constructor() 
   {
     super('LoadingScene');
@@ -956,16 +959,23 @@ class GameScene extends Phaser.Scene
 // DIALOGS
 ///////////////////////////////////////////////////////////
 
+/** Class representing the dialog shown when the game scene is paused. */
 class PauseAlertDialog extends ui.AlertDialog
 {
+  /**
+   * Creates the pause alert dialog object. 
+   * @param {Phaser.Scene} scene - Scene instance.
+   */
   constructor({ scene } = {})
   {
     super();
+
     this.cancelable = false;
     this.rowfooter = false;
 
     this.title = 'Game Paused';
     this.addComponents({ components: [ new ui.Text({ text: 'Select an option to continue' }) ] });
+
     let resumeButton = new ui.AlertDialogButton({ text: 'Resume', onTap: () => 
     { 
       let planeIdleSoundEffect = scene.sound.get('idle');
@@ -976,11 +986,13 @@ class PauseAlertDialog extends ui.AlertDialog
 
       scene.scene.resume(); 
     }});
+
     let quitButton = new ui.AlertDialogButton({ text: 'Quit', textColor: 'red', onTap: () => 
     { 
       scene.scene.stop('GameScene');
       scene.scene.start('MainMenuScene'); 
     }});
+    
     this.buttons = [ resumeButton, quitButton ];
   }
 }
