@@ -117,8 +117,8 @@ class LevelSelectScene extends Phaser.Scene
     let menuMusic = this.sound.get('menu-music');
     if(menuMusic && !menuMusic.isPlaying) menuMusic.play();
 
-    let backButton = this.add.image(20 + (device.screenWidth) / 2, this.scale.height - padding - (device.screenWidth / 12) / 2, 'back-button');
-    backButton.setDisplaySize(btnSize, btnSize);
+    let backButton = this.add.image(20 + (device.screenWidth / 12) / 2, this.scale.height - 20 - (device.screenWidth / 12) / 2, 'back-button');
+    backButton.setDisplaySize((device.screenWidth / 12), (device.screenWidth / 12));
     backButton.setOrigin(0.5);
     backButton.setInteractive({ useHandCursor: true });
     backButton.on('pointerup', () => { this.scene.start('MainMenuScene'); });
@@ -1002,7 +1002,6 @@ class PauseAlertDialog extends ui.AlertDialog
 /** Class representing the dialog shown when the user failed the level. */
 class LevelFailedDialog extends ui.AlertDialog
 {
-
   /**
    * Creates the level failed dialog object. 
    * @param {Phaser.Scene} scene - Scene instance.
@@ -1010,6 +1009,9 @@ class LevelFailedDialog extends ui.AlertDialog
   constructor({ scene } = {})
   {
     super();
+
+    if(!scene) console.error('Level Failed Dialog Error: A valid phaser scene is required.');
+
     this.cancelable = false;
     this.rowfooter = false;
 
@@ -1028,18 +1030,39 @@ class LevelFailedDialog extends ui.AlertDialog
       scene.stop('GameScene');
       scene.start('LoadingScene'); 
     }});
-    
+
     this.buttons = [ mainMenuButton, replayButton ];
   }
 }
 
 /////////////////////////////////////////////////
 
+/** Class representing the dialog shown when the user completed the level. */
 class LevelCompleteDialog extends ui.AlertDialog
 {
+  errors;
+
+  /**
+   * Creates the level completed dialog object. 
+   * @param {Phaser.Scene} scene - Scene instance.
+   * @param {number} score - Score from the completed level.
+   * @param {number} startCount - The number of stars earned from the level, and that should be shown in the dialog.
+   */
   constructor({ scene, score, starCount = 0 } = {})
   {
     super();
+
+    this.errors = 
+    {
+      sceneError: 'Level Complete Dialog Error: A valid phaser scene is required.',
+      scoreTypeError: 'Level Complete Dialog Error: Expected type number for score.',
+      starCountTypeError: 'Level Complete Dialog Error: Expected type number for starCount.'
+    };
+
+    if(!scene) console.error(this.errors.sceneError);
+    if(!typeChecker.check({ type: 'number', value: score })) console.error(this.errors.scoreTypeError);
+    if(!typeChecker.check({ type: 'number', value: starCount })) console.error(this.errors.starCountTypeError);
+
     this.cancelable = false;
     this.rowfooter = false;
 
@@ -1059,18 +1082,21 @@ class LevelCompleteDialog extends ui.AlertDialog
       scene.start('LevelSelectScene');
       confetti.remove(); 
     }});
+
     let mainMenuButton = new ui.AlertDialogButton({ text: 'Main Menu', onTap: () => 
     { 
       scene.stop('GameScene');
       scene.start('MainMenuScene');
       confetti.remove();   
     }});
+
     let replayButton = new ui.AlertDialogButton({ text: 'Replay', onTap: () => 
     { 
       scene.stop('GameScene');
       scene.start('LoadingScene');
       confetti.remove(); 
     }});
+
     this.buttons = [ newLevelButton, mainMenuButton, replayButton ];
   }
 }
@@ -1886,6 +1912,7 @@ class SaveDataManager
 globalThis.levels = LevelManager.getInstance();
 globalThis.saveData = SaveDataManager.getInstance();
 
+typeChecker.register({ name: 'scene', constructor: Phaser.Scene });
 typeChecker.register({ name: 'plane', constructor: Plane });
 typeChecker.register({ name: 'joystick', constructor: Joystick });
 
