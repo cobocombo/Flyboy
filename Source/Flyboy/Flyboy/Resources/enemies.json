@@ -4,9 +4,8 @@
     {
       "name": "bird",
       "sprite": "bird-fly-1.png",
-      "heightScale": 12,
+      "height": 12,
       "flipX": true,
-      "speed": 6,
       "animations": 
       [
         { 
@@ -20,13 +19,14 @@
           "repeat": -1
         }
       ],
+      "startingAnimation": "bird-fly",
+      "speed": 6,
+      "maxNumberOfHits": 2,
+      "score": 50,
       "soundEffects":
       [
         { "key": "hit", "sound": "hit.mp3", "volume": 1.0 }
-      ],
-      "startingAnimation": "bird-fly",
-      "maxNumberOfHits": 2,
-      "score": 50
+      ]
     }
   ]
 }
