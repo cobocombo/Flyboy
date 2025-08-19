@@ -1316,6 +1316,7 @@ class Joystick
 
 /////////////////////////////////////////////////
 
+/** Class representing the shoot button in the HUD of the game scene. */
 class ShootButton 
 {
   errors;
@@ -1324,6 +1325,11 @@ class ShootButton
   scene;
   sprite;
   
+  /**
+   * Creates the shoot button object. 
+   * @param {Phaser.Scene} scene - Scene instance.
+   * @param {Plane} plane - Plane instance.
+   */
   constructor({ scene, plane } = {}) 
   {
     this.errors = 
@@ -1339,19 +1345,14 @@ class ShootButton
     this.scene = scene;
     this.plane = plane;
     this.isHeld = false;
-
-    this.sprite = scene.add.image(0, 0, 'shoot-button');
-    this.sprite.setScale((device.screenWidth / 5) / (this.sprite.height));
-    this.sprite.setOrigin(0.5);
-
     this.shootCooldown = this.plane.shootingRate;
     this.elapsed = 0;
-
-    let x = device.screenHeight - 20 - (this.sprite.displayWidth / 2);
-    let y = device.screenWidth - 20 - (this.sprite.displayHeight / 2);
-    this.sprite.setPosition(x, y);
+  
+    this.sprite = scene.add.image(0, 0, 'shoot-button');
+    this.sprite.setScale((device.screenWidth / 5) / (this.sprite.height));
+    this.sprite.setPosition(device.screenHeight - 20 - (this.sprite.displayWidth / 2), device.screenWidth - 20 - (this.sprite.displayHeight / 2));
     this.sprite.setInteractive();
-
+    this.sprite.setOrigin(0.5);
     this.sprite.on('pointerdown', () => 
     {
       if(!this.isHeld) 
@@ -1359,8 +1360,8 @@ class ShootButton
         this.isHeld = true;
         this.plane?.setAnimation({ name: this.plane.shootingAnimation });
 
-        const x = this.plane.sprite.x + this.plane.sprite.displayWidth / 2;
-        const y = this.plane.sprite.y + this.plane.sprite.displayHeight / 4;
+        let x = this.plane.sprite.x + this.plane.sprite.displayWidth / 2;
+        let y = this.plane.sprite.y + this.plane.sprite.displayHeight / 4;
         let bullet = new Bullet({ scene: this.scene, x, y });
         this.scene.physics.add.existing(bullet.sprite);
         this.scene.sound.play(this.plane.shootingSoundEffect.key, { volume: this.plane.shootingSoundEffect.volume })
@@ -1368,20 +1369,26 @@ class ShootButton
       }
     });
 
-    let stopShooting = () => 
-    {
-      if(this.isHeld) 
-      {
-        this.isHeld = false;
-        this.plane?.setAnimation({ name: this.plane.idleAnimation });
-      }
-    };
-
-    this.sprite.on('pointerup', stopShooting);
-    this.sprite.on('pointerout', stopShooting);
-    this.sprite.on('pointerupoutside', stopShooting);
+    this.stopShooting = this.stopShooting.bind(this);
+    this.sprite.on('pointerup', this.stopShooting);
+    this.sprite.on('pointerout', this.stopShooting);
+    this.sprite.on('pointerupoutside', this.stopShooting);
   }
 
+  /** Public method to be called when the user is done holding or tapping the shoot button. */
+  stopShooting()
+  {
+    if(this.isHeld) 
+    {
+      this.isHeld = false;
+      this.plane?.setAnimation({ name: this.plane.idleAnimation });
+    }
+  }
+
+  /**
+   * Public method to update the shoot button in the game scene update loop. 
+   * @param {number} delta - Time passed since last frame.
+   */
   update({ delta } = {}) 
   {
     if(!typeChecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
@@ -1564,14 +1571,10 @@ class Enemy
     this.hitSoundEffect = this.soundEffects.find(obj => obj.key === "hit");
   }
 
-  /**
-   * Public method to update the enemy in the main game scene update loop. 
-   * @param {number} delta - Time passed since last frame.
-   */
-  update({ delta } = {}) 
+  /** Public method to destroy the enemies sprite. */
+  destroy() 
   {
-    if(!typeChecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
-    this.sprite.x -= (this.speed * delta) / 1000;
+    this.sprite.destroy();
   }
 
   /** 
@@ -1583,10 +1586,14 @@ class Enemy
     return this.sprite.x < -this.sprite.displayWidth;
   }
 
-  /** Public method to destroy the enemies sprite. */
-  destroy() 
+  /**
+   * Public method to update the enemy in the main game scene update loop. 
+   * @param {number} delta - Time passed since last frame.
+   */
+  update({ delta } = {}) 
   {
-    this.sprite.destroy();
+    if(!typeChecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
+    this.sprite.x -= (this.speed * delta) / 1000;
   }
 } 
 
