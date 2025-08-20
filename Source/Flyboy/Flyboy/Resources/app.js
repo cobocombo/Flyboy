@@ -1766,6 +1766,7 @@ class LevelSelectBlock extends Phaser.GameObjects.Container
 // PAGES
 ///////////////////////////////////////////////////////////
 
+/** Class representing the settings page shown in the settings dialog. */
 class SettingsPage extends ui.Page
 {
   sound;
@@ -1783,13 +1784,15 @@ class SettingsPage extends ui.Page
     this.navigationBarTitle = 'Settings';
     this.saveButton = new ui.BarButton({ text: 'Save', onTap: () => 
     { 
-      this.saveSettings();
+      this.save();
       dialog.dismiss(); 
     }});
+    
     this.navigationBarButtonsRight = [ this.saveButton ];
     this.setupBody();
   }
 
+  /** Public method called to set the body of the settings page. */
   setupBody()
   {
     let settings = saveData.getSettings();
@@ -1801,7 +1804,8 @@ class SettingsPage extends ui.Page
     this.addComponents({ components: [ settingsList ]});
   }
 
-  saveSettings()
+  /** Public method called to save the current settings from settings page. */
+  save()
   {
     saveData.addSettings({ soundOn: this.soundSwitch.checked });
 
