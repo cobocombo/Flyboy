@@ -1122,6 +1122,7 @@ class HUD
 
 /////////////////////////////////////////////////
 
+/** Class representing the plane object for the game scene. */
 class Plane 
 {
   baseY;
@@ -1133,63 +1134,96 @@ class Plane
   idleAnimation;
   idleSoundEffect;
   maxNumberOfHits;
+  name;
   numberOfHits;
   projectile;
   scene;
   shootingAnimation;
   shootingRate;
   shootingSoundEffect;
+  startingAnimation;
   soundEffects;
   sprite;
   
+  /**
+   * Creates and spawns the plane object. 
+   * @param {Phaser.Scene} scene - Scene instance.
+   * @param {object} data - Data object loaded from planes.json.
+   * @param {string} type - Unique plane type to be filtered from the data.
+   */
   constructor({ scene, data, type } = {}) 
   {
     this.errors = 
     {
+      animationsTypeError: 'Plane Error: Expected type array for animations.',
       deltaTypeError: 'Plane Error: Expected type number for delta',
+      deathAnimationTypeError: 'Plane Error: Expected type string for deathAnimation.',
+      dataTypeError: 'Plane Error: Expected type object for data.',
+      flipXTypeError: 'Plane Error: Expected type boolean for flipX.',
+      heightTypeError: 'Plane Error: Expected type number for height.',
+      idleAnimationTypeError: 'Plane Error: Expected type string for idleAnimation.',
       joystickTypeError: 'Plane Error: Expected type Joystick for joystick.',
-      nameTypeError: 'Expected type string for name.',
+      maxNumberOfHitsTypeError: 'Plane Error: Expected type number for maxNumberOfHits.',
+      nameTypeError: 'Plane Error: Expected type string for name.',
+      projectileTypeError: 'Plane Error: Expected type string for projectile.',
       sceneError: 'Plane Error: A valid phaser scene is required.',
+      shootingAnimationTypeError: 'Plane Error: Expected type string for shootingAnimation.',
+      shootingRateTypeError: 'Plane Error: Expected type number for shootingRate.',
+      soundEffectsTypeError: 'Plane Error: Expected type array for soundEffects.',
+      spriteTypeError: 'Plane Error: Expected type string for sprite.',
+      startingAnimationTypeError: 'Enemy Error: Expected type string for startingAnimation.',
+      typeTypeError: 'Plane Error: Expected type string for type.',
       xTypeError: 'Plane Error: Expected type number for x when setting position of plane.',
       yTypeError: 'Plane Error: Expected type number for y when setting position of plane.'
     };
 
     if(!scene) console.error(this.errors.sceneError);
+    if(!typeChecker.check({ type: 'object', value: data })) console.error(this.errors.dataTypeError);
+    if(!typeChecker.check({ type: 'string', value: type })) console.error(this.errors.typeTypeError);
 
-    let planeDef = data.planes.find(p => p.name === type);
-    if(!planeDef) console.error(`Plane Error: No pickup definition found for type "${type}".`);
-  
     this.scene = scene;
-    this.sprite = scene.add.sprite(0, 0, planeDef.name);
-    this.sprite.setScale((device.screenWidth / planeDef.heightScale) / (this.sprite.height));
-    this.sprite.play(planeDef.startingAnimation);
+    let planeData = data.planes.find(p => p.name === type);
+    if(!planeData) console.error(`Plane Error: No pickup definition found for type "${type}".`);
+  
+    if(!typeChecker.check({ type: 'string', value: planeData.name })) console.error(this.errors.nameTypeError);
+    if(!typeChecker.check({ type: 'string', value: planeData.sprite })) console.error(this.errors.spriteTypeError);
+    if(!typeChecker.check({ type: 'number', value: planeData.height })) console.error(this.errors.heightTypeError);
+    if(!typeChecker.check({ type: 'boolean', value: planeData.flipX })) console.error(this.errors.flipXTypeError);
+    if(!typeChecker.check({ type: 'array', value: planeData.animations })) console.error(this.errors.animationsTypeError);
+    if(!typeChecker.check({ type: 'string', value: planeData.startingAnimation })) console.error(this.errors.startingAnimationTypeError);
+    if(!typeChecker.check({ type: 'string', value: planeData.idleAnimation })) console.error(this.errors.idleAnimationTypeError);
+    if(!typeChecker.check({ type: 'string', value: planeData.shootingAnimation })) console.error(this.errors.shootingAnimationTypeError);
+    if(!typeChecker.check({ type: 'string', value: planeData.deathAnimation })) console.error(this.errors.deathAnimationTypeError);
+    if(!typeChecker.check({ type: 'number', value: planeData.maxNumberOfHits })) console.error(this.errors.maxNumberOfHitsTypeError);
+    if(!typeChecker.check({ type: 'number', value: planeData.shootingRate })) console.error(this.errors.shootingRateTypeError);
+    if(!typeChecker.check({ type: 'string', value: planeData.projectile })) console.error(this.errors.projectileTypeError);
+    if(!typeChecker.check({ type: 'array', value: planeData.soundEffects })) console.error(this.errors.soundEffectsTypeError);
+
+    this.name = planeData.name;
+    this.sprite = scene.add.sprite(0, 0, planeData.name);
+    this.sprite.setScale((device.screenWidth / planeData.height) / (this.sprite.height));
+    this.sprite.setFlipX(planeData.flipX);
+    this.sprite.play(planeData.startingAnimation);
     this.scene.physics.add.existing(this.sprite);
-
-    this.projectile = planeDef.projectile;
-    
-    this.currentAnimation = planeDef.startingAnimation;
-    this.idleAnimation = planeDef.idleAnimation;
-    this.shootingAnimation = planeDef.shootingAnimation;
-    this.deathAnimation = planeDef.deathAnimation;
+    this.startingAnimation = planeData.startingAnimation;
+    this.idleAnimation = planeData.idleAnimation;
+    this.shootingAnimation = planeData.shootingAnimation;
+    this.deathAnimation = planeData.deathAnimation;
+    this.currentAnimation = this.startingAnimation;
+    this.maxNumberOfHits = planeData.maxNumberOfHits;
     this.numberOfHits = 0;
-    this.maxNumberOfHits = planeDef.maxNumberOfHits;
-
-    this.soundEffects = planeDef.soundEffects;
+    this.shootingRate = planeData.shootingRate;
+    this.projectile = planeData.projectile;
+    this.soundEffects = planeData.soundEffects;
     this.idleSoundEffect = this.soundEffects.find(obj => obj.key === "idle");
     this.shootingSoundEffect = this.soundEffects.find(obj => obj.key === "shoot");
     this.deathSoundEffect = this.soundEffects.find(obj => obj.key === "death");
-
-    this.shootingRate = planeDef.shootingRate;
   }
 
-  setPosition({ x, y } = {}) 
-  {
-    if(!typeChecker.check({ type: 'number', value: x })) console.error(this.errors.xTypeError);
-    if(!typeChecker.check({ type: 'number', value: y })) console.error(this.errors.yTypeError);
-    this.sprite.setPosition(x, y);
-    this.baseY = y;
-  }
-
+  /** 
+   * Public method to set the animation of the plane.
+   * @param {string} name - Name of the animation to change to. 
+   */
   setAnimation({ name } = {}) 
   {
     if(!typeChecker.check({ type: 'string', value: name })) console.error(this.errors.nameTypeError);
@@ -1200,6 +1234,20 @@ class Plane
     }
   }
 
+  /** 
+   * Public method to set the position of the plane.
+   * @param {number} x - X-coordinate positon. 
+   * @param {number} y - Y-coordinate positon. 
+   */
+  setPosition({ x, y } = {}) 
+  {
+    if(!typeChecker.check({ type: 'number', value: x })) console.error(this.errors.xTypeError);
+    if(!typeChecker.check({ type: 'number', value: y })) console.error(this.errors.yTypeError);
+    this.sprite.setPosition(x, y);
+    this.baseY = y;
+  }
+
+  /** Public method to start the bobbing naimation of the plane. */
   startBobbing() 
   {
     if(this.bobTween) return;
@@ -1214,6 +1262,7 @@ class Plane
     });
   }
 
+  /** Public method to stop the bobbing naimation of the plane. */
   stopBobbing() 
   {
     if(this.bobTween) 
@@ -1224,6 +1273,11 @@ class Plane
     }
   }
 
+  /** 
+   * Public method to update the plane in the main game scene update loop.
+   * @param {jostick} jostick - Joystick instance.
+   * @param {number} delta - Time passed since last frame. 
+   */
   update({ joystick, delta } = {})
   {
     if(!typeChecker.check({ type: 'joystick', value: joystick })) console.error(this.errors.joystickTypeError);
@@ -1787,7 +1841,7 @@ class SettingsPage extends ui.Page
       this.save();
       dialog.dismiss(); 
     }});
-    
+
     this.navigationBarButtonsRight = [ this.saveButton ];
     this.setupBody();
   }

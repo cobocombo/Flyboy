@@ -4,7 +4,7 @@
     {
       "name": "green-plane",
       "sprite": "green-plane-fly-1.png",
-      "heightScale": 6,
+      "height": 6,
       "flipX": false,
       "animations": 
       [
@@ -41,19 +41,19 @@
           "repeat": -1
         }
       ],
-      "soundEffects":
-      [
-        { "key": "idle", "sound": "plane-idle.mp3", "volume": 0.5, "loop": true },
-        { "key": "shoot", "sound": "shoot.mp3", "volume": 0.5, "loop": false },
-        { "key": "death", "sound": "explosion.mp3", "volume": 0.7, "loop": false }
-      ],
       "startingAnimation": "green-plane-fly",
       "idleAnimation": "green-plane-fly",
       "shootingAnimation": "green-plane-shoot",
       "deathAnimation": "green-plane-dead",
       "maxNumberOfHits": 3,
       "shootingRate": 300,
-      "projectile": "bullet"
+      "projectile": "bullet",
+      "soundEffects":
+      [
+        { "key": "idle", "sound": "plane-idle.mp3", "volume": 0.5, "loop": true },
+        { "key": "shoot", "sound": "shoot.mp3", "volume": 0.5, "loop": false },
+        { "key": "death", "sound": "explosion.mp3", "volume": 0.7, "loop": false }
+      ]
     }
   ]
 }
