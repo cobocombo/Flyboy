@@ -52,7 +52,8 @@
       "shootingAnimation": "green-plane-shoot",
       "deathAnimation": "green-plane-dead",
       "maxNumberOfHits": 3,
-      "shootingRate": 300
+      "shootingRate": 300,
+      "projectile": "bullet"
     }
   ]
 }

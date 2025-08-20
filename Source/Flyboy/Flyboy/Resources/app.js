@@ -287,6 +287,7 @@ class LoadingScene extends Phaser.Scene
     this.load.json('planes', `planes.json?v=${Date.now()}`);
     this.load.json('pickups', `pickups.json?v=${Date.now()}`);
     this.load.json('enemies', `enemies.json?v=${Date.now()}`);
+    this.load.json('projectiles', `projectiles.json?v=${Date.now()}`);
   } 
 }
 
@@ -296,19 +297,20 @@ class GameScene extends Phaser.Scene
 {
   background1;
   background2;
-  bullets;
-  bulletTimer;
   elapsedTime;
   enemies;
   enemyData;
   enemySpawnQueue;
   hud;
   levelComplete;
+  matchingProjectiles;
   pickups;
   pickupData;
   pickupSpawnQueue;
   plane;
   planeType;
+  projectiles;
+  selectedPlane;
   score;
 
   constructor() 
@@ -328,11 +330,6 @@ class GameScene extends Phaser.Scene
     this.load.image('joystick-base', 'joystick-base.png');
     this.load.image('joystick', 'joystick.png');
     this.load.image('shoot-button', 'shoot-button.png');
-    this.load.image('bullet-1', 'bullet-1.png');
-    this.load.image('bullet-2', 'bullet-2.png');
-    this.load.image('bullet-3', 'bullet-3.png');
-    this.load.image('bullet-4', 'bullet-4.png');
-    this.load.image('bullet-5', 'bullet-5.png');
     this.load.image('pause-button', 'pause-button.png');
 
     this.load.image('explosion-1', 'explosion-1.png');
@@ -348,6 +345,7 @@ class GameScene extends Phaser.Scene
     this.loadEnemyImages();
     this.loadPlaneImages();
     this.loadPickupImages();
+    this.loadProjectileImages();
 
     this.loadEnemySounds();
     this.loadPlaneSounds();
@@ -372,22 +370,6 @@ class GameScene extends Phaser.Scene
     this.background2.setPosition(device.screenHeight-2, 0);
 
     this.sound.play('background-music', { volume: 0.1, loop: true });
-
-    if(!this.anims.exists('bullet-anim')) 
-    {
-      this.anims.create({
-        key: 'bullet-anim',
-        frames: [
-          { key: 'bullet-1' },
-          { key: 'bullet-2' },
-          { key: 'bullet-3' },
-          { key: 'bullet-4' },
-          { key: 'bullet-5' }
-        ],
-        frameRate: 20,
-        repeat: -1
-      });
-    };
 
     if(!this.anims.exists('explosion-anim')) 
     {
@@ -416,6 +398,7 @@ class GameScene extends Phaser.Scene
 
     this.enemies = this.physics.add.group();
     this.pickups = this.physics.add.group();
+    this.projectiles = this.physics.add.group();
   
     this.enemySpawnQueue = [...levels.currentLevel.enemies].sort((a, b) => a.spawnTime - b.spawnTime);
     this.pickupSpawnQueue = [...levels.currentLevel.pickups].sort((a, b) => a.spawnTime - b.spawnTime);
@@ -424,33 +407,22 @@ class GameScene extends Phaser.Scene
     this.plane.setPosition({ x: 20 + (this.plane.sprite.displayWidth / 2), y: (device.screenWidth / 2) - (device.screenWidth / 12) });
     this.sound.play(this.plane.idleSoundEffect.key, { volume: this.plane.idleSoundEffect.volume, loop: this.plane.idleSoundEffect.loop });
 
-    this.bullets = this.physics.add.group();
-    this.bulletTimer = 0;
     this.levelfailedAlert = new LevelFailedDialog({ scene: this.scene });
 
-    this.hud = new HUD({ 
-      scene: this, 
-      joystick: new Joystick({ scene: this }), 
-      shootButton: new ShootButton({ scene: this, plane: this.plane }),
-      plane: this.plane 
-    });
+    this.hud = new HUD({ scene: this, joystick: new Joystick({ scene: this }), shootButton: new ShootButton({ scene: this, plane: this.plane, projectileTypes: this.matchingProjectiles }), plane: this.plane });
 
-    this.physics.add.overlap(this.bullets, this.enemies, (bulletSprite, enemySprite) => 
+    this.physics.add.overlap(this.projectiles, this.enemies, (projectileSprite, enemySprite) => 
     {
       let enemyData = enemySprite.__enemy;
-
       enemyData.numberOfHits += 1;
-
-      bulletSprite.destroy();
-      this.bullets.remove(bulletSprite, true, true);
-
+      projectileSprite.destroy();
+      this.projectiles.remove(projectileSprite, true, true);
       this.sound.play(enemyData.hitSoundEffect.key, { volume: enemyData.hitSoundEffect.volume });
 
       if(enemyData.numberOfHits === enemyData.maxNumberOfHits)
       {
         enemySprite.destroy();
         this.enemies.remove(enemySprite, true, true);
-
         let { x, y, displayHeight } = enemySprite;
         let explosion = this.add.sprite(x, y, 'explosion-1');
         explosion.setScale(displayHeight / (explosion.height / 2));
@@ -565,18 +537,15 @@ class GameScene extends Phaser.Scene
   {
     this.planeType = 'green-plane';
     this.planeData = this.cache.json.get('planes');
-    let selectedPlane = this.planeData.planes.find(plane => plane.name === this.planeType);
-    if(selectedPlane && selectedPlane.name && selectedPlane.sprite && selectedPlane.animations) 
+    this.selectedPlane = this.planeData.planes.find(plane => plane.name === this.planeType);
+    this.load.image(this.selectedPlane.name, this.selectedPlane.sprite);
+    this.selectedPlane.animations.forEach(animation => 
     {
-      this.load.image(selectedPlane.name, selectedPlane.sprite);
-      selectedPlane.animations.forEach(animation => 
+      animation.frames.forEach(frame => 
       {
-        animation.frames.forEach(frame => 
-        {
-          this.load.image(frame.key, frame.sprite);
-        });
+        this.load.image(frame.key, frame.sprite);
       });
-    }
+    });
   }
 
   loadPlaneSounds()
@@ -629,6 +598,16 @@ class GameScene extends Phaser.Scene
     .forEach(pickup => { this.load.audio(pickup.soundEffect.key, pickup.soundEffect.sound); });
   }
 
+  loadProjectileImages() 
+  {
+    this.projectileData = this.cache.json.get('projectiles');
+    this.matchingProjectiles = this.projectileData.projectiles.filter(proj => proj.name === this.selectedPlane.projectile);
+    this.matchingProjectiles.forEach(proj => 
+    { 
+      this.load.image(proj.name, proj.sprite) 
+    });
+  }
+
   update(_time, delta) 
   {
     if(!typeChecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
@@ -638,9 +617,9 @@ class GameScene extends Phaser.Scene
     this.plane.update({ joystick: this.hud.joystick, delta: delta });
     this.hud.shootButton.update({ delta: delta });
 
-    this.updateBullets({ delta: delta });
     this.updateEnemies({ delta: delta });
     this.updatePickups({ delta: delta });
+    this.updateProjectiles({ delta: delta });
 
     if(this.checkForLevelComplete() === true && this.levelComplete === false)
     {
@@ -700,24 +679,22 @@ class GameScene extends Phaser.Scene
     if(this.background2.x <= -device.screenHeight) this.background2.x = (this.background1.x + device.screenHeight)-2;
   }
 
-  updateBullets({ delta } = {})
+  updateProjectiles({ delta } = {})
   {
     if(!typeChecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
 
-    Phaser.Actions.Call(this.bullets.getChildren(), bulletSprite => 
+    Phaser.Actions.Call(this.projectiles.getChildren(), projectileSprite => 
     {
-      if(!bulletSprite || !bulletSprite.active) return;
+      let projectile = { sprite: projectileSprite };
+      projectile.update = Projectile.prototype.update;
+      projectile.isOffScreen = Projectile.prototype.isOffScreen;
+      projectile.destroy = Projectile.prototype.destroy;
 
-      let bullet = { sprite: bulletSprite };
-      bullet.update = Bullet.prototype.update;
-      bullet.isOffScreen = Bullet.prototype.isOffScreen;
-      bullet.destroy = Bullet.prototype.destroy;
-
-      bullet.update({ delta: delta });
-      if(bullet.isOffScreen()) 
+      projectile.update({ delta: delta, speed: projectileSprite.__projectile.speed, direction: projectileSprite.__projectile.direction });
+      if(projectile.isOffScreen({ direction: projectileSprite.__projectile.direction})) 
       {
-        bullet.destroy();
-        this.bullets.remove(bulletSprite, true, true);
+        projectile.destroy();
+        this.projectiles.remove(projectileSprite, true, true);
       }
     }); 
   }
@@ -1157,6 +1134,7 @@ class Plane
   idleSoundEffect;
   maxNumberOfHits;
   numberOfHits;
+  projectile;
   scene;
   shootingAnimation;
   shootingRate;
@@ -1186,6 +1164,8 @@ class Plane
     this.sprite.setScale((device.screenWidth / planeDef.heightScale) / (this.sprite.height));
     this.sprite.play(planeDef.startingAnimation);
     this.scene.physics.add.existing(this.sprite);
+
+    this.projectile = planeDef.projectile;
     
     this.currentAnimation = planeDef.startingAnimation;
     this.idleAnimation = planeDef.idleAnimation;
@@ -1336,6 +1316,7 @@ class ShootButton
   errors;
   isHeld;
   plane;
+  projectileTypes;
   scene;
   sprite;
   
@@ -1343,24 +1324,28 @@ class ShootButton
    * Creates the shoot button object. 
    * @param {Phaser.Scene} scene - Scene instance.
    * @param {Plane} plane - Plane instance.
+   * @param {array} projectileTypes - Array of available prpjectile types.
    */
-  constructor({ scene, plane } = {}) 
+  constructor({ scene, plane, projectileTypes } = {}) 
   {
     this.errors = 
     {
       deltaTypeError: 'Shoot Button Error: Expected type number for delta',
       planeTypeError: 'Shoot Button Erorr: Expected type Plane for plane.',
+      projectileTypesTypeError: 'Shoot Button Erorr: Expected type array for projectileTypes.',
       sceneError: 'Shoot Button Error: A valid phaser scene is required.'
     };
 
     if(!scene) console.error(this.errors.sceneError);
     if(!typeChecker.check({ type: 'plane', value: plane })) console.error(this.errors.planeTypeError);
+    if(!typeChecker.check({ type: 'array', value: projectileTypes })) console.error(this.errors.projectileTypesTypeError);
 
     this.scene = scene;
     this.plane = plane;
     this.isHeld = false;
     this.shootCooldown = this.plane.shootingRate;
     this.elapsed = 0;
+    this.projectileTypes = projectileTypes;
   
     this.sprite = scene.add.image(0, 0, 'shoot-button');
     this.sprite.setScale((device.screenWidth / 5) / (this.sprite.height));
@@ -1373,11 +1358,10 @@ class ShootButton
       {
         this.isHeld = true;
         this.plane?.setAnimation({ name: this.plane.shootingAnimation });
-
         let x = this.plane.sprite.x + this.plane.sprite.displayWidth / 2;
         let y = this.plane.sprite.y + this.plane.sprite.displayHeight / 4;
-        let bullet = new Bullet({ scene: this.scene, x, y });
-        this.scene.physics.add.existing(bullet.sprite);
+        let projectile = new Projectile({ scene: this.scene, data: this.projectileTypes, type: this.plane.projectile, x: x, y: y, direction: 'right' });
+        this.scene.physics.add.existing(projectile.sprite);
         this.scene.sound.play(this.plane.shootingSoundEffect.key, { volume: this.plane.shootingSoundEffect.volume })
         this.elapsed = -this.shootCooldown / 2;
       }
@@ -1413,53 +1397,103 @@ class ShootButton
       this.elapsed = 0;
       let x = this.plane.sprite.x + this.plane.sprite.displayWidth / 2;
       let y = this.plane.sprite.y + this.plane.sprite.displayHeight / 4;
-      let bullet = new Bullet({ scene: this.scene, x, y });
+      let projectile = new Projectile({ scene: this.scene, data: this.projectileTypes, type: this.plane.projectile, x: x, y: y, direction: 'right' });
       this.scene.sound.play(this.plane.shootingSoundEffect.key, { volume: this.plane.shootingSoundEffect.volume });
-      this.scene.physics.add.existing(bullet.sprite);
+      this.scene.physics.add.existing(projectile.sprite);
     }
   }
 }
 
 /////////////////////////////////////////////////
 
-class Bullet 
+/** Class representing a projectle that can be spawned in the game scene, either from the plane or by an enemy. */
+class Projectile
 {
   errors;
+  direction;
   scene;
+  speed;
   sprite;
 
-  constructor({ scene, x, y }) 
+  /**
+   * Creates and spawns the projectile object. 
+   * @param {Phaser.Scene} scene - Scene instance.
+   * @param {number} x - X-coordinate postion.
+   * @param {number} y - Y-coordinate postion.
+   * @param {array} data - Data array loaded from projectiles.json.
+   * @param {string} type - Unique projectle type to be filtered from the data.
+   * @param {string} direction - Horizontal direction the projectile should fly.
+   */
+  constructor({ scene, data, type, x, y, direction } = {}) 
   {
     this.errors = 
     {
-      deltaTypeError: 'Bullet Error: Expected type number for delta',
-      sceneError: 'Bullet Error: A valid phaser scene is required.'
+      directionTypeError: 'Projectile Error: Expected type string for type.',
+      dataNotFoundError: 'Projectile Error: No data found for projectile.',
+      dataTypeError: 'Projectile Error: Expected type array for data.',
+      heightTypeError: 'Projectile Error: Expected type number for height.',
+      nameTypeError: 'Projectile Error: Expected type string for name.',
+      sceneError: 'Projectile Error: A valid phaser scene is required.',
+      speedTypeError: 'Projectile Error: Expected type number for speed.',
+      spriteTypeError: 'Projectile Error: Expected type string for sprite.',
+      typeTypeError: 'Projectile Error: Expected type string for type.',
+      xTypeError: 'Projectile Error: Expected type number for x.',
+      yTypeError: 'Projectile Error: Expected type number for y.'
     };
 
+    if(!scene) console.error(this.errors.sceneError);
+    if(!typeChecker.check({ type: 'array', value: data })) console.error(this.errors.dataTypeError);
+    if(!typeChecker.check({ type: 'string', value: type })) console.error(this.errors.typeTypeError);
+    if(!typeChecker.check({ type: 'number', value: x })) console.error(this.errors.xTypeError);
+    if(!typeChecker.check({ type: 'number', value: y })) console.error(this.errors.yTypeError);
+    if(!typeChecker.check({ type: 'string', value: type })) console.error(this.errors.directionTypeError);
+
     this.scene = scene;
+    let projectileData = data.find(p => p.name === type);
+    if(!projectileData) console.error(this.errors.dataNotFoundError);
 
-    this.sprite = scene.add.sprite(x, y, 'bullet-1');
-    this.sprite.play('bullet-anim');
-    this.sprite.setScale((device.screenWidth / 18) / this.sprite.height);
+    if(!typeChecker.check({ type: 'string', value: projectileData.name })) console.error(this.errors.nameTypeError);
+    if(!typeChecker.check({ type: 'string', value: projectileData.sprite })) console.error(this.errors.spriteTypeError);
+    if(!typeChecker.check({ type: 'number', value: projectileData.height })) console.error(this.errors.heightTypeError);
+    if(!typeChecker.check({ type: 'number', value: projectileData.speed })) console.error(this.errors.speedTypeError);
 
-    scene.bullets.add(this.sprite);
+    this.name = projectileData.name;
+    this.sprite = scene.add.sprite(x, y, projectileData.name);
+    this.sprite.setScale((device.screenWidth / projectileData.height) / this.sprite.height);
+    this.speed = device.screenWidth / projectileData.speed;
+    this.direction = direction;
+    this.sprite.__projectile = this;
+    this.scene.projectiles.add(this.sprite);
   }
 
-  update({ delta } = {}) 
-  {
-    if(!typeChecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
-    let speed = device.screenWidth * 0.75;
-    this.sprite.x += (speed * delta) / 1000;
-  }
-
-  isOffScreen() 
-  {
-    return this.sprite.x > device.screenHeight + this.sprite.displayWidth;
-  }
-
+  /** Public method to destroy the projectiles sprite. */
   destroy() 
   {
     this.sprite.destroy();
+  }
+
+  /**
+   * Public method to return if the projectle is currently off screen or not. 
+   * @param {string} direction - Horizontal direction that determines which bound to check for if the projectle is off screen yet or not.
+   * @returns {boolean} Returns true or false if the projectle is off screen or not.
+   */
+  isOffScreen({ direction } = {}) 
+  {
+    if(direction === 'right') return this.sprite.x > device.screenHeight + this.sprite.displayWidth;
+    else return this.sprite.x < -this.sprite.displayWidth;
+  }
+
+  /**
+   * Public method to update the projectile in the main game scene update loop. 
+   * @param {number} delta - Time passed since last frame.
+   * @param {number} speed - The speed value the projectle should fly.
+   * @param {string} direction - Horizontal direction the projectile should fly.
+   */
+  update({ delta, speed, direction } = {}) 
+  {
+    if(!typeChecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
+    if(direction === 'right') this.sprite.x += ((speed * delta) / 1000);
+    else this.sprite.x -= ((speed * delta) / 1000);
   }
 }
 

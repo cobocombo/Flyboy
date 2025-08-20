@@ -1,0 +1,11 @@
+{
+  "projectiles": 
+  [
+    {
+      "name": "bullet",
+      "sprite": "bullet.png",
+      "height": 18,
+      "speed": 2
+    }
+  ]
+}
