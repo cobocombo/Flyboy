@@ -326,6 +326,11 @@ class GameScene extends Phaser.Scene
 
   preload() 
   {
+    this.planeData = this.cache.json.get('planes');
+    this.enemyData = this.cache.json.get('enemies');
+    this.pickupData = this.cache.json.get('pickups');
+    this.projectileData = this.cache.json.get('projectiles');
+
     this.load.image('background', levels.currentLevel.background);
     this.load.image('joystick-base', 'joystick-base.png');
     this.load.image('joystick', 'joystick.png');
@@ -480,7 +485,6 @@ class GameScene extends Phaser.Scene
   loadEnemyImages() 
   {
     this.enemyTypes = [...new Set((levels.currentLevel?.enemies || []).map(e => e.type))];
-    this.enemyData = this.cache.json.get('enemies');
     this.enemyData.enemies
     .filter(enemy => this.enemyTypes.includes(enemy.name))
     .forEach(enemy => 
@@ -536,7 +540,6 @@ class GameScene extends Phaser.Scene
   loadPlaneImages() 
   {
     this.planeType = 'green-plane';
-    this.planeData = this.cache.json.get('planes');
     this.selectedPlane = this.planeData.planes.find(plane => plane.name === this.planeType);
     this.load.image(this.selectedPlane.name, this.selectedPlane.sprite);
     this.selectedPlane.animations.forEach(animation => 
@@ -584,7 +587,7 @@ class GameScene extends Phaser.Scene
 
   loadPickupImages() 
   {
-    this.pickupData = this.cache.json.get('pickups');
+    
     this.pickupTypes = [...new Set((levels.currentLevel?.pickups || []).map(p => p.type))];
     this.pickupData.pickups
     .filter(pickup => this.pickupTypes.includes(pickup.name))
@@ -600,7 +603,6 @@ class GameScene extends Phaser.Scene
 
   loadProjectileImages() 
   {
-    this.projectileData = this.cache.json.get('projectiles');
     this.matchingProjectiles = this.projectileData.projectiles.filter(proj => proj.name === this.selectedPlane.projectile);
     this.matchingProjectiles.forEach(proj => 
     { 
