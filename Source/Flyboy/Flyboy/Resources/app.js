@@ -288,6 +288,7 @@ class LoadingScene extends Phaser.Scene
     this.load.json('pickups', `pickups.json?v=${Date.now()}`);
     this.load.json('enemies', `enemies.json?v=${Date.now()}`);
     this.load.json('projectiles', `projectiles.json?v=${Date.now()}`);
+    this.load.json('effects', `effects.json?v=${Date.now()}`);
   } 
 }
 
@@ -330,18 +331,13 @@ class GameScene extends Phaser.Scene
     this.enemyData = this.cache.json.get('enemies');
     this.pickupData = this.cache.json.get('pickups');
     this.projectileData = this.cache.json.get('projectiles');
+    this.effectsData = this.cache.json.get('effects');
 
     this.load.image('background', levels.currentLevel.background);
     this.load.image('joystick-base', 'joystick-base.png');
     this.load.image('joystick', 'joystick.png');
     this.load.image('shoot-button', 'shoot-button.png');
     this.load.image('pause-button', 'pause-button.png');
-
-    this.load.image('explosion-1', 'explosion-1.png');
-    this.load.image('explosion-2', 'explosion-2.png');
-    this.load.image('explosion-3', 'explosion-3.png');
-    this.load.image('explosion-4', 'explosion-4.png');
-    this.load.image('explosion-5', 'explosion-5.png');
 
     this.load.image('poof', 'poof.png'); 
     this.load.image('sparkle', 'sparkle.png'); 
@@ -351,6 +347,7 @@ class GameScene extends Phaser.Scene
     this.loadPlaneImages();
     this.loadPickupImages();
     this.loadProjectileImages();
+    this.loadEffectsImages();
 
     this.loadEnemySounds();
     this.loadPlaneSounds();
@@ -376,21 +373,6 @@ class GameScene extends Phaser.Scene
 
     this.sound.play('background-music', { volume: 0.1, loop: true });
 
-    if(!this.anims.exists('explosion-anim')) 
-    {
-      this.anims.create({
-        key: 'explosion-anim',
-        frames: [
-          { key: 'explosion-1' },
-          { key: 'explosion-2' },
-          { key: 'explosion-3' },
-          { key: 'explosion-4' },
-          { key: 'explosion-5' }
-        ],
-        frameRate: 35
-      });
-    };
-
     this.pickupSpawnQueue = [];
     this.enemySpawnQueue = [];
     this.elapsedTime = 0;
@@ -400,6 +382,7 @@ class GameScene extends Phaser.Scene
     this.loadEnemyAnimations();
     this.loadPlaneAnimations();
     this.loadPickupAnimations();
+    this.loadEffectsAnimations();
 
     this.enemies = this.physics.add.group();
     this.pickups = this.physics.add.group();
@@ -429,13 +412,14 @@ class GameScene extends Phaser.Scene
         enemySprite.destroy();
         this.enemies.remove(enemySprite, true, true);
         let { x, y, displayHeight } = enemySprite;
-        let explosion = this.add.sprite(x, y, 'explosion-1');
-        explosion.setScale(displayHeight / (explosion.height / 2));
-        explosion.setDepth(10);
-        explosion.play('explosion-anim');
-        explosion.on('animationcomplete', (animation, frame) => 
+        let deathEffect = this.add.sprite(x, y, enemySprite.__enemy.deathSprite);
+        let scale = (displayHeight / deathEffect.height) / 4;
+        deathEffect.setScale(scale);
+        deathEffect.setDepth(10);
+        deathEffect.play(enemySprite.__enemy.deathAnimation);
+        deathEffect.on('animationcomplete', (animation, frame) => 
         {
-          if(animation.key === 'explosion-anim') explosion.destroy();
+          if(animation.key === enemySprite.__enemy.deathAnimation) deathEffect.destroy();
           this.updateScore({ amount: enemySprite.__enemy.score });
         });
       }
@@ -455,6 +439,35 @@ class GameScene extends Phaser.Scene
     let planeAlive = this.plane.currentAnimation !== this.plane.deathAnimation;
     if(queuesEmpty && noEnemiesLeft && noPickupsLeft && planeAlive) return true;
     return false;
+  }
+
+  loadEffectsImages()
+  {
+    this.effectsData.effects.forEach(effect => 
+    {
+      this.load.image(effect.name, effect.sprite);
+      effect.frames.forEach(frame => 
+      {
+        this.load.image(frame.key, frame.sprite);
+      });
+    });
+  }
+
+  loadEffectsAnimations()
+  {
+    this.effectsData.effects.forEach(effect => 
+    {
+      let frames = effect.frames.map(frame => ({ key: frame.key }));
+      if(!this.anims.exists(effect.key)) 
+      {
+        this.anims.create({
+          key: effect.key,
+          frames: frames,
+          frameRate: effect.frameRate || 24,
+          repeat: effect.repeat !== undefined ? effect.repeat : 0
+        });
+      }
+    });
   }
 
   loadEnemyAnimations()
@@ -728,13 +741,14 @@ class GameScene extends Phaser.Scene
         enemy.destroy();
         this.enemies.remove(enemy.sprite, true, true);
 
-        let explosion = this.add.sprite(x, y, 'explosion-1');
-        explosion.setScale(displayHeight / (explosion.height / 2));
-        explosion.setDepth(10);
-        explosion.play('explosion-anim');
-        explosion.on('animationcomplete', (animation, frame) => 
+        let deathEffect = this.add.sprite(x, y, enemy.deathSprite);
+        let scale = (displayHeight / deathEffect.height) / 4;
+        deathEffect.setScale(scale);
+        deathEffect.setDepth(10);
+        deathEffect.play(enemy.deathAnimation);
+        deathEffect.on('animationcomplete', (animation, frame) => 
         {
-          if(animation.key === 'explosion-anim') explosion.destroy();
+          if(animation.key === enemy.deathAnimation) deathEffect.destroy();
         });
 
         this.sound.play(enemy.hitSoundEffect.key, { volume: enemy.hitSoundEffect.volume });
@@ -1648,6 +1662,8 @@ class Pickup
 /** Class representing an enemy that can be spawned in the game scene. */
 class Enemy
 {
+  deathAnimation;
+  deathSprite;
   errors;
   hitSoundEffect;
   maxNumberOfHits;
@@ -1656,6 +1672,7 @@ class Enemy
   scene;
   score;
   soundEffects;
+  startingAnimation;
 
   /**
    * Creates and spawns the enemy object. 
@@ -1670,6 +1687,7 @@ class Enemy
     this.errors = 
     {
       animationsTypeError: 'Enemy Error: Expected type array for animations.',
+      deathAnimationTypeError: 'Enemy Error: Expected type string for deathAnimation.',
       dataNotFoundError: 'Enemy Error: No data found for enemy.',
       dataTypeError: 'Enemy Error: Expected type object for data.',
       deltaTypeError: 'Enemy Error: Expected type number for delta.',
@@ -1704,6 +1722,7 @@ class Enemy
     if(!typeChecker.check({ type: 'boolean', value: enemyData.flipX })) console.error(this.errors.flipXTypeError);
     if(!typeChecker.check({ type: 'array', value: enemyData.animations })) console.error(this.errors.animationsTypeError);
     if(!typeChecker.check({ type: 'string', value: enemyData.startingAnimation })) console.error(this.errors.startingAnimationTypeError);
+    if(!typeChecker.check({ type: 'string', value: enemyData.deathAnimation })) console.error(this.errors.deathAnimationTypeError);
     if(!typeChecker.check({ type: 'number', value: enemyData.speed })) console.error(this.errors.speedTypeError);
     if(!typeChecker.check({ type: 'number', value: enemyData.maxNumberOfHits })) console.error(this.errors.maxNumberOfHitsTypeError);
     if(!typeChecker.check({ type: 'number', value: enemyData.score })) console.error(this.errors.scoreTypeError);
@@ -1712,6 +1731,9 @@ class Enemy
     this.name = enemyData.name;
     this.sprite = scene.add.sprite(x, y, this.name);
     this.sprite.setScale((device.screenWidth / enemyData.height) / this.sprite.height);
+    this.startingAnimation = enemyData.startingAnimation;
+    this.deathAnimation = enemyData.deathAnimation;
+    this.deathSprite = enemyData.deathSprite;
     this.sprite.play(enemyData.startingAnimation);
     this.sprite.setFlipX(enemyData.flipX);
     this.speed = device.screenWidth / enemyData.speed;
@@ -1747,6 +1769,19 @@ class Enemy
     this.sprite.x -= (this.speed * delta) / 1000;
   }
 } 
+
+/////////////////////////////////////////////////
+
+/** Class representing an effect that can be spawned in the game scene. */
+class Effect
+{
+  errors;
+  
+  constructor()
+  {
+
+  }
+}
 
 /////////////////////////////////////////////////
 

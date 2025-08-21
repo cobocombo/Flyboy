@@ -1,0 +1,19 @@
+{
+  "effects": 
+  [
+    {
+      "name": "explosion",
+      "sprite": "explosion-1.png",
+      "key": "explosion",
+      "frames":
+      [
+        { "key": "explosion-1", "sprite": "explosion-1.png" },
+        { "key": "explosion-2", "sprite": "explosion-2.png" },
+        { "key": "explosion-3", "sprite": "explosion-3.png" },
+        { "key": "explosion-4", "sprite": "explosion-4.png" },
+        { "key": "explosion-5", "sprite": "explosion-5.png" }
+      ],
+      "frameRate": 35
+    }
+  ]
+}

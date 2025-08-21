@@ -20,6 +20,8 @@
         }
       ],
       "startingAnimation": "bird-fly",
+      "deathAnimation": "explosion",
+      "deathSprite": "explosion-1.png",
       "speed": 6,
       "maxNumberOfHits": 2,
       "score": 50,
