@@ -19,13 +19,13 @@ class SplashScene extends Phaser.Scene
     if(app.isFirstLaunch === true) 
     {
       levels.addLevelProgress({ id: 1, stars: 0, unlocked: true, score: 0 });
-      saveData.addSettings({ soundOn: true });
+      userSettings.addSettings({ soundOn: true });
     }
 
-    let settings = saveData.getSettings();
+    let settings = userSettings.getSettings();
     if(settings.soundOn === true) this.sound.mute = false;
     else this.sound.mute = true;
-    
+
     let logo = this.add.image(this.scale.width / 2, this.scale.height / 2, 'logo');
     logo.setScale(Math.min(this.scale.width * 0.4 / logo.width, 1));
     logo.setOrigin(0.5);
@@ -1851,7 +1851,7 @@ class SettingsPage extends ui.Page
   /** Public method called to set the body of the settings page. */
   setupBody()
   {
-    let settings = saveData.getSettings();
+    let settings = userSettings.getSettings();
     this.soundSwitch = new ui.Switch({ checked: settings.soundOn });
 
     let settingsList = new ui.List();
@@ -1863,8 +1863,7 @@ class SettingsPage extends ui.Page
   /** Public method called to save the current settings from settings page. */
   save()
   {
-    saveData.addSettings({ soundOn: this.soundSwitch.checked });
-
+    userSettings.addSettings({ soundOn: this.soundSwitch.checked });
     if(this.soundSwitch.checked === true) this.sound.mute = false;
     else this.sound.mute = true;
   }
@@ -2042,6 +2041,66 @@ class LevelManager
 }
 
 ///////////////////////////////////////////////////////////
+// USER SETTINGS MODULE
+///////////////////////////////////////////////////////////
+
+/** Singleton class representing the global SettingsManager. */
+class SettingsManager 
+{
+  errors;
+  static #instance = null;
+
+  /** Initializes the SettingsManager singleton. */
+  constructor() 
+  {
+    this.errors = 
+    {
+      singleInstanceError: 'Settings Manager Error: Only one SettingsManager instance can exist.',
+      soundOnTypeError: 'Settings Manager Error: Expected type boolean for soundOn.'
+    };
+
+    if(SettingsManager.#instance) 
+    {
+      console.error(this.errors.singleInstanceError);
+      return SettingsManager.#instance;
+    }
+
+    SettingsManager.#instance = this;
+  }
+
+  /** Returns the singleton instance. */
+  static getInstance() 
+  {
+    if(!SettingsManager.#instance) SettingsManager.#instance = new SettingsManager();
+    return SettingsManager.#instance;
+  }
+
+  /**
+   * Add or modify user settings data.
+   * @param {boolean} soundOn - Boolean value on if the user prefers sound on or off.
+   */
+  addSettings({ soundOn } = {})
+  {
+    if(!typeChecker.check({ type: 'boolean', value: soundOn })) console.error(this.errors.soundOnTypeError);
+    let data = saveData.load({ key: saveData.storageKeys.settings });
+    if(!data) data = { soundOn: true };
+    else data = { soundOn: soundOn };
+    saveData.save({ key: saveData.storageKeys.settings, data: data });
+  }
+
+  /**
+   * Returns the user's saved settings.
+   * @returns {object} Settings object.
+   */
+  getSettings()
+  {
+    let data = saveData.load({ key: saveData.storageKeys.settings });
+    if(!data) data = { soundOn: false };
+    return data;
+  }
+}
+
+///////////////////////////////////////////////////////////
 // SAVE DATA MODULE
 ///////////////////////////////////////////////////////////
 
@@ -2068,7 +2127,6 @@ class SaveDataManager
       loadingError: 'Save Data Manager Error: There was an issue loading data.',
       removingError: 'Save Data Manager Error: There was an issue removing data.',
       singleInstanceError: 'Save Data Manager Error: Only one SaveDataManager instance can exist.',
-      soundOnTypeError: 'Save Data Manager Error: Expected type boolean for soundOn.',
       savingError: 'Save Data Manager Error: There was an issue saving data.',
       wrongKeyProvidedError: 'Save Data Manager Error: Wrong key was provided when attempting to retrieve stored data.'
     };
@@ -2087,22 +2145,6 @@ class SaveDataManager
   {
     if(!SaveDataManager.#instance) SaveDataManager.#instance = new SaveDataManager();
     return SaveDataManager.#instance;
-  }
-
-  addSettings({ soundOn } = {})
-  {
-    if(!typeChecker.check({ type: 'boolean', value: soundOn })) console.error(this.errors.soundOnTypeError);
-    let data = this.load({ key: this.storageKeys.settings });
-    if(!data) data = { soundOn: true };
-    else data = { soundOn: soundOn };
-    this.save({ key: this.storageKeys.settings, data: data });
-  }
-
-  getSettings()
-  {
-    let data = this.load({ key: this.storageKeys.settings });
-    if(!data) data = { soundOn: false };
-    return data;
   }
 
   /**
@@ -2152,8 +2194,9 @@ class SaveDataManager
 
 ///////////////////////////////////////////////////////////
 
-globalThis.levels = LevelManager.getInstance();
 globalThis.saveData = SaveDataManager.getInstance();
+globalThis.levels = LevelManager.getInstance();
+globalThis.userSettings = SettingsManager.getInstance();
 
 typeChecker.register({ name: 'plane', constructor: Plane });
 typeChecker.register({ name: 'joystick', constructor: Joystick });
