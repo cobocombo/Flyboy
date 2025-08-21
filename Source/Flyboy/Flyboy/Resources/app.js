@@ -22,7 +22,7 @@ class SplashScene extends Phaser.Scene
 
     if(app.isFirstLaunch === true) 
     {
-      saveData.addLevelProgress({ id: 1, stars: 0, unlocked: true, score: 0 });
+      levels.addLevelProgress({ id: 1, stars: 0, unlocked: true, score: 0 });
       saveData.addSettings({ soundOn: true });
     }
 
@@ -91,10 +91,10 @@ class LevelSelectScene extends Phaser.Scene
       let x = startX + col * (blockSize + spacing) + blockSize / 2;
       let y = startY + row * (blockSize + spacing);
 
-      let unlocked = saveData.isLevelUnlocked({ id: level.id });
+      let unlocked = levels.isLevelUnlocked({ id: level.id });
       if(unlocked === true) 
       {
-        let block = new LevelSelectBlock({ scene: this, x, y, level: level.id, starCount: saveData.getStarsForLevel({ id: level.id }) || 0 });
+        let block = new LevelSelectBlock({ scene: this, x, y, level: level.id, starCount: levels.getStarsForLevel({ id: level.id }) || 0 });
         block.setInteractive({ useHandCursor: true }).on('pointerup', () => 
         {
           levels.selectLevel({ id: level.id });
@@ -661,11 +661,11 @@ class GameScene extends Phaser.Scene
           let levelCompleteAlert = new LevelCompleteDialog({ scene: this.scene, score: this.score, starCount: starCount });
           levelCompleteAlert.present();
           confetti.start();
-          saveData.addLevelProgress({ id: levels.currentLevel.id, stars: starCount, unlocked: true, score: this.score });
+          levels.addLevelProgress({ id: levels.currentLevel.id, stars: starCount, unlocked: true, score: this.score });
 
           let levelCount = levels.levelCount;
           let nextLevelId = levels.currentLevel.id + 1;
-          if(levelCount && nextLevelId <= levelCount) saveData.addLevelProgress({ id: nextLevelId, stars: 0, completed: false, unlocked: true, score: 0 });
+          if(levelCount && nextLevelId <= levelCount) levels.addLevelProgress({ id: nextLevelId, stars: 0, completed: false, unlocked: true, score: 0 });
         }
       });
     }
@@ -1877,31 +1877,35 @@ class SettingsPage extends ui.Page
 /** Singleton class representing the global LevelManager. */
 class LevelManager 
 {
-  #errors;
-  #levels;
-  #currentLevel;
+  errors;
+  levels;
+  currentLevel;
   static #instance = null;
 
   /** Initializes the LevelManager singleton. */
   constructor() 
   {
-    this.#errors = 
+    this.errors = 
     {
-      singleInstanceError: 'Level Manager Error: Only one LevelManager instance can exist.',
+      idTypeError: 'Level Manager Error: Expected type number for id.',
       levelsTypeError: 'Level Manager Error: Expected an array of level objects.',
       levelIdTypeError: 'Level Manager Error: Expected type number for level ID.',
       levelNotFoundError: 'Level Manager Error: No level found with the specified ID.',
       levelsNotLoadedError: 'Level Manager Error: No levels have been loaded yet.',
+      scoreTypeError: 'Level Manager Error: Expected type number for score.',
+      singleInstanceError: 'Level Manager Error: Only one LevelManager instance can exist.',
+      starsTypeError: 'Level Manager Error: Expected type number for stars.',
+      unlockedTypeError: 'Level Manager Error: Expected type boolean for unlocked'
     };
 
     if(LevelManager.#instance) 
     {
-      console.error(this.#errors.singleInstanceError);
+      console.error(this.errors.singleInstanceError);
       return LevelManager.#instance;
     }
 
-    this.#levels = [];
-    this.#currentLevel = null;
+    this.levels = [];
+    this.currentLevel = null;
     LevelManager.#instance = this;
   }
 
@@ -1913,21 +1917,115 @@ class LevelManager
   }
 
   /**
-   * Loads level data from a JSON array.
-   * @param {Array<Object>} levels - Array of raw level objects.
+   * Gets the currently selected level.
+   * @returns {object} The current level object.
+   */
+  get currentLevel() 
+  {
+    if(!this.currentLevel) console.warn(this.errors.levelsNotLoadedError);
+    return this.currentLevel;
+  }
+
+  /**
+   * Gets the number of levels stored from levels.json.
+   * @returns {object} The current level count.
+   */
+  get levelCount()
+  {
+    return this.levels.length;
+  }
+
+  /**
+   * Add or update a level entry in the save data.
+   * @param {string} key - The storage key for the save data.
+   * @param {number} id - The level ID to add or update.
+   * @param {number} stars - The number of stars for this level.
+   * @param {boolean} unlocked - Flag status on if the level is unlocked or not.
+   * @param {number} score - Highest score the user earned for the level.
+   */
+  addLevelProgress({ id, stars, unlocked, score } = {}) 
+  {
+    if(!typeChecker.check({ type: 'number', value: id })) console.error(this.errors.idTypeError);
+    if(!typeChecker.check({ type: 'number', value: stars })) console.error(this.errors.starsTypeError);
+    if(!typeChecker.check({ type: 'boolean', value: unlocked })) console.error(this.errors.unlockedTypeError);
+    if(!typeChecker.check({ type: 'number', value: score })) console.error(this.errors.scoreTypeError);
+
+    let data = saveData.load({ key: saveData.storageKeys.levelProgress });
+    if(!data) data = { levels: [] };
+
+    let existingLevel = data.levels.find(level => level.id === id);
+    if(existingLevel)
+    {
+      existingLevel.stars = Math.max(existingLevel.stars, stars);
+      if(unlocked === true) existingLevel.unlocked = true;
+      existingLevel.score = Math.max(existingLevel.score, score);
+    } 
+    else data.levels.push({ id, stars, unlocked, score });
+    saveData.save({ key: saveData.storageKeys.levelProgress, data: data });
+  }
+
+  /**
+   * Clears all loaded levels and the current level.
+   */
+  clear() 
+  {
+    this.levels = [];
+    this.currentLevel = null;
+  }
+
+  /**
+   * Get the number of stars saved for a specific level.
+   * @param {number} id - The level ID to query.
+   * @returns {number} Number of stars for the level, or 0 if not found.
+   */
+  getStarsForLevel({ id } = {}) 
+  {
+    if(!typeChecker.check({ type: 'number', value: id })) console.error(this.errors.idTypeError);
+    let data = saveData.load({ key: saveData.storageKeys.levelProgress });
+    if(!data) return 0;
+    let level = data.levels.find(level => level.id === id);
+    return level ? level.stars || 0 : 0;
+  }
+
+  /**
+   * Gets all loaded levels.
+   * @returns {array} All level data.
+   */
+  getAllLevels() 
+  {
+    return this.levels;
+  }
+
+  /**
+   * Check if a specific level is completed.
+   * @param {number} id - The level ID to check.
+   * @returns {boolean} True if completed, false otherwise.
+   */
+  isLevelUnlocked({ id } = {}) 
+  {
+    if(!typeChecker.check({ type: 'number', value: id })) console.error(this.errors.idTypeError);
+  
+    let data = saveData.load({ key: saveData.storageKeys.levelProgress });
+    if(!data) return false;
+
+    let level = data.levels.find(level => level.id === id);
+    return level ? level.unlocked === true : false;
+  }
+
+  /**
+   * Loads level data from levels.json.
+   * @param {array} levels - Array of level objects.
    */
   load({ levels } = {}) 
   {
-    if(!typeChecker.check({ type: 'array', value: levels })) console.error(this.#errors.levelsTypeError);
-    this.#levels = [];
-
+    if(!typeChecker.check({ type: 'array', value: levels })) console.error(this.errors.levelsTypeError);
+    this.levels = [];
     for(const rawLevel of levels) 
     {
       if(!typeChecker.check({ type: 'object', value: rawLevel })) continue;
-      if(rawLevel?.id != null) this.#levels.push(rawLevel);
+      if(rawLevel?.id != null) this.levels.push(rawLevel);
     }
-
-    this.#currentLevel = null;
+    this.currentLevel = null;
   }
 
   /**
@@ -1936,43 +2034,10 @@ class LevelManager
    */
   selectLevel({ id } = {}) 
   {
-    if(!typeChecker.check({ type: 'number', value: id })) console.error(this.#errors.levelIdTypeError);
-    let level = this.#levels.find(level => level.id === id);
-    if(!level) console.error(this.#errors.levelNotFoundError);
-    this.#currentLevel = level;
-  }
-
-  /**
-   * Gets the currently selected level.
-   * @returns {LevelData|null} The current level object.
-   */
-  get currentLevel() 
-  {
-    if(!this.#currentLevel) console.warn(this.#errors.levelsNotLoadedError);
-    return this.#currentLevel;
-  }
-
-  /**
-   * Gets all loaded levels.
-   * @returns {Array<LevelData>} All level data.
-   */
-  getAllLevels() 
-  {
-    return this.#levels;
-  }
-
-  get levelCount()
-  {
-    return this.#levels.length;
-  }
-
-  /**
-   * Clears all loaded levels and the current level.
-   */
-  clear() 
-  {
-    this.#levels = [];
-    this.#currentLevel = null;
+    if(!typeChecker.check({ type: 'number', value: id })) console.error(this.errors.levelIdTypeError);
+    let level = this.levels.find(level => level.id === id);
+    if(!level) console.error(this.errors.levelNotFoundError);
+    this.currentLevel = level;
   }
 }
 
@@ -1983,38 +2048,34 @@ class LevelManager
 /** Singleton class representing the global SaveDataManager. */
 class SaveDataManager 
 {
-  #storageKeys;
-  #errors;
+  storageKeys;
+  errors;
   static #instance = null;
 
   /** Initializes the LevelManager singleton. */
   constructor() 
   {
-    this.#storageKeys = 
+    this.storageKeys = 
     {
       levelProgress: 'level-progress',
       settings: 'settings'
     };
 
-    this.#errors = 
+    this.errors = 
     {
-      unlockedTypeError: 'Save Data Manager Error: Expected type boolean for unlocked',
       dataTypeError: 'Save Data Manager Error: Expected type object for data.',
-      idTypeError: 'Save Data Manager Error: Expected type number for id.',
       keyTypeError: 'Save Data Manager Error: Expected type string for key.',
       loadingError: 'Save Data Manager Error: There was an issue loading data.',
       removingError: 'Save Data Manager Error: There was an issue removing data.',
-      scoreTypeError: 'Save Data Manager Error: Expected type number for score.',
       singleInstanceError: 'Save Data Manager Error: Only one SaveDataManager instance can exist.',
       soundOnTypeError: 'Save Data Manager Error: Expected type boolean for soundOn.',
-      starsTypeError: 'Save Data Manager Error: Expected type number for stars.',
       savingError: 'Save Data Manager Error: There was an issue saving data.',
       wrongKeyProvidedError: 'Save Data Manager Error: Wrong key was provided when attempting to retrieve stored data.'
     };
 
     if(SaveDataManager.#instance) 
     {
-      console.error(this.#errors.singleInstanceError);
+      console.error(this.errors.singleInstanceError);
       return SaveDataManager.#instance;
     }
 
@@ -2028,79 +2089,20 @@ class SaveDataManager
     return SaveDataManager.#instance;
   }
 
-  /**
-   * Add or update a level entry in the save data.
-   * @param {string} key - The storage key for the save data.
-   * @param {number} id - The level ID to add or update.
-   * @param {number} stars - The number of stars for this level.
-   * @param {boolean} unlocked - Flag status on if the level is unlocked or not.
-   * @param {number} score - Highest score the user earned for the level.
-   */
-  addLevelProgress({ id, stars, unlocked, score } = {}) 
-  {
-    if(!typeChecker.check({ type: 'number', value: id })) console.error(this.#errors.idTypeError);
-    if(!typeChecker.check({ type: 'number', value: stars })) console.error(this.#errors.starsTypeError);
-    if(!typeChecker.check({ type: 'boolean', value: unlocked })) console.error(this.#errors.unlockedTypeError);
-    if(!typeChecker.check({ type: 'number', value: score })) console.error(this.#errors.scoreTypeError);
-
-    let data = this.load({ key: this.#storageKeys.levelProgress });
-    if(!data) data = { levels: [] };
-
-    let existingLevel = data.levels.find(level => level.id === id);
-    if(existingLevel)
-    {
-      existingLevel.stars = Math.max(existingLevel.stars, stars);
-      if(unlocked === true) existingLevel.unlocked = true;
-      existingLevel.score = Math.max(existingLevel.score, score);
-    } 
-    else data.levels.push({ id, stars, unlocked, score });
-    this.save({ key: this.#storageKeys.levelProgress, data: data });
-  }
-
   addSettings({ soundOn } = {})
   {
-    if(!typeChecker.check({ type: 'boolean', value: soundOn })) console.error(this.#errors.soundOnTypeError);
-    let data = this.load({ key: this.#storageKeys.settings });
+    if(!typeChecker.check({ type: 'boolean', value: soundOn })) console.error(this.errors.soundOnTypeError);
+    let data = this.load({ key: this.storageKeys.settings });
     if(!data) data = { soundOn: true };
     else data = { soundOn: soundOn };
-    this.save({ key: this.#storageKeys.settings, data: data });
+    this.save({ key: this.storageKeys.settings, data: data });
   }
 
   getSettings()
   {
-    let data = this.load({ key: this.#storageKeys.settings });
+    let data = this.load({ key: this.storageKeys.settings });
     if(!data) data = { soundOn: false };
     return data;
-  }
-
-  /**
-   * Check if a specific level is completed.
-   * @param {number} id - The level ID to check.
-   * @returns {boolean} True if completed, false otherwise.
-   */
-  isLevelUnlocked({ id } = {}) 
-  {
-    if(!typeChecker.check({ type: 'number', value: id })) console.error(this.#errors.idTypeError);
-  
-    let data = this.load({ key: this.#storageKeys.levelProgress });
-    if(!data) return false;
-
-    let level = data.levels.find(level => level.id === id);
-    return level ? level.unlocked === true : false;
-  }
-
-  /**
-   * Get the number of stars saved for a specific level.
-   * @param {number} id - The level ID to query.
-   * @returns {number} Number of stars for the level, or 0 if not found.
-   */
-  getStarsForLevel({ id } = {}) 
-  {
-    if(!typeChecker.check({ type: 'number', value: id })) console.error(this.#errors.idTypeError);
-    let data = this.load({ key: this.#storageKeys.levelProgress });
-    if (!data) return 0;
-    let level = data.levels.find(level => level.id === id);
-    return level ? level.stars || 0 : 0;
   }
 
   /**
@@ -2110,14 +2112,14 @@ class SaveDataManager
    */
   save({ key, data } = {}) 
   {
-    if(!typeChecker.check({ type: 'string', value: key })) console.error(this.#errors.keyTypeError);
-    if(!typeChecker.check({ type: 'object', value: data })) console.error(this.#errors.dataTypeError);
+    if(!typeChecker.check({ type: 'string', value: key })) console.error(this.errors.keyTypeError);
+    if(!typeChecker.check({ type: 'object', value: data })) console.error(this.errors.dataTypeError);
     try 
     {
       let json = JSON.stringify(data);
       localStorage.setItem(key, json);
     } 
-    catch { console.error(this.#errors.savingError); }
+    catch { console.error(this.errors.savingError); }
   }
 
   /**
@@ -2126,14 +2128,14 @@ class SaveDataManager
    */
   load({ key } = {}) 
   {
-    if(!typeChecker.check({ type: 'string', value: key })) console.error(this.#errors.keyTypeError);
+    if(!typeChecker.check({ type: 'string', value: key })) console.error(this.errors.keyTypeError);
     try 
     {
       let json = localStorage.getItem(key);
       if(json === null) return null;
       return JSON.parse(json);
     } 
-    catch { console.error(this.#errors.loadingError); }
+    catch { console.error(this.errors.loadingError); }
   }
 
   /**
@@ -2142,9 +2144,9 @@ class SaveDataManager
    */
   remove({ key } = {}) 
   {
-    if(!typeChecker.check({ type: 'string', value: key })) console.error(this.#errors.keyTypeError);
+    if(!typeChecker.check({ type: 'string', value: key })) console.error(this.errors.keyTypeError);
     try { localStorage.removeItem(key); } 
-    catch { console.error(this.#errors.removingError); }
+    catch { console.error(this.errors.removingError); }
   }
 }
 
