@@ -16,16 +16,16 @@ class SplashScene extends Phaser.Scene
   {
     this.cameras.main.setBackgroundColor('#F0DB4F');
 
-    let settings = saveData.getSettings();
-    if(settings.soundOn === true) this.sound.mute = false;
-    else this.sound.mute = true;
-
     if(app.isFirstLaunch === true) 
     {
       levels.addLevelProgress({ id: 1, stars: 0, unlocked: true, score: 0 });
       saveData.addSettings({ soundOn: true });
     }
 
+    let settings = saveData.getSettings();
+    if(settings.soundOn === true) this.sound.mute = false;
+    else this.sound.mute = true;
+    
     let logo = this.add.image(this.scale.width / 2, this.scale.height / 2, 'logo');
     logo.setScale(Math.min(this.scale.width * 0.4 / logo.width, 1));
     logo.setOrigin(0.5);
@@ -115,7 +115,7 @@ class LevelSelectScene extends Phaser.Scene
     });
 
     let menuMusic = this.sound.get('menu-music');
-    if(menuMusic && !menuMusic.isPlaying) menuMusic.play();
+    if(menuMusic) menuMusic.play();
 
     let backButton = this.add.image(20 + (device.screenWidth / 12) / 2, this.scale.height - 20 - (device.screenWidth / 12) / 2, 'back-button');
     backButton.setDisplaySize((device.screenWidth / 12), (device.screenWidth / 12));
