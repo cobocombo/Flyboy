@@ -14,7 +14,17 @@
         { "key": "explosion-4", "sprite": "explosion-4.png" },
         { "key": "explosion-5", "sprite": "explosion-5.png" }
       ],
-      "frameRate": 35
+      "frameRate": 35,
+      "tween": null
+    },
+    {
+      "name": "sparkle",
+      "sprite": "sparkle.png",
+      "height": 6,
+      "key": "sparkle",
+      "frames": null,
+      "frameRate": null,
+      "tween": { "alpha": 0, "scaleX": 0, "scaleY": 0, "duration": 1000, "ease": "Power1" }
     }
   ]
 }

@@ -338,9 +338,6 @@ class GameScene extends Phaser.Scene
     this.load.image('joystick', 'joystick.png');
     this.load.image('shoot-button', 'shoot-button.png');
     this.load.image('pause-button', 'pause-button.png');
-
-    this.load.image('poof', 'poof.png'); 
-    this.load.image('sparkle', 'sparkle.png'); 
     this.load.image('heart', 'heart.png'); 
 
     this.loadEnemyImages();
@@ -371,8 +368,6 @@ class GameScene extends Phaser.Scene
     this.background1.setPosition(0, 0);
     this.background2.setPosition(device.screenHeight-2, 0);
 
-    this.sound.play('background-music', { volume: 0.1, loop: true });
-
     this.pickupSpawnQueue = [];
     this.enemySpawnQueue = [];
     this.elapsedTime = 0;
@@ -394,11 +389,26 @@ class GameScene extends Phaser.Scene
     this.plane = new Plane({ scene: this, data: this.planeData, type: this.planeType });
     this.plane.setPosition({ x: 20 + (this.plane.sprite.displayWidth / 2), y: (device.screenWidth / 2) - (device.screenWidth / 12) });
     this.sound.play(this.plane.idleSoundEffect.key, { volume: this.plane.idleSoundEffect.volume, loop: this.plane.idleSoundEffect.loop });
+    this.sound.play('background-music', { volume: 0.1, loop: true });
 
     this.levelfailedAlert = new LevelFailedDialog({ scene: this.scene });
-
     this.hud = new HUD({ scene: this, joystick: new Joystick({ scene: this }), shootButton: new ShootButton({ scene: this, plane: this.plane, projectileTypes: this.matchingProjectiles }), plane: this.plane });
 
+    this.setProjectileEnemyCollision();
+  }
+
+  checkForLevelComplete() 
+  {
+    let queuesEmpty = this.enemySpawnQueue.length === 0 && this.pickupSpawnQueue.length === 0;
+    let noEnemiesLeft = this.enemies.countActive(true) === 0;
+    let noPickupsLeft = this.pickups.countActive(true) === 0;
+    let planeAlive = this.plane.currentAnimation !== this.plane.deathAnimation;
+    if(queuesEmpty && noEnemiesLeft && noPickupsLeft && planeAlive) return true;
+    return false;
+  }
+
+  setProjectileEnemyCollision()
+  {
     this.physics.add.overlap(this.projectiles, this.enemies, (projectileSprite, enemySprite) => 
     {
       let enemyData = enemySprite.__enemy;
@@ -416,21 +426,9 @@ class GameScene extends Phaser.Scene
         let deathEffect = new Effect({ scene: this, data: this.effectsData, type: enemySprite.__enemy.deathAnimation, x: x, y: y });
         deathEffect.onAnimationComplete(effect => 
         {
-          deathEffect.destroy();
+          effect.destroy();
           this.updateScore({ amount: enemySprite.__enemy.score });
         });
-
-        // let deathEffect = this.add.sprite(x, y, enemySprite.__enemy.deathSprite);
-        // let scale = (displayHeight / deathEffect.height) / 4;
-        // deathEffect.setScale(scale);
-        // deathEffect.setDepth(10);
-        // deathEffect.play(enemySprite.__enemy.deathAnimation);
-        // deathEffect.on('animationcomplete', (animation, frame) => 
-        // {
-        //   if(animation.key === enemySprite.__enemy.deathAnimation) deathEffect.destroy();
-        //   this.updateScore({ amount: enemySprite.__enemy.score });
-        // });
-
       }
       else
       {
@@ -440,25 +438,18 @@ class GameScene extends Phaser.Scene
     });
   }
 
-  checkForLevelComplete() 
-  {
-    let queuesEmpty = this.enemySpawnQueue.length === 0 && this.pickupSpawnQueue.length === 0;
-    let noEnemiesLeft = this.enemies.countActive(true) === 0;
-    let noPickupsLeft = this.pickups.countActive(true) === 0;
-    let planeAlive = this.plane.currentAnimation !== this.plane.deathAnimation;
-    if(queuesEmpty && noEnemiesLeft && noPickupsLeft && planeAlive) return true;
-    return false;
-  }
-
   loadEffectsImages()
   {
     this.effectsData.effects.forEach(effect => 
     {
       this.load.image(effect.name, effect.sprite);
-      effect.frames.forEach(frame => 
+      if(effect.frames !== null)
       {
-        this.load.image(frame.key, frame.sprite);
-      });
+        effect.frames.forEach(frame => 
+        {
+          this.load.image(frame.key, frame.sprite);
+        });
+      }
     });
   }
 
@@ -466,15 +457,21 @@ class GameScene extends Phaser.Scene
   {
     this.effectsData.effects.forEach(effect => 
     {
-      let frames = effect.frames.map(frame => ({ key: frame.key }));
-      if(!this.anims.exists(effect.key)) 
+      if(effect.frames !== null)
       {
-        this.anims.create({
-          key: effect.key,
-          frames: frames,
-          frameRate: effect.frameRate || 24,
-          repeat: effect.repeat !== undefined ? effect.repeat : 0
-        });
+        let frames = effect.frames.map(frame => ({ key: frame.key }));
+        if(frames !== null)
+        {
+          if(!this.anims.exists(effect.key)) 
+          {
+            this.anims.create({
+              key: effect.key,
+              frames: frames,
+              frameRate: effect.frameRate,
+              repeat: effect.repeat
+            });
+          }
+        }
       }
     });
   }
@@ -750,15 +747,8 @@ class GameScene extends Phaser.Scene
         enemy.destroy();
         this.enemies.remove(enemy.sprite, true, true);
 
-        let deathEffect = this.add.sprite(x, y, enemy.deathSprite);
-        let scale = (displayHeight / deathEffect.height) / 4;
-        deathEffect.setScale(scale);
-        deathEffect.setDepth(10);
-        deathEffect.play(enemy.deathAnimation);
-        deathEffect.on('animationcomplete', (animation, frame) => 
-        {
-          if(animation.key === enemy.deathAnimation) deathEffect.destroy();
-        });
+        let deathEffect = new Effect({ scene: this, data: this.effectsData, type: enemy.deathAnimation, x: x, y: y });
+        deathEffect.onAnimationComplete(effect => { effect.destroy(); });
 
         this.sound.play(enemy.hitSoundEffect.key, { volume: enemy.hitSoundEffect.volume });
         this.hud.updateHearts();
@@ -839,21 +829,8 @@ class GameScene extends Phaser.Scene
         this.updateScore({ amount: pickup.score });
 
         this.sound.play(pickup.soundEffect.key, { volume: pickup.soundEffect.volume });
-
-        let sparkle = this.add.sprite(x, y, 'sparkle');
-        sparkle.setScale(displayHeight / (sparkle.height / 6));
-        sparkle.setDepth(10);
-
-        this.tweens.add
-        ({
-          targets: sparkle,
-          alpha: 0,
-          scaleX: 0,
-          scaleY: 0,
-          duration: 1000,
-          ease: 'Power1',
-          onComplete: () => { sparkle.destroy(); }
-        });
+        let pickupEffect = new Effect({ scene: this, data: this.effectsData, type: pickup.animationEffect, x: x, y: y });
+        pickupEffect.onAnimationComplete(effect => { effect.destroy(); });
       });
     }
 
@@ -1638,6 +1615,7 @@ class Pickup
     this.speed = device.screenWidth / pickupData.speed;
     this.score = pickupData.score;
     this.soundEffect = pickupData.soundEffect;
+    this.animationEffect = pickupData.animationEffect;
   }
 
   /** Public method to destroy the pickups sprite. */
@@ -1832,8 +1810,33 @@ class Effect
     this.sprite = scene.add.sprite(x, y, this.name);
     this.sprite.setScale((device.screenWidth / effectData.height) / this.sprite.height);
     this.sprite.setDepth(10);
-    this.key = effectData.key;
-    this.sprite.play(this.key);
+
+    if(effectData.frames !== null)
+    {
+      this.key = effectData.key;
+      this.sprite.play(this.key);
+    }
+
+    if(effectData.tween !== null)
+    {
+      let tween = effectData.tween;
+      this.scene.tweens.add({
+        targets: this.sprite,
+        alpha: tween.alpha,
+        scaleX: tween.scaleX,
+        scaleY: tween.scaleY,
+        duration: tween.duration,
+        ease: tween.ease
+      });
+
+      if(tween.duration !== null)
+      {
+        this.scene.time.delayedCall(tween.duration, () => 
+        {
+          this.destroy();
+        });
+      }
+    }
   }
 
   /** Public method to destroy the effect's sprite. */
