@@ -4,6 +4,7 @@
     {
       "name": "explosion",
       "sprite": "explosion-1.png",
+      "height": 8,
       "key": "explosion",
       "frames":
       [
