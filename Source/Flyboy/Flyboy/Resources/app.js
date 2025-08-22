@@ -43,6 +43,7 @@ class SplashScene extends Phaser.Scene
 
     this.load.audio('menu-music', 'menu-music.mp3');
     this.load.audio('tap', 'tap.mp3');
+    this.load.audio('error', 'error.mp3');
     this.load.image('logo', 'scriptit-logo.png');
     this.load.json('levels', `levels.json?v=${Date.now()}`);
   }
@@ -111,7 +112,7 @@ class LevelSelectScene extends Phaser.Scene
         lock.setInteractive({ useHandCursor: true });
         lock.on('pointerup', () => 
         {
-
+          this.sound.play('error', { volume: 0.7, loop: false });
         });
       }
     });
