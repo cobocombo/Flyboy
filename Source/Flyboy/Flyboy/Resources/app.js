@@ -42,6 +42,7 @@ class SplashScene extends Phaser.Scene
     .catch((err) => { console.warn('Font failed to load', err); });
 
     this.load.audio('menu-music', 'menu-music.mp3');
+    this.load.audio('tap', 'tap.mp3');
     this.load.image('logo', 'scriptit-logo.png');
     this.load.json('levels', `levels.json?v=${Date.now()}`);
   }
@@ -97,6 +98,7 @@ class LevelSelectScene extends Phaser.Scene
         let block = new LevelSelectBlock({ scene: this, x, y, level: level.id, starCount: levels.getStarsForLevel({ id: level.id }) || 0 });
         block.setInteractive({ useHandCursor: true }).on('pointerup', () => 
         {
+          this.sound.play('tap', { volume: 0.7, loop: false }); 
           levels.selectLevel({ id: level.id });
           this.scene.start('LoadingScene');
         });
@@ -121,7 +123,11 @@ class LevelSelectScene extends Phaser.Scene
     backButton.setDisplaySize((device.screenWidth / 12), (device.screenWidth / 12));
     backButton.setOrigin(0.5);
     backButton.setInteractive({ useHandCursor: true });
-    backButton.on('pointerup', () => { this.scene.start('MainMenuScene'); });
+    backButton.on('pointerup', () => 
+    { 
+      this.scene.start('MainMenuScene');
+      this.sound.play('tap', { volume: 0.7, loop: false });  
+    });
   }
 
   /** Public method called to pre-load any assets for the scene or upcoming scenes. */
@@ -170,7 +176,11 @@ class MainMenuScene extends Phaser.Scene
     this.startButton.setScale((device.screenWidth / 8) / this.startButton.height);
     this.startButton.setPosition(this.cameras.main.centerX, this.cameras.main.height * 0.55);
     this.startButton.setInteractive();
-    this.startButton.on('pointerdown', () => { this.scene.start('LevelSelectScene'); });
+    this.startButton.on('pointerdown', () => 
+    { 
+      this.scene.start('LevelSelectScene');
+      this.sound.play('tap', { volume: 0.7, loop: false }); 
+    });
 
     this.settingsTapped = false;
     this.settingsDialog = new ui.Dialog({ id: 'settings-dialog', width: `400px`, height: `200px` });
@@ -186,9 +196,10 @@ class MainMenuScene extends Phaser.Scene
     this.settingsButton.setScale((device.screenWidth / 10) / this.settingsButton.height);
     this.settingsButton.setInteractive();
     this.settingsButton.on('pointerdown', () => 
-    {
+    { 
       if(this.settingsTapped === false) 
       {
+        this.sound.play('tap', { volume: 0.7, loop: false });
         this.settingsTapped = true;
         this.toggleInteractive({ enable: false });
         this.settingsDialog.present({ root: new SettingsPage({ sound: this.sound }) });
@@ -1949,6 +1960,7 @@ class SettingsPage extends ui.Page
     { 
       this.save();
       dialog.dismiss(); 
+      this.sound.play('tap', { volume: 0.7, loop: false });
     }});
 
     this.navigationBarButtonsRight = [ this.saveButton ];
