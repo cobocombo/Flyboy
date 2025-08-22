@@ -98,7 +98,7 @@ class LevelSelectScene extends Phaser.Scene
         let block = new LevelSelectBlock({ scene: this, x, y, level: level.id, starCount: levels.getStarsForLevel({ id: level.id }) || 0 });
         block.setInteractive({ useHandCursor: true }).on('pointerup', () => 
         {
-          this.sound.play('tap', { volume: 0.7, loop: false }); 
+          this.sound.play('tap', { volume: 0.8, loop: false }); 
           levels.selectLevel({ id: level.id });
           this.scene.start('LoadingScene');
         });
@@ -117,7 +117,7 @@ class LevelSelectScene extends Phaser.Scene
     });
 
     let menuMusic = this.sound.get('menu-music');
-    if(menuMusic) menuMusic.play();
+    if(menuMusic && !menuMusic.isPlaying) menuMusic.play();
 
     let backButton = this.add.image(20 + (device.screenWidth / 12) / 2, this.scale.height - 20 - (device.screenWidth / 12) / 2, 'back-button');
     backButton.setDisplaySize((device.screenWidth / 12), (device.screenWidth / 12));
@@ -126,7 +126,7 @@ class LevelSelectScene extends Phaser.Scene
     backButton.on('pointerup', () => 
     { 
       this.scene.start('MainMenuScene');
-      this.sound.play('tap', { volume: 0.7, loop: false });  
+      this.sound.play('tap', { volume: 0.8, loop: false });  
     });
   }
 
@@ -179,7 +179,7 @@ class MainMenuScene extends Phaser.Scene
     this.startButton.on('pointerdown', () => 
     { 
       this.scene.start('LevelSelectScene');
-      this.sound.play('tap', { volume: 0.7, loop: false }); 
+      this.sound.play('tap', { volume: 0.8, loop: false }); 
     });
 
     this.settingsTapped = false;
@@ -199,7 +199,7 @@ class MainMenuScene extends Phaser.Scene
     { 
       if(this.settingsTapped === false) 
       {
-        this.sound.play('tap', { volume: 0.7, loop: false });
+        this.sound.play('tap', { volume: 0.8, loop: false });
         this.settingsTapped = true;
         this.toggleInteractive({ enable: false });
         this.settingsDialog.present({ root: new SettingsPage({ sound: this.sound }) });
@@ -1960,7 +1960,7 @@ class SettingsPage extends ui.Page
     { 
       this.save();
       dialog.dismiss(); 
-      this.sound.play('tap', { volume: 0.7, loop: false });
+      this.sound.play('tap', { volume: 0.8, loop: false });
     }});
 
     this.navigationBarButtonsRight = [ this.saveButton ];
