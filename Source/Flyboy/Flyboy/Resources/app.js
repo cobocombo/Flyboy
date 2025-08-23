@@ -175,7 +175,7 @@ class MainMenuScene extends Phaser.Scene
 
     this.startButton = this.add.image(0, 0, 'start-button');
     this.startButton.setScale((device.screenWidth / 8) / this.startButton.height);
-    this.startButton.setPosition(this.cameras.main.centerX, this.cameras.main.height * 0.55);
+    this.startButton.setPosition(this.cameras.main.centerX, this.cameras.main.height * 0.60);
     this.startButton.setInteractive();
     this.startButton.on('pointerdown', () => 
     { 
