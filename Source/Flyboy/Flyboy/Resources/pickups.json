@@ -9,6 +9,15 @@
       "score": 100,
       "soundEffect": { "key": "coin", "sound": "coin.mp3", "volume": 0.5 },
       "animationEffect": "sparkle"
+    },
+    {
+      "name": "heal",
+      "sprite": "heal.png",
+      "height": 18,
+      "speed": 4,
+      "score": 0,
+      "soundEffect": { "key": "heal", "sound": "heal.mp3", "volume": 0.5 },
+      "animationEffect": "sparkle"
     }
   ]
 }

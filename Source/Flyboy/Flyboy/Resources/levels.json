@@ -13,7 +13,8 @@
       "obstacles": [{ }],
       "pickups": 
       [ 
-        { "type": "coin", "spawnPosition": -1, "spawnTime": 5000 }
+        { "type": "coin", "spawnPosition": -1, "spawnTime": 5000 },
+        { "type": "heal", "spawnPosition": -1, "spawnTime": 10000 }
       ],
       "oneStarScore": 50,
       "twoStarScore": 100,

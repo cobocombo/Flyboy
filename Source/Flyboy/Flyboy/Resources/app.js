@@ -285,7 +285,11 @@ class LoadingScene extends Phaser.Scene
         interval.remove(false);
         loadingText.setText('Start ');
         loadingText.setInteractive({ useHandCursor: true });
-        loadingText.on('pointerdown', () => { this.scene.start('GameScene'); });
+        loadingText.on('pointerdown', () => 
+        { 
+          this.sound.play('tap', { volume: 0.8, loop: false }); 
+          this.scene.start('GameScene'); 
+        });
       });
     });
 
@@ -840,6 +844,12 @@ class GameScene extends Phaser.Scene
 
         this.updateScore({ amount: pickup.score });
 
+        if(pickup.name == 'heal')
+        {
+          if(this.plane.numberOfHits !== 0) this.plane.numberOfHits -=1;
+          this.hud.updateHearts();
+        }
+        
         this.sound.play(pickup.soundEffect.key, { volume: pickup.soundEffect.volume });
         let pickupEffect = new Effect({ scene: this, data: this.effectsData, type: pickup.animationEffect, x: x, y: y });
         pickupEffect.onAnimationComplete(effect => { effect.destroy(); });
