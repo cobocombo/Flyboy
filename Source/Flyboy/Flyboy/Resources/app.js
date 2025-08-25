@@ -343,36 +343,15 @@ class GameScene extends Phaser.Scene
     }; 
   }
 
-  /** Public method called to pre-load any assets for the scene or upcoming scenes. */
-  preload() 
+  /** Public method called to check if all the conditions are right for the level to be marked as complete, before deciding failure or not. */
+  checkForLevelComplete() 
   {
-    this.planeType = 'green-plane';
-    this.planeData = this.cache.json.get('planes');
-    this.enemyData = this.cache.json.get('enemies');
-    this.pickupData = this.cache.json.get('pickups');
-    this.projectileData = this.cache.json.get('projectiles');
-    this.effectsData = this.cache.json.get('effects');
-
-    this.load.image('background', levels.currentLevel.background);
-    this.load.image('joystick-base', 'joystick-base.png');
-    this.load.image('joystick', 'joystick.png');
-    this.load.image('shoot-button', 'shoot-button.png');
-    this.load.image('pause-button', 'pause-button.png');
-    this.load.image('heart', 'heart.png'); 
-
-    this.loadEnemyImages();
-    this.loadPlaneImages();
-    this.loadPickupImages();
-    this.loadProjectileImages();
-    this.loadEffectsImages();
-
-    this.loadEnemySounds();
-    this.loadPlaneSounds();
-    this.loadPickupSounds();
-
-    this.load.audio('level-failed', 'level-failed.mp3');
-    this.load.audio('level-complete', 'level-complete.mp3');
-    this.load.audio('background-music', levels.currentLevel.backgroundMusic);
+    let queuesEmpty = this.enemySpawnQueue.length === 0 && this.pickupSpawnQueue.length === 0;
+    let noEnemiesLeft = this.enemies.countActive(true) === 0;
+    let noPickupsLeft = this.pickups.countActive(true) === 0;
+    let planeAlive = this.plane.currentAnimation !== this.plane.deathAnimation;
+    if(queuesEmpty && noEnemiesLeft && noPickupsLeft && planeAlive) return true;
+    return false;
   }
 
   /** Public method called to create logic and assets for the scene. */
@@ -418,63 +397,36 @@ class GameScene extends Phaser.Scene
     this.setProjectileEnemyCollision();
   }
 
-  /** Public method called to check if all the conditions are right for the level to be marked as complete, before deciding failure or not. */
-  checkForLevelComplete() 
+  /** Public method called to pre-load any assets for the scene or upcoming scenes. */
+  preload() 
   {
-    let queuesEmpty = this.enemySpawnQueue.length === 0 && this.pickupSpawnQueue.length === 0;
-    let noEnemiesLeft = this.enemies.countActive(true) === 0;
-    let noPickupsLeft = this.pickups.countActive(true) === 0;
-    let planeAlive = this.plane.currentAnimation !== this.plane.deathAnimation;
-    if(queuesEmpty && noEnemiesLeft && noPickupsLeft && planeAlive) return true;
-    return false;
-  }
+    this.planeType = 'green-plane';
+    this.planeData = this.cache.json.get('planes');
+    this.enemyData = this.cache.json.get('enemies');
+    this.pickupData = this.cache.json.get('pickups');
+    this.projectileData = this.cache.json.get('projectiles');
+    this.effectsData = this.cache.json.get('effects');
 
-  /** Public method called to set the physics for the projectiles and the enemies currently in the game scene. */
-  setProjectileEnemyCollision()
-  {
-    this.physics.add.overlap(this.projectiles, this.enemies, (projectileSprite, enemySprite) => 
-    {
-      let enemyData = enemySprite.__enemy;
-      enemyData.numberOfHits += 1;
-      projectileSprite.destroy();
-      this.projectiles.remove(projectileSprite, true, true);
-      this.sound.play(enemyData.hitSoundEffect.key, { volume: enemyData.hitSoundEffect.volume });
+    this.load.image('background', levels.currentLevel.background);
+    this.load.image('joystick-base', 'joystick-base.png');
+    this.load.image('joystick', 'joystick.png');
+    this.load.image('shoot-button', 'shoot-button.png');
+    this.load.image('pause-button', 'pause-button.png');
+    this.load.image('heart', 'heart.png'); 
 
-      if(enemyData.numberOfHits === enemyData.maxNumberOfHits)
-      {
-        enemySprite.destroy();
-        this.enemies.remove(enemySprite, true, true);
-        let { x, y, displayHeight } = enemySprite;
+    this.loadEnemyImages();
+    this.loadPlaneImages();
+    this.loadPickupImages();
+    this.loadProjectileImages();
+    this.loadEffectsImages();
 
-        let deathEffect = new Effect({ scene: this, data: this.effectsData, type: enemySprite.__enemy.deathAnimation, x: x, y: y });
-        deathEffect.onAnimationComplete(effect => 
-        {
-          effect.destroy();
-          this.updateScore({ amount: enemySprite.__enemy.score });
-        });
-      }
-      else
-      {
-        enemySprite.setTint(0xff0000);
-        this.time.delayedCall(100, () => { enemySprite.clearTint(); });
-      }
-    });
-  }
+    this.loadEnemySounds();
+    this.loadPlaneSounds();
+    this.loadPickupSounds();
 
-  /** Public method called to load needed effects images in the game scene. */
-  loadEffectsImages()
-  {
-    this.effectsData.effects.forEach(effect => 
-    {
-      this.load.image(effect.name, effect.sprite);
-      if(effect.frames !== null)
-      {
-        effect.frames.forEach(frame => 
-        {
-          this.load.image(frame.key, frame.sprite);
-        });
-      }
-    });
+    this.load.audio('level-failed', 'level-failed.mp3');
+    this.load.audio('level-complete', 'level-complete.mp3');
+    this.load.audio('background-music', levels.currentLevel.backgroundMusic);
   }
 
   /** Public method called to load needed effects animations in the game scene. */
@@ -497,6 +449,22 @@ class GameScene extends Phaser.Scene
             });
           }
         }
+      }
+    });
+  }
+
+  /** Public method called to load needed effects images in the game scene. */
+  loadEffectsImages()
+  {
+    this.effectsData.effects.forEach(effect => 
+    {
+      this.load.image(effect.name, effect.sprite);
+      if(effect.frames !== null)
+      {
+        effect.frames.forEach(frame => 
+        {
+          this.load.image(frame.key, frame.sprite);
+        });
       }
     });
   }
@@ -563,7 +531,50 @@ class GameScene extends Phaser.Scene
     });
   }
 
-  /** Public method called to load needed plane animations in the game scene. */
+  /** Public method called to load needed pickup animations in the game scene. */
+  loadPickupAnimations() 
+  {
+    this.pickupData.pickups
+    .filter(pickup => this.pickupTypes.includes(pickup.name))
+    .forEach(pickup => 
+    {
+      if(pickup.animations && Array.isArray(pickup.animations)) 
+      {
+        pickup.animations.forEach(animation => 
+        {
+          let frames = animation.frames.map(frame => ({ key: frame.key }));
+          if(!this.anims.exists(animation.key)) 
+          {
+            this.anims.create({
+              key: animation.key,
+              frames: frames,
+              frameRate: animation.frameRate || 12,
+              repeat: animation.repeat ?? -1
+            });
+          }
+        });
+      }
+    });
+  }
+
+  /** Public method called to load needed pickup images in the game scene. */
+  loadPickupImages() 
+  {
+    this.pickupTypes = [...new Set((levels.currentLevel?.pickups || []).map(p => p.type))];
+    this.pickupData.pickups
+    .filter(pickup => this.pickupTypes.includes(pickup.name))
+    .forEach(pickup => { if(pickup.name && pickup.sprite) this.load.image(pickup.name, pickup.sprite); });
+  }
+
+  /** Public method called to load needed pickup sounds in the game scene. */
+  loadPickupSounds()
+  {
+    this.pickupData.pickups
+    .filter(pickup => this.pickupTypes.includes(pickup.name))
+    .forEach(pickup => { this.load.audio(pickup.soundEffect.key, pickup.soundEffect.sound); });
+  }
+
+    /** Public method called to load needed plane animations in the game scene. */
   loadPlaneAnimations() 
   {
     let selectedPlane = this.planeData.planes.find(plane => plane.name === this.planeType);
@@ -609,50 +620,6 @@ class GameScene extends Phaser.Scene
     });
   }
 
-  /** Public method called to load needed pickup animations in the game scene. */
-  loadPickupAnimations() 
-  {
-    this.pickupData.pickups
-    .filter(pickup => this.pickupTypes.includes(pickup.name))
-    .forEach(pickup => 
-    {
-      if(pickup.animations && Array.isArray(pickup.animations)) 
-      {
-        pickup.animations.forEach(animation => 
-        {
-          let frames = animation.frames.map(frame => ({ key: frame.key }));
-          if(!this.anims.exists(animation.key)) 
-          {
-            this.anims.create({
-              key: animation.key,
-              frames: frames,
-              frameRate: animation.frameRate || 12,
-              repeat: animation.repeat ?? -1
-            });
-          }
-        });
-      }
-    });
-  }
-
-  /** Public method called to load needed pickup images in the game scene. */
-  loadPickupImages() 
-  {
-    
-    this.pickupTypes = [...new Set((levels.currentLevel?.pickups || []).map(p => p.type))];
-    this.pickupData.pickups
-    .filter(pickup => this.pickupTypes.includes(pickup.name))
-    .forEach(pickup => { if(pickup.name && pickup.sprite) this.load.image(pickup.name, pickup.sprite); });
-  }
-
-  /** Public method called to load needed pickup sounds in the game scene. */
-  loadPickupSounds()
-  {
-    this.pickupData.pickups
-    .filter(pickup => this.pickupTypes.includes(pickup.name))
-    .forEach(pickup => { this.load.audio(pickup.soundEffect.key, pickup.soundEffect.sound); });
-  }
-
   /** Public method called to load needed projectile images in the game scene. */
   loadProjectileImages() 
   {
@@ -662,7 +629,40 @@ class GameScene extends Phaser.Scene
       this.load.image(proj.name, proj.sprite) 
     });
   }
+  
+  /** Public method called to set the physics for the projectiles and the enemies currently in the game scene. */
+  setProjectileEnemyCollision()
+  {
+    this.physics.add.overlap(this.projectiles, this.enemies, (projectileSprite, enemySprite) => 
+    {
+      let enemyData = enemySprite.__enemy;
+      enemyData.numberOfHits += 1;
+      projectileSprite.destroy();
+      this.projectiles.remove(projectileSprite, true, true);
+      this.sound.play(enemyData.hitSoundEffect.key, { volume: enemyData.hitSoundEffect.volume });
 
+      if(enemyData.numberOfHits === enemyData.maxNumberOfHits)
+      {
+        enemySprite.destroy();
+        this.enemies.remove(enemySprite, true, true);
+        let { x, y, displayHeight } = enemySprite;
+
+        let deathEffect = new Effect({ scene: this, data: this.effectsData, type: enemySprite.__enemy.deathAnimation, x: x, y: y });
+        deathEffect.onAnimationComplete(effect => 
+        {
+          effect.destroy();
+          this.updateScore({ amount: enemySprite.__enemy.score });
+        });
+      }
+      else
+      {
+        enemySprite.setTint(0xff0000);
+        this.time.delayedCall(100, () => { enemySprite.clearTint(); });
+      }
+    });
+  }
+
+  /** Main phaser update loop for the game scene. */
   update(_time, delta) 
   {
     if(!typeChecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
@@ -724,6 +724,7 @@ class GameScene extends Phaser.Scene
     }
   }
 
+  /** Public method called during the update loop of the game scene to update the moving background. */
   updateBackground({ delta } = {})
   {
     if(!typeChecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
@@ -734,26 +735,7 @@ class GameScene extends Phaser.Scene
     if(this.background2.x <= -device.screenHeight) this.background2.x = (this.background1.x + device.screenHeight)-2;
   }
 
-  updateProjectiles({ delta } = {})
-  {
-    if(!typeChecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
-
-    Phaser.Actions.Call(this.projectiles.getChildren(), projectileSprite => 
-    {
-      let projectile = { sprite: projectileSprite };
-      projectile.update = Projectile.prototype.update;
-      projectile.isOffScreen = Projectile.prototype.isOffScreen;
-      projectile.destroy = Projectile.prototype.destroy;
-
-      projectile.update({ delta: delta, speed: projectileSprite.__projectile.speed, direction: projectileSprite.__projectile.direction });
-      if(projectile.isOffScreen({ direction: projectileSprite.__projectile.direction})) 
-      {
-        projectile.destroy();
-        this.projectiles.remove(projectileSprite, true, true);
-      }
-    }); 
-  }
-
+  /** Public method called during the update loop of the game scene to update all current enemies. Handles enemy to plane collision. */
   updateEnemies({ delta } = {})
   {
     if(!typeChecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
@@ -834,6 +816,7 @@ class GameScene extends Phaser.Scene
     });
   }
 
+  /** Public method called during the update loop of the game scene to update all current pickups. Handles pickup to plane collision. */
   updatePickups({ delta } = {})
   {
     if(!typeChecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
@@ -888,11 +871,33 @@ class GameScene extends Phaser.Scene
     });
   }
 
+  /** Public method called during the game scene periodically when the user's score needs to be updated. */
   updateScore({ amount } = {})
   {
     if(!typeChecker.check({ type: 'number', value: amount })) console.error(this.errors.amountTypeError);
     this.score += amount;
     this.hud.scoreText.setText(`Score: ${this.score}`);
+  }
+
+  /** Public method called during the update loop of the game scene to update all current projectiles. */
+  updateProjectiles({ delta } = {})
+  {
+    if(!typeChecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
+
+    Phaser.Actions.Call(this.projectiles.getChildren(), projectileSprite => 
+    {
+      let projectile = { sprite: projectileSprite };
+      projectile.update = Projectile.prototype.update;
+      projectile.isOffScreen = Projectile.prototype.isOffScreen;
+      projectile.destroy = Projectile.prototype.destroy;
+
+      projectile.update({ delta: delta, speed: projectileSprite.__projectile.speed, direction: projectileSprite.__projectile.direction });
+      if(projectile.isOffScreen({ direction: projectileSprite.__projectile.direction})) 
+      {
+        projectile.destroy();
+        this.projectiles.remove(projectileSprite, true, true);
+      }
+    }); 
   }
 }
 
