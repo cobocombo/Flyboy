@@ -310,6 +310,7 @@ class LoadingScene extends Phaser.Scene
 
 /////////////////////////////////////////////////
 
+/** Class representing the game scene of Flyboy. */
 class GameScene extends Phaser.Scene 
 {
   background1;
@@ -330,6 +331,7 @@ class GameScene extends Phaser.Scene
   selectedPlane;
   score;
 
+  /** Creates the game scene object. */
   constructor() 
   {
     super('GameScene');
@@ -341,8 +343,10 @@ class GameScene extends Phaser.Scene
     }; 
   }
 
+  /** Public method called to pre-load any assets for the scene or upcoming scenes. */
   preload() 
   {
+    this.planeType = 'green-plane';
     this.planeData = this.cache.json.get('planes');
     this.enemyData = this.cache.json.get('enemies');
     this.pickupData = this.cache.json.get('pickups');
@@ -371,6 +375,7 @@ class GameScene extends Phaser.Scene
     this.load.audio('background-music', levels.currentLevel.backgroundMusic);
   }
 
+  /** Public method called to create logic and assets for the scene. */
   create() 
   {
     this.input.addPointer(2);
@@ -413,6 +418,7 @@ class GameScene extends Phaser.Scene
     this.setProjectileEnemyCollision();
   }
 
+  /** Public method called to check if all the conditions are right for the level to be marked as complete, before deciding failure or not. */
   checkForLevelComplete() 
   {
     let queuesEmpty = this.enemySpawnQueue.length === 0 && this.pickupSpawnQueue.length === 0;
@@ -423,6 +429,7 @@ class GameScene extends Phaser.Scene
     return false;
   }
 
+  /** Public method called to set the physics for the projectiles and the enemies currently in the game scene. */
   setProjectileEnemyCollision()
   {
     this.physics.add.overlap(this.projectiles, this.enemies, (projectileSprite, enemySprite) => 
@@ -454,6 +461,7 @@ class GameScene extends Phaser.Scene
     });
   }
 
+  /** Public method called to load needed effects images in the game scene. */
   loadEffectsImages()
   {
     this.effectsData.effects.forEach(effect => 
@@ -469,6 +477,7 @@ class GameScene extends Phaser.Scene
     });
   }
 
+  /** Public method called to load needed effects animations in the game scene. */
   loadEffectsAnimations()
   {
     this.effectsData.effects.forEach(effect => 
@@ -492,6 +501,7 @@ class GameScene extends Phaser.Scene
     });
   }
 
+  /** Public method called to load needed enemy animations in the game scene. */
   loadEnemyAnimations()
   {
     this.enemyData.enemies
@@ -517,6 +527,7 @@ class GameScene extends Phaser.Scene
     });
   }
 
+  /** Public method called to load needed enemy images in the game scene. */
   loadEnemyImages() 
   {
     this.enemyTypes = [...new Set((levels.currentLevel?.enemies || []).map(e => e.type))];
@@ -538,6 +549,7 @@ class GameScene extends Phaser.Scene
     });
   }
 
+  /** Public method called to load needed enemy sounds in the game scene. */
   loadEnemySounds()
   {
     this.enemyData.enemies
@@ -551,6 +563,7 @@ class GameScene extends Phaser.Scene
     });
   }
 
+  /** Public method called to load needed plane animations in the game scene. */
   loadPlaneAnimations() 
   {
     let selectedPlane = this.planeData.planes.find(plane => plane.name === this.planeType);
@@ -572,9 +585,9 @@ class GameScene extends Phaser.Scene
     }
   }
 
+  /** Public method called to load needed effects images in the game scene. */
   loadPlaneImages() 
   {
-    this.planeType = 'green-plane';
     this.selectedPlane = this.planeData.planes.find(plane => plane.name === this.planeType);
     this.load.image(this.selectedPlane.name, this.selectedPlane.sprite);
     this.selectedPlane.animations.forEach(animation => 
@@ -586,6 +599,7 @@ class GameScene extends Phaser.Scene
     });
   }
 
+  /** Public method called to load needed plane sounds in the game scene. */
   loadPlaneSounds()
   {
     let selectedPlane = this.planeData.planes.find(plane => plane.name === this.planeType);
@@ -595,6 +609,7 @@ class GameScene extends Phaser.Scene
     });
   }
 
+  /** Public method called to load needed pickup animations in the game scene. */
   loadPickupAnimations() 
   {
     this.pickupData.pickups
@@ -620,6 +635,7 @@ class GameScene extends Phaser.Scene
     });
   }
 
+  /** Public method called to load needed pickup images in the game scene. */
   loadPickupImages() 
   {
     
@@ -629,6 +645,7 @@ class GameScene extends Phaser.Scene
     .forEach(pickup => { if(pickup.name && pickup.sprite) this.load.image(pickup.name, pickup.sprite); });
   }
 
+  /** Public method called to load needed pickup sounds in the game scene. */
   loadPickupSounds()
   {
     this.pickupData.pickups
@@ -636,6 +653,7 @@ class GameScene extends Phaser.Scene
     .forEach(pickup => { this.load.audio(pickup.soundEffect.key, pickup.soundEffect.sound); });
   }
 
+  /** Public method called to load needed projectile images in the game scene. */
   loadProjectileImages() 
   {
     this.matchingProjectiles = this.projectileData.projectiles.filter(proj => proj.name === this.selectedPlane.projectile);
