@@ -1561,6 +1561,7 @@ class Projectile
     this.name = projectileData.name;
     this.sprite = scene.add.sprite(x, y, projectileData.name);
     this.sprite.setScale((device.screenWidth / projectileData.height) / this.sprite.height);
+    this.sprite.setFlipX(projectileData.flipX);
     this.speed = device.screenWidth / projectileData.speed;
     this.direction = direction;
     this.sprite.__projectile = this;
@@ -1770,6 +1771,10 @@ class Enemy
     this.sprite.setFlipX(enemyData.flipX);
     this.speed = device.screenWidth / enemyData.speed;
     this.maxNumberOfHits = enemyData.maxNumberOfHits;
+    this.projectile = enemyData.projectile;
+    this.shootingRate = enemyData.shootingRate;
+
+
     this.numberOfHits = 0;
     this.score = enemyData.score;
     this.soundEffects = enemyData.soundEffects;

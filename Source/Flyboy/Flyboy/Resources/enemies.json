@@ -2,6 +2,7 @@
   "enemies": 
   [
     {
+      "starting-comment:": "//////////////////// START OF BIRD DEFINTION ////////////////////",
       "name": "bird",
       "sprite": "bird-fly-1.png",
       "height": 12,
@@ -20,15 +21,70 @@
         }
       ],
       "startingAnimation": "bird-fly",
+      "shootingAnimation": null,
       "deathAnimation": "explosion",
       "deathSprite": "explosion-1.png",
       "speed": 6,
       "maxNumberOfHits": 2,
+      "projectile": null,
+      "shootingRate": null,
       "score": 50,
       "soundEffects":
       [
         { "key": "hit", "sound": "hit.mp3", "volume": 1.0 }
-      ]
+      ],
+      "ending-comment:": "//////////////////// END OF BIRD DEFINITION ////////////////////"
+    },
+    {
+      "starting-comment:": "//////////////////// START OF CHICKEN DEFINTION ////////////////////",
+      "name": "chicken",
+      "sprite": "chicken-fly-1.png",
+      "height": 12,
+      "flipX": true,
+      "animations": 
+      [
+        { 
+          "key": "chicken-fly",
+          "frames":
+          [
+            { "key": "chicken-fly-1", "sprite": "chicken-fly-1.png" },
+            { "key": "chicken-fly-2", "sprite": "chicken-fly-2.png" },
+            { "key": "chicken-fly-3", "sprite": "chicken-fly-3.png" },
+            { "key": "chicken-fly-4", "sprite": "chicken-fly-4.png" },
+            { "key": "chicken-fly-5", "sprite": "chicken-fly-5.png" },
+            { "key": "chicken-fly-6", "sprite": "chicken-fly-6.png" },
+            { "key": "chicken-fly-7", "sprite": "chicken-fly-7.png" },
+            { "key": "chicken-fly-8", "sprite": "chicken-fly-8.png" }
+          ],
+          "frameRate": 8,
+          "repeat": -1
+        },
+        { 
+          "key": "chicken-shoot",
+          "frames":
+          [
+            { "key": "chicken-shoot-1", "sprite": "chicken-shoot-1.png" },
+            { "key": "chicken-shoot-2", "sprite": "chicken-shoot-2.png" },
+            { "key": "chicken-shoot-3", "sprite": "chicken-shoot-3.png" }
+          ],
+          "frameRate": 4,
+          "repeat": -1
+        }
+      ],
+      "startingAnimation": "chicken-fly",
+      "shootingAnimation": "chicken-shoot",
+      "deathAnimation": "explosion",
+      "deathSprite": "explosion-1.png",
+      "speed": 6,
+      "maxNumberOfHits": 5,
+      "projectile": "flame",
+      "shootingRate": 2000,
+      "score": 100,
+      "soundEffects":
+      [
+        { "key": "hit", "sound": "hit.mp3", "volume": 1.0 }
+      ],
+      "ending-comment:": "//////////////////// END OF CHICKEN DEFINITION ////////////////////"
     }
   ]
 }
