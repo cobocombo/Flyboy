@@ -71,10 +71,10 @@
       "shootingAnimation": "chicken-shoot",
       "deathAnimation": "explosion",
       "deathSprite": "explosion-1.png",
-      "speed": 6,
+      "speed": 8,
       "maxNumberOfHits": 3,
       "projectile": "flame",
-      "shootingRate": 2000,
+      "shootingRate": 3000,
       "score": 100,
       "soundEffects":
       [

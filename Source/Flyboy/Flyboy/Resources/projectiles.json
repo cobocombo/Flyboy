@@ -13,7 +13,7 @@
       "sprite": "flame.png",
       "height": 40,
       "flipX": true,
-      "speed": 2
+      "speed": 4
     }
   ]
 }

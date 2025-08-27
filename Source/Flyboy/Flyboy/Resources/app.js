@@ -355,6 +355,40 @@ class GameScene extends Phaser.Scene
     return false;
   }
 
+  checkForPlaneDeath()
+  {
+    if(this.plane.numberOfHits === this.plane.maxNumberOfHits)
+    {
+      this.plane?.setAnimation({ name: this.plane.deathAnimation });
+      this.time.delayedCall(100, () => 
+      { 
+        let planeIdleSoundEffect = this.sound.get(this.plane.idleSoundEffect.key);
+        if(planeIdleSoundEffect)
+        {
+          planeIdleSoundEffect.stop();
+          planeIdleSoundEffect.destroy();
+        } 
+
+        let backgroundMusic = this.sound.get('background-music');
+        if(backgroundMusic)
+        {
+          backgroundMusic.stop();
+          backgroundMusic.destroy();
+        } 
+
+        this.sound.play(this.plane.deathSoundEffect.key, { volume: this.plane.deathSoundEffect.volume, loop: this.plane.deathSoundEffect.loop });
+        this.scene.pause();
+        this.levelfailedAlert.present();
+        this.sound.play('level-failed', { volume: 0.7, loop: false });
+      });
+    }
+    else
+    {
+      this.plane.sprite.setTint(0xff0000);
+      this.time.delayedCall(100, () => { this.plane.sprite.clearTint(); });
+    }
+  }
+
   /** Public method called to create logic and assets for the scene. */
   create() 
   {
@@ -397,6 +431,7 @@ class GameScene extends Phaser.Scene
     this.hud = new HUD({ scene: this, joystick: new Joystick({ scene: this }), shootButton: new ShootButton({ scene: this, plane: this.plane, projectileTypes: this.matchingProjectiles }), plane: this.plane });
 
     this.setProjectileEnemyCollision();
+    this.setEnemyProjectilePlaneCollision();
   }
 
   /** Public method called to pre-load any assets for the scene or upcoming scenes. */
@@ -679,6 +714,20 @@ class GameScene extends Phaser.Scene
     });
   }
 
+  /** Public method called to set the physics for the enemy projectiles and the plane currently in the game scene. */
+  setEnemyProjectilePlaneCollision()
+  {
+    this.physics.add.overlap(this.enemyProjectiles, this.plane.sprite, (projectileSprite, planeSprite) => 
+    {
+      planeSprite.destroy();
+      this.enemyProjectiles.remove(planeSprite, true, true);
+
+      this.plane.numberOfHits += 1;
+      this.hud.updateHearts();
+      this.checkForPlaneDeath();
+    });
+  }
+
   /** Main phaser update loop for the game scene. */
   update(_time, delta) 
   {
@@ -785,37 +834,7 @@ class GameScene extends Phaser.Scene
 
         this.sound.play(enemy.hitSoundEffect.key, { volume: enemy.hitSoundEffect.volume });
         this.hud.updateHearts();
-
-        if(this.plane.numberOfHits === this.plane.maxNumberOfHits)
-        {
-          this.plane?.setAnimation({ name: this.plane.deathAnimation });
-          this.time.delayedCall(100, () => 
-          { 
-            let planeIdleSoundEffect = this.sound.get(this.plane.idleSoundEffect.key);
-            if(planeIdleSoundEffect)
-            {
-              planeIdleSoundEffect.stop();
-              planeIdleSoundEffect.destroy();
-            } 
-
-            let backgroundMusic = this.sound.get('background-music');
-            if(backgroundMusic)
-            {
-              backgroundMusic.stop();
-              backgroundMusic.destroy();
-            } 
-
-            this.sound.play(this.plane.deathSoundEffect.key, { volume: this.plane.deathSoundEffect.volume, loop: this.plane.deathSoundEffect.loop });
-            this.scene.pause();
-            this.levelfailedAlert.present();
-            this.sound.play('level-failed', { volume: 0.7, loop: false });
-          });
-        }
-        else
-        {
-          this.plane.sprite.setTint(0xff0000);
-          this.time.delayedCall(100, () => { this.plane.sprite.clearTint(); });
-        }
+        this.checkForPlaneDeath();
       });
     }
 
@@ -1832,7 +1851,7 @@ class Enemy
 
   fireProjectile() 
   {
-    if (!this.sprite.active) return;
+    if(!this.sprite.active) return;
     this.sprite.play(this.shootingAnimation);
     this.sprite.once(Phaser.Animations.Events.ANIMATION_COMPLETE, (anim, frame) => 
     {
