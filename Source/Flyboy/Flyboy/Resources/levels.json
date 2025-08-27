@@ -7,8 +7,9 @@
       "backgroundMusic": "blue-sky.mp3",
       "enemies": 
       [
-        { "type": "bird", "spawnPosition": 0.75, "spawnTime": 2000 },
-        { "type": "bird", "spawnPosition": 0.1, "spawnTime": 4000 }
+        { "type": "chicken", "spawnPosition": 0.75, "spawnTime": 2000 },
+        { "type": "chicken", "spawnPosition": 0.1, "spawnTime": 4000 },
+        { "type": "chicken", "spawnPosition": 0.5, "spawnTime": 6000 }
       ],
       "obstacles": [{ }],
       "pickups": 

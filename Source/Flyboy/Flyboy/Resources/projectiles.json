@@ -11,7 +11,7 @@
     {
       "name": "flame",
       "sprite": "flame.png",
-      "height": 32,
+      "height": 40,
       "flipX": true,
       "speed": 2
     }

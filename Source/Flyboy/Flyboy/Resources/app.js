@@ -318,6 +318,7 @@ class GameScene extends Phaser.Scene
   elapsedTime;
   enemies;
   enemyData;
+  enemyProjectiles;
   enemySpawnQueue;
   hud;
   levelComplete;
@@ -382,6 +383,7 @@ class GameScene extends Phaser.Scene
     this.enemies = this.physics.add.group();
     this.pickups = this.physics.add.group();
     this.projectiles = this.physics.add.group();
+    this.enemyProjectiles = this.physics.add.group();
   
     this.enemySpawnQueue = [...levels.currentLevel.enemies].sort((a, b) => a.spawnTime - b.spawnTime);
     this.pickupSpawnQueue = [...levels.currentLevel.pickups].sort((a, b) => a.spawnTime - b.spawnTime);
@@ -623,13 +625,28 @@ class GameScene extends Phaser.Scene
   /** Public method called to load needed projectile images in the game scene. */
   loadProjectileImages() 
   {
-    this.matchingProjectiles = this.projectileData.projectiles.filter(proj => proj.name === this.selectedPlane.projectile);
-    this.matchingProjectiles.forEach(proj => 
-    { 
-      this.load.image(proj.name, proj.sprite) 
+    this.matchingProjectiles = this.projectileData.projectiles.filter(
+      proj => proj.name === this.selectedPlane.projectile
+    );
+
+    this.enemyTypes = [...new Set((levels.currentLevel?.enemies || []).map(e => e.type))];
+    let enemyProjectiles = this.enemyData.enemies
+      .filter(enemy => this.enemyTypes.includes(enemy.name))
+      .map(enemy => enemy.projectile)
+      .filter(Boolean);
+
+    let enemyMatchingProjectiles = this.projectileData.projectiles.filter(
+      proj => enemyProjectiles.includes(proj.name)
+    );
+    this.matchingProjectiles = [
+      ...this.matchingProjectiles,
+      ...enemyMatchingProjectiles
+    ];
+    this.matchingProjectiles.forEach(proj => {
+      this.load.image(proj.name, proj.sprite);
     });
   }
-  
+
   /** Public method called to set the physics for the projectiles and the enemies currently in the game scene. */
   setProjectileEnemyCollision()
   {
@@ -760,7 +777,7 @@ class GameScene extends Phaser.Scene
         this.plane.numberOfHits += 1;
 
         const { x, y, displayHeight } = enemy.sprite;
-        enemy.destroy();
+        enemy.destroy({ shootTimer: enemy.shootTimer });
         this.enemies.remove(enemy.sprite, true, true);
 
         let deathEffect = new Effect({ scene: this, data: this.effectsData, type: enemy.deathAnimation, x: x, y: y });
@@ -810,7 +827,7 @@ class GameScene extends Phaser.Scene
 
       if(enemy.isOffScreen()) 
       {
-        enemy.destroy();
+        enemy.destroy({ shootTimer: enemy.shootTimer });
         this.enemies.remove(sprite, true, true);
       }
     });
@@ -896,6 +913,21 @@ class GameScene extends Phaser.Scene
       {
         projectile.destroy();
         this.projectiles.remove(projectileSprite, true, true);
+      }
+    });
+    
+    Phaser.Actions.Call(this.enemyProjectiles.getChildren(), projectileSprite => 
+    {
+      let projectile = { sprite: projectileSprite };
+      projectile.update = Projectile.prototype.update;
+      projectile.isOffScreen = Projectile.prototype.isOffScreen;
+      projectile.destroy = Projectile.prototype.destroy;
+
+      projectile.update({ delta: delta, speed: projectileSprite.__projectile.speed, direction: projectileSprite.__projectile.direction });
+      if(projectile.isOffScreen({ direction: projectileSprite.__projectile.direction})) 
+      {
+        projectile.destroy();
+        this.enemyProjectiles.remove(projectileSprite, true, true);
       }
     }); 
   }
@@ -1463,6 +1495,7 @@ class ShootButton
         let y = this.plane.sprite.y + this.plane.sprite.displayHeight / 4;
         let projectile = new Projectile({ scene: this.scene, data: this.projectileTypes, type: this.plane.projectile, x: x, y: y, direction: 'right' });
         this.scene.physics.add.existing(projectile.sprite);
+        this.scene.projectiles.add(projectile.sprite);
         this.scene.sound.play(this.plane.shootingSoundEffect.key, { volume: this.plane.shootingSoundEffect.volume })
         this.elapsed = -this.shootCooldown / 2;
       }
@@ -1499,6 +1532,7 @@ class ShootButton
       let x = this.plane.sprite.x + this.plane.sprite.displayWidth / 2;
       let y = this.plane.sprite.y + this.plane.sprite.displayHeight / 4;
       let projectile = new Projectile({ scene: this.scene, data: this.projectileTypes, type: this.plane.projectile, x: x, y: y, direction: 'right' });
+      this.scene.projectiles.add(projectile.sprite);
       this.scene.sound.play(this.plane.shootingSoundEffect.key, { volume: this.plane.shootingSoundEffect.volume });
       this.scene.physics.add.existing(projectile.sprite);
     }
@@ -1565,7 +1599,6 @@ class Projectile
     this.speed = device.screenWidth / projectileData.speed;
     this.direction = direction;
     this.sprite.__projectile = this;
-    this.scene.projectiles.add(this.sprite);
   }
 
   /** Public method to destroy the projectiles sprite. */
@@ -1765,6 +1798,7 @@ class Enemy
     this.sprite = scene.add.sprite(x, y, this.name);
     this.sprite.setScale((device.screenWidth / enemyData.height) / this.sprite.height);
     this.startingAnimation = enemyData.startingAnimation;
+    this.shootingAnimation = enemyData.shootingAnimation;
     this.deathAnimation = enemyData.deathAnimation;
     this.deathSprite = enemyData.deathSprite;
     this.sprite.play(enemyData.startingAnimation);
@@ -1773,18 +1807,55 @@ class Enemy
     this.maxNumberOfHits = enemyData.maxNumberOfHits;
     this.projectile = enemyData.projectile;
     this.shootingRate = enemyData.shootingRate;
-
-
     this.numberOfHits = 0;
     this.score = enemyData.score;
     this.soundEffects = enemyData.soundEffects;
     this.hitSoundEffect = this.soundEffects.find(obj => obj.key === "hit");
+
+    if(this.projectile !== null && this.shootingRate !== null)
+    {
+      this.shootTimer = this.scene.time.addEvent({
+      delay: this.shootingRate,
+      callback: this.fireProjectile,
+      callbackScope: this,
+      loop: true
+    });
+    }
   }
 
   /** Public method to destroy the enemies sprite. */
-  destroy() 
+  destroy({ shootTimer } = {}) 
   {
+    if(shootTimer) this.shootTimer.remove();
     this.sprite.destroy();
+  }
+
+  fireProjectile() 
+  {
+    if (!this.sprite.active) return;
+    this.sprite.play(this.shootingAnimation);
+    this.sprite.once(Phaser.Animations.Events.ANIMATION_COMPLETE, (anim, frame) => 
+    {
+      if(anim.key === this.shootingAnimation) 
+      {
+        this.sprite.play(this.startingAnimation);
+      }
+    });
+
+    let x = this.sprite.x - this.sprite.displayWidth / 2;
+    let y = this.sprite.y;
+
+    let projectile = new Projectile({
+      scene: this.scene,
+      data: this.scene.matchingProjectiles,
+      type: this.projectile,
+      x: x,
+      y: y,
+      direction: 'left'
+    });
+
+    this.scene.physics.add.existing(projectile.sprite);
+    this.scene.enemyProjectiles.add(projectile.sprite);
   }
 
   /** 

@@ -39,7 +39,7 @@
       "starting-comment:": "//////////////////// START OF CHICKEN DEFINTION ////////////////////",
       "name": "chicken",
       "sprite": "chicken-fly-1.png",
-      "height": 12,
+      "height": 9,
       "flipX": true,
       "animations": 
       [
@@ -50,11 +50,7 @@
             { "key": "chicken-fly-1", "sprite": "chicken-fly-1.png" },
             { "key": "chicken-fly-2", "sprite": "chicken-fly-2.png" },
             { "key": "chicken-fly-3", "sprite": "chicken-fly-3.png" },
-            { "key": "chicken-fly-4", "sprite": "chicken-fly-4.png" },
-            { "key": "chicken-fly-5", "sprite": "chicken-fly-5.png" },
-            { "key": "chicken-fly-6", "sprite": "chicken-fly-6.png" },
-            { "key": "chicken-fly-7", "sprite": "chicken-fly-7.png" },
-            { "key": "chicken-fly-8", "sprite": "chicken-fly-8.png" }
+            { "key": "chicken-fly-4", "sprite": "chicken-fly-4.png" }
           ],
           "frameRate": 8,
           "repeat": -1
@@ -67,8 +63,8 @@
             { "key": "chicken-shoot-2", "sprite": "chicken-shoot-2.png" },
             { "key": "chicken-shoot-3", "sprite": "chicken-shoot-3.png" }
           ],
-          "frameRate": 4,
-          "repeat": -1
+          "frameRate": 5,
+          "repeat": 0
         }
       ],
       "startingAnimation": "chicken-fly",
@@ -76,7 +72,7 @@
       "deathAnimation": "explosion",
       "deathSprite": "explosion-1.png",
       "speed": 6,
-      "maxNumberOfHits": 5,
+      "maxNumberOfHits": 3,
       "projectile": "flame",
       "shootingRate": 2000,
       "score": 100,
