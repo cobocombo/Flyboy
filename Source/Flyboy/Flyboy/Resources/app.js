@@ -433,6 +433,18 @@ class GameScene extends Phaser.Scene
 
     this.setProjectileEnemyCollision();
     this.setEnemyProjectilePlaneCollision();
+
+    // this.tweens.add({
+    //   targets: this.plane.sprite,
+    //   tint: { from: 0xFFFFFF, to: 0xFFD700 }, // flash between white and gold
+    //   ease: 'Linear',
+    //   duration: 200,
+    //   yoyo: true,
+    //   repeat: 20, // number of flashes
+    //   onComplete: () => {
+    //     this.plane.sprite.clearTint();
+    //   }
+    // });
   }
 
   /** Public method called to pre-load any assets for the scene or upcoming scenes. */
