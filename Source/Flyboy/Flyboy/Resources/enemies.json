@@ -31,7 +31,8 @@
       "score": 50,
       "soundEffects":
       [
-        { "key": "hit", "sound": "hit.mp3", "volume": 1.0 }
+        { "key": "bird-hit", "sound": "hit.mp3", "volume": 1.0 },
+        { "key": "bird-shoot", "sound": "enemy-shoot.mp3", "volume": 1.0 }
       ],
       "ending-comment:": "//////////////////// END OF BIRD DEFINITION ////////////////////"
     },
@@ -78,7 +79,8 @@
       "score": 100,
       "soundEffects":
       [
-        { "key": "hit", "sound": "hit.mp3", "volume": 1.0 }
+        { "key": "chicken-hit", "sound": "hit.mp3", "volume": 1.0 },
+        { "key": "chicken-shoot", "sound": "enemy-shoot.mp3", "volume": 1.0 }
       ],
       "ending-comment:": "//////////////////// END OF CHICKEN DEFINITION ////////////////////"
     }

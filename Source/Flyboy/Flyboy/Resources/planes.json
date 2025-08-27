@@ -50,9 +50,10 @@
       "projectile": "bullet",
       "soundEffects":
       [
-        { "key": "idle", "sound": "plane-idle.mp3", "volume": 0.5, "loop": true },
-        { "key": "shoot", "sound": "shoot.mp3", "volume": 0.5, "loop": false },
-        { "key": "death", "sound": "explosion.mp3", "volume": 0.7, "loop": false }
+        { "key": "green-plane-idle", "sound": "plane-idle.mp3", "volume": 0.5, "loop": true },
+        { "key": "green-plane-shoot", "sound": "shoot.mp3", "volume": 0.5, "loop": false },
+        { "key": "green-plane-hit", "sound": "clank.mp3", "volume": 0.5, "loop": false },
+        { "key": "green-plane-death", "sound": "explosion.mp3", "volume": 0.7, "loop": false }
       ]
     }
   ]

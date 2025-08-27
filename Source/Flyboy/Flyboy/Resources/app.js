@@ -384,6 +384,7 @@ class GameScene extends Phaser.Scene
     }
     else
     {
+      this.sound.play(this.plane.hitSoundEffect.key, { volume: this.plane.hitSoundEffect.volume, loop: this.plane.hitSoundEffect.loop });
       this.plane.sprite.setTint(0xff0000);
       this.time.delayedCall(100, () => { this.plane.sprite.clearTint(); });
     }
@@ -651,10 +652,7 @@ class GameScene extends Phaser.Scene
   loadPlaneSounds()
   {
     let selectedPlane = this.planeData.planes.find(plane => plane.name === this.planeType);
-    selectedPlane.soundEffects.forEach(effect => 
-    {
-      this.load.audio(effect.key, effect.sound);
-    });
+    selectedPlane.soundEffects.forEach(effect => { this.load.audio(effect.key, effect.sound); });
   }
 
   /** Public method called to load needed projectile images in the game scene. */
@@ -833,6 +831,7 @@ class GameScene extends Phaser.Scene
         deathEffect.onAnimationComplete(effect => { effect.destroy(); });
 
         this.sound.play(enemy.hitSoundEffect.key, { volume: enemy.hitSoundEffect.volume });
+        this.sound.play(this.plane.hitSoundEffect.key, { volume: this.plane.hitSoundEffect.volume });
         this.hud.updateHearts();
         this.checkForPlaneDeath();
       });
@@ -1313,9 +1312,10 @@ class Plane
     this.shootingRate = planeData.shootingRate;
     this.projectile = planeData.projectile;
     this.soundEffects = planeData.soundEffects;
-    this.idleSoundEffect = this.soundEffects.find(obj => obj.key === "idle");
-    this.shootingSoundEffect = this.soundEffects.find(obj => obj.key === "shoot");
-    this.deathSoundEffect = this.soundEffects.find(obj => obj.key === "death");
+    this.idleSoundEffect = this.soundEffects.find(obj => obj.key.includes("idle"));
+    this.shootingSoundEffect = this.soundEffects.find(obj => obj.key.includes("shoot"));
+    this.hitSoundEffect = this.soundEffects.find(obj => obj.key.includes("hit"));
+    this.deathSoundEffect = this.soundEffects.find(obj => obj.key.includes("death"));
   }
 
   /** 
@@ -1829,7 +1829,8 @@ class Enemy
     this.numberOfHits = 0;
     this.score = enemyData.score;
     this.soundEffects = enemyData.soundEffects;
-    this.hitSoundEffect = this.soundEffects.find(obj => obj.key === "hit");
+    this.hitSoundEffect = this.soundEffects.find(obj => obj.key.includes("hit"));
+    this.shootingSoundEffect = this.soundEffects.find(obj => obj.key.includes("shoot"));
 
     if(this.projectile !== null && this.shootingRate !== null)
     {
@@ -1875,6 +1876,7 @@ class Enemy
 
     this.scene.physics.add.existing(projectile.sprite);
     this.scene.enemyProjectiles.add(projectile.sprite);
+    this.scene.sound.play(this.shootingSoundEffect.key, { volume: this.shootingSoundEffect.volume, loop: this.shootingSoundEffect.loop });
   }
 
   /** 
