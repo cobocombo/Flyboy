@@ -75,7 +75,7 @@
       "speed": 8,
       "maxNumberOfHits": 3,
       "projectile": "flame",
-      "shootingRate": 3000,
+      "shootingRate": 5000,
       "score": 100,
       "soundEffects":
       [

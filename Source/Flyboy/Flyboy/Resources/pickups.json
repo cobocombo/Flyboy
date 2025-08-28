@@ -18,6 +18,15 @@
       "score": 0,
       "soundEffect": { "key": "heal", "sound": "heal.mp3", "volume": 0.5 },
       "animationEffect": "sparkle"
+    },
+    {
+      "name": "invincible",
+      "sprite": "invincible.png",
+      "height": 18,
+      "speed": 4,
+      "score": 0,
+      "soundEffect": { "key": "invincible", "sound": "invincible.mp3", "volume": 0.5 },
+      "animationEffect": "sparkle"
     }
   ]
 }

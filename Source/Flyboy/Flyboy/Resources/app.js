@@ -433,18 +433,6 @@ class GameScene extends Phaser.Scene
 
     this.setProjectileEnemyCollision();
     this.setEnemyProjectilePlaneCollision();
-
-    // this.tweens.add({
-    //   targets: this.plane.sprite,
-    //   tint: { from: 0xFFFFFF, to: 0xFFD700 }, // flash between white and gold
-    //   ease: 'Linear',
-    //   duration: 200,
-    //   yoyo: true,
-    //   repeat: 20, // number of flashes
-    //   onComplete: () => {
-    //     this.plane.sprite.clearTint();
-    //   }
-    // });
   }
 
   /** Public method called to pre-load any assets for the scene or upcoming scenes. */
@@ -665,6 +653,7 @@ class GameScene extends Phaser.Scene
   {
     let selectedPlane = this.planeData.planes.find(plane => plane.name === this.planeType);
     selectedPlane.soundEffects.forEach(effect => { this.load.audio(effect.key, effect.sound); });
+    this.load.audio('clock', 'clock.mp3');
   }
 
   /** Public method called to load needed projectile images in the game scene. */
@@ -732,7 +721,7 @@ class GameScene extends Phaser.Scene
       planeSprite.destroy();
       this.enemyProjectiles.remove(planeSprite, true, true);
 
-      this.plane.numberOfHits += 1;
+      if(this.plane.isInvincible !== true) this.plane.numberOfHits += 1;
       this.hud.updateHearts();
       this.checkForPlaneDeath();
     });
@@ -833,8 +822,8 @@ class GameScene extends Phaser.Scene
 
       this.physics.add.overlap(this.plane.sprite, enemy.sprite, () => 
       {
-        this.plane.numberOfHits += 1;
-
+        if(this.plane.isInvincible !== true) this.plane.numberOfHits += 1;
+      
         const { x, y, displayHeight } = enemy.sprite;
         enemy.destroy({ shootTimer: enemy.shootTimer });
         this.enemies.remove(enemy.sprite, true, true);
@@ -897,7 +886,8 @@ class GameScene extends Phaser.Scene
           if(this.plane.numberOfHits !== 0) this.plane.numberOfHits -=1;
           this.hud.updateHearts();
         }
-        
+        if(pickup.name == 'invincible') this.plane.startInvincibility();
+    
         this.sound.play(pickup.soundEffect.key, { volume: pickup.soundEffect.volume });
         let pickupEffect = new Effect({ scene: this, data: this.effectsData, type: pickup.animationEffect, x: x, y: y });
         pickupEffect.onAnimationComplete(effect => { effect.destroy(); });
@@ -1323,11 +1313,14 @@ class Plane
     this.numberOfHits = 0;
     this.shootingRate = planeData.shootingRate;
     this.projectile = planeData.projectile;
+    this.isInvincible = false;
+    this.invincibilityDuration = planeData.invincibilityDuration;
     this.soundEffects = planeData.soundEffects;
     this.idleSoundEffect = this.soundEffects.find(obj => obj.key.includes("idle"));
     this.shootingSoundEffect = this.soundEffects.find(obj => obj.key.includes("shoot"));
     this.hitSoundEffect = this.soundEffects.find(obj => obj.key.includes("hit"));
     this.deathSoundEffect = this.soundEffects.find(obj => obj.key.includes("death"));
+    this.invincibilitySoundEffect = this.scene.sound.add('clock', { volume: 0.5, loop: true });
   }
 
   /** 
@@ -1372,6 +1365,23 @@ class Plane
     });
   }
 
+  startInvincibility()
+  {
+    let cycleDuration = 50 * 2; 
+    let repeatCount = Math.floor(this.invincibilityDuration / cycleDuration) - 1;
+    this.isInvincible = true;
+    this.scene.tweens.add({
+      targets: this.sprite,
+      tint: { from: 0xFFFFFF, to: 0xFFD700 },
+      ease: 'Linear',
+      duration: 50,
+      yoyo: true,
+      repeat: repeatCount,
+      onComplete: () => { this.stopInvincibility() }
+    });
+    if(!this.invincibilitySoundEffect.isPlaying) this.invincibilitySoundEffect.play();
+  }
+
   /** Public method to stop the bobbing naimation of the plane. */
   stopBobbing() 
   {
@@ -1381,6 +1391,13 @@ class Plane
       this.bobTween = null;
       this.sprite.setY(this.baseY);
     }
+  }
+
+  stopInvincibility()
+  {
+    this.sprite.clearTint();
+    this.isInvincible = false;
+    if(this.invincibilitySoundEffect.isPlaying) this.invincibilitySoundEffect.stop();
   }
 
   /** 

@@ -48,6 +48,7 @@
       "maxNumberOfHits": 3,
       "shootingRate": 300,
       "projectile": "bullet",
+      "invincibilityDuration": 10000,
       "soundEffects":
       [
         { "key": "green-plane-idle", "sound": "plane-idle.mp3", "volume": 0.5, "loop": true },
