@@ -384,9 +384,12 @@ class GameScene extends Phaser.Scene
     }
     else
     {
-      this.sound.play(this.plane.hitSoundEffect.key, { volume: this.plane.hitSoundEffect.volume, loop: this.plane.hitSoundEffect.loop });
-      this.plane.sprite.setTint(0xff0000);
-      this.time.delayedCall(100, () => { this.plane.sprite.clearTint(); });
+      if(this.plane.isInvincible !== true) 
+      {
+        this.sound.play(this.plane.hitSoundEffect.key, { volume: this.plane.hitSoundEffect.volume, loop: this.plane.hitSoundEffect.loop });
+        this.plane.sprite.setTint(0xff0000);
+        this.time.delayedCall(100, () => { this.plane.sprite.clearTint(); });
+      }
     }
   }
 
@@ -823,8 +826,8 @@ class GameScene extends Phaser.Scene
       this.physics.add.overlap(this.plane.sprite, enemy.sprite, () => 
       {
         if(this.plane.isInvincible !== true) this.plane.numberOfHits += 1;
-      
-        const { x, y, displayHeight } = enemy.sprite;
+        
+        let { x, y, displayHeight } = enemy.sprite;
         enemy.destroy({ shootTimer: enemy.shootTimer });
         this.enemies.remove(enemy.sprite, true, true);
 
@@ -832,9 +835,8 @@ class GameScene extends Phaser.Scene
         deathEffect.onAnimationComplete(effect => { effect.destroy(); });
 
         this.sound.play(enemy.hitSoundEffect.key, { volume: enemy.hitSoundEffect.volume });
-        this.sound.play(this.plane.hitSoundEffect.key, { volume: this.plane.hitSoundEffect.volume });
-        this.hud.updateHearts();
         this.checkForPlaneDeath();
+        this.hud.updateHearts();
       });
     }
 
@@ -1350,7 +1352,7 @@ class Plane
     this.baseY = y;
   }
 
-  /** Public method to start the bobbing naimation of the plane. */
+  /** Public method to start the bobbing animation of the plane. */
   startBobbing() 
   {
     if(this.bobTween) return;
@@ -1365,6 +1367,7 @@ class Plane
     });
   }
 
+  /** Public method to start the invincibility animation of the plane. */
   startInvincibility()
   {
     let cycleDuration = 50 * 2; 
@@ -1393,6 +1396,7 @@ class Plane
     }
   }
 
+  /** Public method to stop the invincibility animation of the plane. */
   stopInvincibility()
   {
     this.sprite.clearTint();
