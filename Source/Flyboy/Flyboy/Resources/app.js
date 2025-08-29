@@ -2506,7 +2506,7 @@ typeChecker.register({ name: 'plane', constructor: Plane });
 typeChecker.register({ name: 'joystick', constructor: Joystick });
 typeChecker.register({ name: 'shoot-button', constructor: ShootButton});
 
-const game = new ui.PhaserGame({ 
+let game = new ui.PhaserGame({ 
   config: 
   { 
     type: Phaser.WEBGL,
@@ -2514,13 +2514,10 @@ const game = new ui.PhaserGame({
     physics: 
     { 
       default: "arcade", 
-      arcade: 
-      { 
-        debug: false
-      }
+      arcade: { debug: false }
     } 
-  }
-}); 
+  }}
+); 
 
 app.present({ root: game });
 
