@@ -340,7 +340,8 @@ class GameScene extends Phaser.Scene
     this.errors = 
     {
       amountTypeError: 'Game Scene Error: Expected type number for amount.',
-      deltaTypeError: 'Game Scene Error: Expected type number for delta.'
+      deltaTypeError: 'Game Scene Error: Expected type number for delta.',
+      stateTypeError: 'Game Scene Error: Expected type string for state.'
     }; 
   }
 
@@ -355,33 +356,10 @@ class GameScene extends Phaser.Scene
     return false;
   }
 
+  /** Public method called to check if all the conditions are right the plane to be dead or not. */
   checkForPlaneDeath()
   {
-    if(this.plane.numberOfHits === this.plane.maxNumberOfHits)
-    {
-      this.plane?.setAnimation({ name: this.plane.deathAnimation });
-      this.time.delayedCall(100, () => 
-      { 
-        let planeIdleSoundEffect = this.sound.get(this.plane.idleSoundEffect.key);
-        if(planeIdleSoundEffect)
-        {
-          planeIdleSoundEffect.stop();
-          planeIdleSoundEffect.destroy();
-        } 
-
-        let backgroundMusic = this.sound.get('background-music');
-        if(backgroundMusic)
-        {
-          backgroundMusic.stop();
-          backgroundMusic.destroy();
-        } 
-
-        this.sound.play(this.plane.deathSoundEffect.key, { volume: this.plane.deathSoundEffect.volume, loop: this.plane.deathSoundEffect.loop });
-        this.scene.pause();
-        this.levelfailedAlert.present();
-        this.sound.play('level-failed', { volume: 0.7, loop: false });
-      });
-    }
+    if(this.plane.numberOfHits === this.plane.maxNumberOfHits) this.gameOver({ state: 'death' });
     else
     {
       if(this.plane.isInvincible !== true) 
@@ -434,8 +412,87 @@ class GameScene extends Phaser.Scene
     this.levelfailedAlert = new LevelFailedDialog({ scene: this.scene });
     this.hud = new HUD({ scene: this, joystick: new Joystick({ scene: this }), shootButton: new ShootButton({ scene: this, plane: this.plane, projectileTypes: this.matchingProjectiles }), plane: this.plane });
 
+    this.setPlaneEnemyCollision();
+    this.setPlanePickupCollision();
     this.setProjectileEnemyCollision();
     this.setEnemyProjectilePlaneCollision();
+  }
+
+  /** Public method called when the game is over. */
+  gameOver({ state } = {})
+  {
+    if(!typeChecker.check({ type: 'string', value: state })) console.error(this.errors.stateTypeError);
+    if(state === 'death')
+    {
+      this.plane?.setAnimation({ name: this.plane.deathAnimation });
+      this.time.delayedCall(100, () => 
+      { 
+        let planeIdleSoundEffect = this.sound.get(this.plane.idleSoundEffect.key);
+        if(planeIdleSoundEffect)
+        {
+          planeIdleSoundEffect.stop();
+          planeIdleSoundEffect.destroy();
+        } 
+
+        let backgroundMusic = this.sound.get('background-music');
+        if(backgroundMusic)
+        {
+          backgroundMusic.stop();
+          backgroundMusic.destroy();
+        } 
+
+        this.sound.play(this.plane.deathSoundEffect.key, { volume: this.plane.deathSoundEffect.volume, loop: this.plane.deathSoundEffect.loop });
+        this.scene.pause();
+        this.levelfailedAlert.present();
+        this.sound.play('level-failed', { volume: 0.7, loop: false });
+      });
+    }
+    else if(state === 'alive')
+    {
+      this.levelComplete = true;
+      this.time.delayedCall(2000, () => 
+      { 
+        this.scene.pause();
+
+        let planeIdleSoundEffect = this.sound.get(this.plane.idleSoundEffect.key);
+        if(planeIdleSoundEffect)
+        {
+          planeIdleSoundEffect.stop();
+          planeIdleSoundEffect.destroy();
+        }
+
+        let backgroundMusic = this.sound.get('background-music');
+        if(backgroundMusic)
+        {
+          backgroundMusic.stop();
+          backgroundMusic.destroy();
+        } 
+          
+        let starCount = 0;
+        if(this.score >= levels.currentLevel.threeStarScore) starCount = 3;
+        else if(this.score >= levels.currentLevel.twoStarScore) starCount = 2;
+        else if(this.score >= levels.currentLevel.oneStarScore) starCount = 1;
+        else starCount = 0;
+
+        if(starCount === 0)
+        {
+          this.levelfailedAlert.present();
+          this.sound.play('level-failed', { volume: 0.7, loop: false });
+        }
+        else
+        {
+          this.sound.play('level-complete', { volume: 0.7, loop: false });
+          let levelCompleteAlert = new LevelCompleteDialog({ scene: this.scene, score: this.score, starCount: starCount });
+          levelCompleteAlert.present();
+          confetti.start();
+          levels.addLevelProgress({ id: levels.currentLevel.id, stars: starCount, unlocked: true, score: this.score });
+
+          let levelCount = levels.levelCount;
+          let nextLevelId = levels.currentLevel.id + 1;
+          if(levelCount && nextLevelId <= levelCount) levels.addLevelProgress({ id: nextLevelId, stars: 0, completed: false, unlocked: true, score: 0 });
+        }
+      });
+    }
   }
 
   /** Public method called to pre-load any assets for the scene or upcoming scenes. */
@@ -684,6 +741,62 @@ class GameScene extends Phaser.Scene
     });
   }
 
+  /** Public method called to set the physics for the enemy projectiles and the plane currently in the game scene. */
+  setEnemyProjectilePlaneCollision()
+  {
+    this.physics.add.overlap(this.enemyProjectiles, this.plane.sprite, (projectileSprite, planeSprite) => 
+    {
+      planeSprite.destroy();
+      this.enemyProjectiles.remove(planeSprite, true, true);
+
+      if(this.plane.isInvincible !== true) this.plane.numberOfHits += 1;
+      this.hud.updateHearts();
+      this.checkForPlaneDeath();
+    });
+  }
+
+  /** Public method called to set the physics for the plane and enemies for the game scene. */
+  setPlaneEnemyCollision()
+  {
+    this.physics.add.overlap(this.plane.sprite, this.enemies, (planeSprite, enemySprite) => 
+    {
+      if(this.plane.isInvincible !== true) this.plane.numberOfHits += 1;
+      let enemy = enemySprite.__enemy;
+      let { x, y, displayHeight } = enemySprite;
+      enemy.destroy({ shootTimer: enemy.shootTimer });
+      this.enemies.remove(enemy.sprite, true, true);
+
+      let deathEffect = new Effect({ scene: this, data: this.effectsData, type: enemy.deathAnimation, x: x, y: y });
+      deathEffect.onAnimationComplete(effect => { effect.destroy(); });
+
+      this.sound.play(enemy.hitSoundEffect.key, { volume: enemy.hitSoundEffect.volume });
+      this.checkForPlaneDeath();
+      this.hud.updateHearts();
+    });
+  }
+
+  /** Public method called to set the physics for the plane and pickups for the game scene. */
+  setPlanePickupCollision()
+  {
+    this.physics.add.overlap(this.plane.sprite, this.pickups, (planeSprite, pickupSprite) => 
+    {
+      let pickup = pickupSprite.__pickup;
+      let { x, y, displayHeight } = pickupSprite;
+      pickup.destroy();
+      this.pickups.remove(pickup.sprite, true, true);
+      this.updateScore({ amount: pickup.score });
+      if(pickup.name == 'heal')
+      {
+        if(this.plane.numberOfHits !== 0) this.plane.numberOfHits -=1;
+        this.hud.updateHearts();
+      }
+      if(pickup.name == 'invincible') this.plane.startInvincibility();
+      this.sound.play(pickup.soundEffect.key, { volume: pickup.soundEffect.volume });
+      let pickupEffect = new Effect({ scene: this, data: this.effectsData, type: pickup.animationEffect, x: x, y: y });
+      pickupEffect.onAnimationComplete(effect => { effect.destroy(); });
+    });
+  }
+
   /** Public method called to set the physics for the projectiles and the enemies currently in the game scene. */
   setProjectileEnemyCollision()
   {
@@ -716,18 +829,39 @@ class GameScene extends Phaser.Scene
     });
   }
 
-  /** Public method called to set the physics for the enemy projectiles and the plane currently in the game scene. */
-  setEnemyProjectilePlaneCollision()
+  /** Public method called to spawn a new enemy into the Game Scene when needed. */
+  spawnEnemy()
   {
-    this.physics.add.overlap(this.enemyProjectiles, this.plane.sprite, (projectileSprite, planeSprite) => 
-    {
-      planeSprite.destroy();
-      this.enemyProjectiles.remove(planeSprite, true, true);
+    let enemyData = this.enemySpawnQueue.shift();
+    let spawnX = device.screenHeight;
+    let spawnPosition = 0.5;
 
-      if(this.plane.isInvincible !== true) this.plane.numberOfHits += 1;
-      this.hud.updateHearts();
-      this.checkForPlaneDeath();
-    });
+    if(enemyData.spawnPosition === -1) spawnPosition = Math.floor((Math.random() * (0.75 - 0.1) + 0.1) * 100) / 100;
+    else spawnPosition = enemyData.spawnPosition;
+    let spawnY = device.screenWidth * spawnPosition;
+    
+    let enemy = new Enemy({ scene: this, data: this.enemyData, type: enemyData.type, x: spawnX, y: spawnY });
+    this.enemies.add(enemy.sprite);
+    enemy.sprite.__enemy = enemy;
+    this.physics.add.existing(enemy.sprite);
+  }
+
+  /** Public method called to spawn a new enemy into the Game Scene when needed. */
+  spawnPickup()
+  {
+    let pickupData = this.pickupSpawnQueue.shift();
+    let spawnX = device.screenHeight;
+    let spawnPosition = 0.5;
+
+    if(pickupData.spawnPosition === -1) spawnPosition = Math.floor((Math.random() * (0.75 - 0.1) + 0.1) * 100) / 100;
+    else spawnPosition = pickupData.spawnPosition;
+    let spawnY = device.screenWidth * spawnPosition;
+
+    let pickup = new Pickup({ scene: this, data: this.pickupData, type: pickupData.type, x: spawnX, y: spawnY });
+    this.pickups.add(pickup.sprite);
+    pickup.sprite.__pickup = pickup;
+
+    this.physics.add.existing(pickup.sprite);
   }
 
   /** Main phaser update loop for the game scene. */
@@ -744,52 +878,7 @@ class GameScene extends Phaser.Scene
     this.updatePickups({ delta: delta });
     this.updateProjectiles({ delta: delta });
 
-    if(this.checkForLevelComplete() === true && this.levelComplete === false)
-    {
-      this.levelComplete = true;
-      this.time.delayedCall(2000, () => 
-      { 
-        this.scene.pause();
-
-        let planeIdleSoundEffect = this.sound.get(this.plane.idleSoundEffect.key);
-        if(planeIdleSoundEffect)
-        {
-          planeIdleSoundEffect.stop();
-          planeIdleSoundEffect.destroy();
-        }
-
-        let backgroundMusic = this.sound.get('background-music');
-        if(backgroundMusic)
-        {
-          backgroundMusic.stop();
-          backgroundMusic.destroy();
-        } 
-          
-        let starCount = 0;
-        if(this.score >= levels.currentLevel.threeStarScore) starCount = 3;
-        else if(this.score >= levels.currentLevel.twoStarScore) starCount = 2;
-        else if(this.score >= levels.currentLevel.oneStarScore) starCount = 1;
-        else starCount = 0;
-
-        if(starCount === 0)
-        {
-          this.levelfailedAlert.present();
-          this.sound.play('level-failed', { volume: 0.7, loop: false });
-        }
-        else
-        {
-          this.sound.play('level-complete', { volume: 0.7, loop: false });
-          let levelCompleteAlert = new LevelCompleteDialog({ scene: this.scene, score: this.score, starCount: starCount });
-          levelCompleteAlert.present();
-          confetti.start();
-          levels.addLevelProgress({ id: levels.currentLevel.id, stars: starCount, unlocked: true, score: this.score });
-
-          let levelCount = levels.levelCount;
-          let nextLevelId = levels.currentLevel.id + 1;
-          if(levelCount && nextLevelId <= levelCount) levels.addLevelProgress({ id: nextLevelId, stars: 0, completed: false, unlocked: true, score: 0 });
-        }
-      });
-    }
+    if(this.checkForLevelComplete() === true && this.levelComplete === false) this.gameOver({ state: 'alive' })
   }
 
   /** Public method called during the update loop of the game scene to update the moving background. */
@@ -807,45 +896,12 @@ class GameScene extends Phaser.Scene
   updateEnemies({ delta } = {})
   {
     if(!typeChecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
-
-    while(this.enemySpawnQueue.length > 0 && this.elapsedTime >= this.enemySpawnQueue[0].spawnTime) 
-    {
-      let enemyData = this.enemySpawnQueue.shift();
-      let spawnX = device.screenHeight;
-      let spawnPosition = 0.5;
-
-      if(enemyData.spawnPosition === -1) spawnPosition = Math.floor((Math.random() * (0.75 - 0.1) + 0.1) * 100) / 100;
-      else spawnPosition = enemyData.spawnPosition;
-      let spawnY = device.screenWidth * spawnPosition;
-      
-      let enemy = new Enemy({ scene: this, data: this.enemyData, type: enemyData.type, x: spawnX, y: spawnY });
-      this.enemies.add(enemy.sprite);
-      enemy.sprite.__enemy = enemy;
-      this.physics.add.existing(enemy.sprite);
-
-      this.physics.add.overlap(this.plane.sprite, enemy.sprite, () => 
-      {
-        if(this.plane.isInvincible !== true) this.plane.numberOfHits += 1;
-        
-        let { x, y, displayHeight } = enemy.sprite;
-        enemy.destroy({ shootTimer: enemy.shootTimer });
-        this.enemies.remove(enemy.sprite, true, true);
-
-        let deathEffect = new Effect({ scene: this, data: this.effectsData, type: enemy.deathAnimation, x: x, y: y });
-        deathEffect.onAnimationComplete(effect => { effect.destroy(); });
-
-        this.sound.play(enemy.hitSoundEffect.key, { volume: enemy.hitSoundEffect.volume });
-        this.checkForPlaneDeath();
-        this.hud.updateHearts();
-      });
-    }
-
+    while(this.enemySpawnQueue.length > 0 && this.elapsedTime >= this.enemySpawnQueue[0].spawnTime) this.spawnEnemy();
     Phaser.Actions.Call(this.enemies.getChildren(), sprite => 
     {
       let enemy = sprite.__enemy;
       if(!enemy) return;
       enemy.update({ delta: delta });
-
       if(enemy.isOffScreen()) 
       {
         enemy.destroy({ shootTimer: enemy.shootTimer });
@@ -858,50 +914,12 @@ class GameScene extends Phaser.Scene
   updatePickups({ delta } = {})
   {
     if(!typeChecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
-
-    while(this.pickupSpawnQueue.length > 0 && this.elapsedTime >= this.pickupSpawnQueue[0].spawnTime) 
-    {
-      let pickupData = this.pickupSpawnQueue.shift();
-      let spawnX = device.screenHeight;
-      let spawnPosition = 0.5;
-
-      if(pickupData.spawnPosition === -1) spawnPosition = Math.floor((Math.random() * (0.75 - 0.1) + 0.1) * 100) / 100;
-      else spawnPosition = pickupData.spawnPosition;
-      let spawnY = device.screenWidth * spawnPosition;
-
-      let pickup = new Pickup({ scene: this, data: this.pickupData, type: pickupData.type, x: spawnX, y: spawnY });
-      this.pickups.add(pickup.sprite);
-      pickup.sprite.__pickup = pickup;
-
-      this.physics.add.existing(pickup.sprite);
-      this.physics.add.overlap(this.plane.sprite, pickup.sprite, () => 
-      {
-        const { x, y, displayHeight } = pickup.sprite;
-
-        pickup.destroy();
-        this.pickups.remove(pickup.sprite, true, true);
-
-        this.updateScore({ amount: pickup.score });
-
-        if(pickup.name == 'heal')
-        {
-          if(this.plane.numberOfHits !== 0) this.plane.numberOfHits -=1;
-          this.hud.updateHearts();
-        }
-        if(pickup.name == 'invincible') this.plane.startInvincibility();
-    
-        this.sound.play(pickup.soundEffect.key, { volume: pickup.soundEffect.volume });
-        let pickupEffect = new Effect({ scene: this, data: this.effectsData, type: pickup.animationEffect, x: x, y: y });
-        pickupEffect.onAnimationComplete(effect => { effect.destroy(); });
-      });
-    }
-
+    while(this.pickupSpawnQueue.length > 0 && this.elapsedTime >= this.pickupSpawnQueue[0].spawnTime) this.spawnPickup();
     Phaser.Actions.Call(this.pickups.getChildren(), sprite => 
     {
       let pickup = sprite.__pickup;
       if(!pickup) return;
       pickup.update({ delta: delta });
-
       if(pickup.isOffScreen()) 
       {
         pickup.destroy();
