@@ -1252,6 +1252,8 @@ class Plane
   errors;
   idleAnimation;
   idleSoundEffect;
+  invincibilityDuration;
+  invincibilitySoundEffect;
   maxNumberOfHits;
   name;
   numberOfHits;
@@ -1808,6 +1810,7 @@ class Enemy
   scene;
   score;
   soundEffects;
+  shootingSoundEffect;
   startingAnimation;
 
   /**
