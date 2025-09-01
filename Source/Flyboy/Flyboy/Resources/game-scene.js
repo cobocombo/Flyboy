@@ -457,10 +457,8 @@ class GameScene extends Phaser.Scene
       let { x, y, displayHeight } = enemySprite;
       enemy.destroy({ shootTimer: enemy.shootTimer });
       this.enemies.remove(enemy.sprite, true, true);
-
-      let deathEffect = new Effect({ scene: this, data: this.effectsData, type: enemy.deathAnimation, x: x, y: y });
+      let deathEffect = new Effect({ scene: this, data: this.effectsData, type: enemy.deathAnimation, x: x, y: y, height: displayHeight * 1.5 });
       deathEffect.onAnimationComplete(effect => { effect.destroy(); });
-
       this.sound.play(enemy.hitSoundEffect.key, { volume: enemy.hitSoundEffect.volume });
       this.checkForPlaneDeath();
       this.hud.updateHearts();
@@ -484,7 +482,7 @@ class GameScene extends Phaser.Scene
       }
       if(pickup.name == 'invincible') this.plane.startInvincibility();
       this.sound.play(pickup.soundEffect.key, { volume: pickup.soundEffect.volume });
-      let pickupEffect = new Effect({ scene: this, data: this.effectsData, type: pickup.animationEffect, x: x, y: y });
+      let pickupEffect = new Effect({ scene: this, data: this.effectsData, type: pickup.animationEffect, x: x, y: y, height: displayHeight * 1.5 });
       pickupEffect.onAnimationComplete(effect => { effect.destroy(); });
     });
   }
@@ -502,11 +500,10 @@ class GameScene extends Phaser.Scene
 
       if(enemyData.numberOfHits === enemyData.maxNumberOfHits)
       {
-        enemySprite.destroy();
+        enemyData.destroy();
         this.enemies.remove(enemySprite, true, true);
         let { x, y, displayHeight } = enemySprite;
-
-        let deathEffect = new Effect({ scene: this, data: this.effectsData, type: enemySprite.__enemy.deathAnimation, x: x, y: y });
+        let deathEffect = new Effect({ scene: this, data: this.effectsData, type: enemySprite.__enemy.deathAnimation, x: x, y: y, height: displayHeight * 1.5 });
         deathEffect.onAnimationComplete(effect => 
         {
           effect.destroy();

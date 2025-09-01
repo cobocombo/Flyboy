@@ -18,15 +18,14 @@ class Effect
    * @param {number} x - X-coordinate postion.
    * @param {number} y - Y-coordinate postion.
    */
-  constructor({ scene, data, type, x, y } = {})
+  constructor({ scene, data, type, x, y, height } = {})
   {
     this.scene = scene;
     let effectData = data.effects.find(e => e.name === type);
-    if(!effectData) console.error(this.errors.dataNotFoundError);
 
     this.name = effectData.name;
     this.sprite = scene.add.sprite(x, y, this.name);
-    this.sprite.setScale((device.screenWidth / effectData.height) / this.sprite.height);
+    this.sprite.setScale(height / this.sprite.height);
     this.sprite.setDepth(10);
 
     if(effectData.frames !== null)

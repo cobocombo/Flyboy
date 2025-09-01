@@ -5,7 +5,6 @@
 /** Class representing the HUD object for the game scene. */
 class HUD
 {
-  errors;
   heartsGroup;
   joystick;
   scoreText;
@@ -21,19 +20,6 @@ class HUD
    */
   constructor({ scene, joystick, shootButton, plane } = {})
   {
-    this.errors = 
-    {
-      joystickTypeError: 'HUD Error: Expected type Joystick for joystick.',
-      planeTypeError: 'HUD Error: Expected type Plane for plane.',
-      sceneError: 'HUD Error: A valid phaser scene is required.',
-      shootButtonTypeError: 'HUD Error: Expected type ShootButton for shootButton.'
-    };
-
-    if(!scene) console.error(this.errors.sceneError);
-    if(!typeChecker.check({ type: 'joystick', value: joystick })) console.error(this.errors.joystickTypeError);
-    if(!typeChecker.check({ type: 'shoot-button', value: shootButton })) console.error(this.errors.shootButtonTypeError);
-    if(!typeChecker.check({ type: 'plane', value: plane })) console.error(this.errors.planeTypeError);
-    
     this.scene = scene;
     this.joystick = joystick;
     this.shootButton = shootButton;
@@ -47,9 +33,13 @@ class HUD
     this.pauseButton.on('pointerdown', () => 
     {
       let planeIdleSoundEffect = this.scene.sound.get(this.plane.idleSoundEffect.key);
-      if(planeIdleSoundEffect) planeIdleSoundEffect.stop();
       let backgroundMusic = this.scene.sound.get('background-music');
+      let invinciblitySoundEffect = this.scene.sound.get('clock');
+
+      if(planeIdleSoundEffect) planeIdleSoundEffect.stop();
       if(backgroundMusic) backgroundMusic.stop();
+      if(invinciblitySoundEffect) invinciblitySoundEffect.stop();
+      
       this.scene.scene.pause();
       this.pauseAlert = new PauseAlertDialog({ scene: this.scene });
       this.pauseAlert.present();

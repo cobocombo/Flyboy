@@ -7,6 +7,7 @@ class Enemy
 {
   deathAnimation;
   deathSprite;
+  deathSoundEffect;
   hitSoundEffect;
   maxNumberOfHits;
   name;
@@ -29,8 +30,6 @@ class Enemy
   {
     this.scene = scene;
     let enemyData = data.enemies.find(e => e.name === type);
-    if(!enemyData) console.error(this.errors.dataNotFoundError);
-
     this.name = enemyData.name;
     this.sprite = scene.add.sprite(x, y, this.name);
     this.sprite.setScale((device.screenWidth / enemyData.height) / this.sprite.height);
@@ -47,8 +46,9 @@ class Enemy
     this.numberOfHits = 0;
     this.score = enemyData.score;
     this.soundEffects = enemyData.soundEffects;
-    this.hitSoundEffect = this.soundEffects.find(obj => obj.key.includes("hit"));
-    this.shootingSoundEffect = this.soundEffects.find(obj => obj.key.includes("shoot"));
+    this.hitSoundEffect = this.soundEffects.find(obj => obj.key.includes('hit'));
+    this.shootingSoundEffect = this.soundEffects.find(obj => obj.key.includes('shoot'));
+    this.deathSoundEffect = this.soundEffects.find(obj => obj.key.includes('death'));
 
     if(this.projectile !== null && this.shootingRate !== null)
     {
@@ -66,6 +66,14 @@ class Enemy
   {
     if(shootTimer) this.shootTimer.remove();
     this.sprite.destroy();
+    if(this.deathSoundEffect !== null)
+    {
+      this.scene.sound.play(this.deathSoundEffect.key, 
+      { 
+        volume: this.deathSoundEffect.volume, 
+        loop: this.deathSoundEffect.loop 
+      });
+    }
   }
 
   /** Public method to fire a projectile if the enemy supports it. */
@@ -95,7 +103,14 @@ class Enemy
 
     this.scene.physics.add.existing(projectile.sprite);
     this.scene.enemyProjectiles.add(projectile.sprite);
-    this.scene.sound.play(this.shootingSoundEffect.key, { volume: this.shootingSoundEffect.volume, loop: this.shootingSoundEffect.loop });
+    if(this.shootingSoundEffect !== null)
+    {
+      this.scene.sound.play(this.shootingSoundEffect.key, 
+      { 
+        volume: this.shootingSoundEffect.volume, 
+        loop: this.shootingSoundEffect.loop 
+      });
+    }
   }
 
   /** 

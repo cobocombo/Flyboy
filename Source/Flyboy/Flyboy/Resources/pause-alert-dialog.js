@@ -22,10 +22,12 @@ class PauseAlertDialog extends ui.AlertDialog
     let resumeButton = new ui.AlertDialogButton({ text: 'Resume', onTap: () => 
     { 
       let planeIdleSoundEffect = scene.sound.get('idle');
-      if(planeIdleSoundEffect) planeIdleSoundEffect.play();
-
       let backgroundMusic = scene.sound.get('background-music');
+      let invinciblitySoundEffect = scene.sound.get('clock');
+      
+      if(planeIdleSoundEffect) planeIdleSoundEffect.play();
       if(backgroundMusic) backgroundMusic.play();
+      if(invinciblitySoundEffect) invinciblitySoundEffect.play();
 
       scene.scene.resume(); 
     }});

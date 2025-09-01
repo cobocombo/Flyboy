@@ -23,8 +23,6 @@ class Pickup
   {
     this.scene = scene;
     let pickupData = data.pickups.find(p => p.name === type);
-    if(!pickupData) console.error(this.errors.dataNotFoundError);
-
     this.name = pickupData.name;
     this.sprite = scene.add.sprite(x, y, this.name);
     this.sprite.setScale((device.screenWidth / pickupData.height) / this.sprite.height);

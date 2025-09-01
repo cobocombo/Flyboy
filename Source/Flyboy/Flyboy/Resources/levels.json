@@ -8,41 +8,22 @@
       "backgroundMusic": "blue-sky.mp3",
       "enemies": 
       [
-        { "type": "chicken", "spawnPosition": 0.75, "spawnTime": 5000 },
-        { "type": "chicken", "spawnPosition": 0.1, "spawnTime": 8000 },
-        { "type": "chicken", "spawnPosition": 0.5, "spawnTime": 11000 }
+        { "type": "bird", "spawnPosition": 0.5, "spawnTime": 3000 },
+        { "type": "bird", "spawnPosition": 0.3, "spawnTime": 6000 },
+        { "type": "bird", "spawnPosition": 0.7, "spawnTime": 9000 },
+        { "type": "bird", "spawnPosition": 0.5, "spawnTime": 12000 },
+        { "type": "bird", "spawnPosition": 0.3, "spawnTime": 15000 },
+        { "type": "bird", "spawnPosition": 0.7, "spawnTime": 18000 }
       ],
-      "obstacles": [{ }],
       "pickups": 
       [ 
-        { "type": "invincible", "spawnPosition": -1, "spawnTime": 100 }
+        { "type": "coin", "spawnPosition": -1, "spawnTime": 1000 },
+        { "type": "heal", "spawnPosition": -1, "spawnTime": 10000 }
       ],
-      "oneStarScore": 50,
-      "twoStarScore": 100,
+      "oneStarScore": 63,
+      "twoStarScore": 125,
       "threeStarScore": 200,
       "ending-comment:": "//////////////////// END OF LEVEL 1 DEFINITION ////////////////////" 
-    },
-    {
-      "starting-comment:": "//////////////////// START OF LEVEL 2 DEFINTION ////////////////////",
-      "id": 2,
-      "background": "blue-sky-clear.png",
-      "backgroundMusic": "blue-sky.mp3",
-      "enemies": 
-      [
-        { "type": "bird", "spawnPosition": 0.75, "spawnTime": 3000 },
-        { "type": "bird", "spawnPosition": 0.1, "spawnTime": 6000 },
-        { "type": "bird", "spawnPosition": 0.5, "spawnTime": 9000 }
-      ],
-      "obstacles": [{ }],
-      "pickups": 
-      [ 
-        { "type": "coin", "spawnPosition": -1, "spawnTime": 7000 }, 
-        { "type": "coin", "spawnPosition": -1, "spawnTime": 14000 }
-      ],
-      "oneStarScore": 100,
-      "twoStarScore": 200,
-      "threeStarScore": 300,
-      "ending-comment:": "//////////////////// END OF LEVEL 2 DEFINITION ////////////////////"  
     }
   ]
 }
