@@ -5,8 +5,8 @@
 /** Class representing an effect that can be spawned in the game scene. */
 class Effect
 {
-  errors;
   name;
+  scene;
   sprite;
   key;
   
@@ -20,34 +20,9 @@ class Effect
    */
   constructor({ scene, data, type, x, y } = {})
   {
-    this.errors = 
-    {
-      dataNotFoundError: 'Effect Error: No data found for enemy.',
-      dataTypeError: 'Effect Error: Expected type object for data.',
-      heightTypeError: 'Effect Error: Expected type number for height.',
-      keyTypeError: 'Effect Error: Expected type string for key.',
-      nameTypeError: 'Effect Error: Expected type string for name.',
-      sceneError: 'Effect Error: A valid phaser scene is required.',
-      spriteTypeError: 'Effect Error: Expected type string for sprite.',
-      typeTypeError: 'Effect Error: Expected type string for type.',
-      xTypeError: 'Effect Error: Expected type number for x.',
-      yTypeError: 'Effect Error: Expected type number for y.'
-    };
-
-    if(!scene) console.error(this.errors.sceneError);
-    if(!typeChecker.check({ type: 'object', value: data })) console.error(this.errors.dataTypeError);
-    if(!typeChecker.check({ type: 'string', value: type })) console.error(this.errors.typeTypeError);
-    if(!typeChecker.check({ type: 'number', value: x })) console.error(this.errors.xTypeError);
-    if(!typeChecker.check({ type: 'number', value: y })) console.error(this.errors.yTypeError);
-
     this.scene = scene;
     let effectData = data.effects.find(e => e.name === type);
     if(!effectData) console.error(this.errors.dataNotFoundError);
-
-    if(!typeChecker.check({ type: 'string', value: effectData.name })) console.error(this.errors.nameTypeError);
-    if(!typeChecker.check({ type: 'string', value: effectData.sprite })) console.error(this.errors.spriteTypeError);
-    if(!typeChecker.check({ type: 'number', value: effectData.height })) console.error(this.errors.heightTypeError);
-    if(!typeChecker.check({ type: 'string', value: effectData.key })) console.error(this.errors.keyTypeError);
 
     this.name = effectData.name;
     this.sprite = scene.add.sprite(x, y, this.name);

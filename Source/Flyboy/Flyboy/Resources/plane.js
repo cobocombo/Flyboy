@@ -10,7 +10,7 @@ class Plane
   currentAnimation;
   deathAnimation;
   deathSoundEffect;
-  errors;
+  hitSoundEffect;
   idleAnimation;
   idleSoundEffect;
   invincibilityDuration;
@@ -35,51 +35,9 @@ class Plane
    */
   constructor({ scene, data, type } = {}) 
   {
-    this.errors = 
-    {
-      animationsTypeError: 'Plane Error: Expected type array for animations.',
-      deltaTypeError: 'Plane Error: Expected type number for delta',
-      deathAnimationTypeError: 'Plane Error: Expected type string for deathAnimation.',
-      dataTypeError: 'Plane Error: Expected type object for data.',
-      flipXTypeError: 'Plane Error: Expected type boolean for flipX.',
-      heightTypeError: 'Plane Error: Expected type number for height.',
-      idleAnimationTypeError: 'Plane Error: Expected type string for idleAnimation.',
-      joystickTypeError: 'Plane Error: Expected type Joystick for joystick.',
-      maxNumberOfHitsTypeError: 'Plane Error: Expected type number for maxNumberOfHits.',
-      nameTypeError: 'Plane Error: Expected type string for name.',
-      projectileTypeError: 'Plane Error: Expected type string for projectile.',
-      sceneError: 'Plane Error: A valid phaser scene is required.',
-      shootingAnimationTypeError: 'Plane Error: Expected type string for shootingAnimation.',
-      shootingRateTypeError: 'Plane Error: Expected type number for shootingRate.',
-      soundEffectsTypeError: 'Plane Error: Expected type array for soundEffects.',
-      spriteTypeError: 'Plane Error: Expected type string for sprite.',
-      startingAnimationTypeError: 'Enemy Error: Expected type string for startingAnimation.',
-      typeTypeError: 'Plane Error: Expected type string for type.',
-      xTypeError: 'Plane Error: Expected type number for x when setting position of plane.',
-      yTypeError: 'Plane Error: Expected type number for y when setting position of plane.'
-    };
-
-    if(!scene) console.error(this.errors.sceneError);
-    if(!typeChecker.check({ type: 'object', value: data })) console.error(this.errors.dataTypeError);
-    if(!typeChecker.check({ type: 'string', value: type })) console.error(this.errors.typeTypeError);
-
     this.scene = scene;
     let planeData = data.planes.find(p => p.name === type);
     if(!planeData) console.error(`Plane Error: No pickup definition found for type "${type}".`);
-  
-    if(!typeChecker.check({ type: 'string', value: planeData.name })) console.error(this.errors.nameTypeError);
-    if(!typeChecker.check({ type: 'string', value: planeData.sprite })) console.error(this.errors.spriteTypeError);
-    if(!typeChecker.check({ type: 'number', value: planeData.height })) console.error(this.errors.heightTypeError);
-    if(!typeChecker.check({ type: 'boolean', value: planeData.flipX })) console.error(this.errors.flipXTypeError);
-    if(!typeChecker.check({ type: 'array', value: planeData.animations })) console.error(this.errors.animationsTypeError);
-    if(!typeChecker.check({ type: 'string', value: planeData.startingAnimation })) console.error(this.errors.startingAnimationTypeError);
-    if(!typeChecker.check({ type: 'string', value: planeData.idleAnimation })) console.error(this.errors.idleAnimationTypeError);
-    if(!typeChecker.check({ type: 'string', value: planeData.shootingAnimation })) console.error(this.errors.shootingAnimationTypeError);
-    if(!typeChecker.check({ type: 'string', value: planeData.deathAnimation })) console.error(this.errors.deathAnimationTypeError);
-    if(!typeChecker.check({ type: 'number', value: planeData.maxNumberOfHits })) console.error(this.errors.maxNumberOfHitsTypeError);
-    if(!typeChecker.check({ type: 'number', value: planeData.shootingRate })) console.error(this.errors.shootingRateTypeError);
-    if(!typeChecker.check({ type: 'string', value: planeData.projectile })) console.error(this.errors.projectileTypeError);
-    if(!typeChecker.check({ type: 'array', value: planeData.soundEffects })) console.error(this.errors.soundEffectsTypeError);
 
     this.name = planeData.name;
     this.sprite = scene.add.sprite(0, 0, planeData.name);
