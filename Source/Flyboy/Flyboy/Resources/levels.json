@@ -2,6 +2,7 @@
   "levels": 
   [
     {
+      "starting-comment:": "//////////////////// START OF LEVEL 1 DEFINTION ////////////////////",
       "id": 1,
       "background": "blue-sky-clear.png",
       "backgroundMusic": "blue-sky.mp3",
@@ -18,9 +19,11 @@
       ],
       "oneStarScore": 50,
       "twoStarScore": 100,
-      "threeStarScore": 200 
+      "threeStarScore": 200,
+      "ending-comment:": "//////////////////// END OF LEVEL 1 DEFINITION ////////////////////" 
     },
     {
+      "starting-comment:": "//////////////////// START OF LEVEL 2 DEFINTION ////////////////////",
       "id": 2,
       "background": "blue-sky-clear.png",
       "backgroundMusic": "blue-sky.mp3",
@@ -38,7 +41,8 @@
       ],
       "oneStarScore": 100,
       "twoStarScore": 200,
-      "threeStarScore": 300 
+      "threeStarScore": 300,
+      "ending-comment:": "//////////////////// END OF LEVEL 2 DEFINITION ////////////////////"  
     }
   ]
 }
