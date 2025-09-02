@@ -10,20 +10,282 @@
       [
         { "type": "bird", "spawnPosition": 0.5, "spawnTime": 3000 },
         { "type": "bird", "spawnPosition": 0.3, "spawnTime": 6000 },
-        { "type": "bird", "spawnPosition": 0.7, "spawnTime": 9000 },
-        { "type": "bird", "spawnPosition": 0.5, "spawnTime": 12000 },
-        { "type": "bird", "spawnPosition": 0.3, "spawnTime": 15000 },
-        { "type": "bird", "spawnPosition": 0.7, "spawnTime": 18000 }
+        { "type": "bird", "spawnPosition": 0.7, "spawnTime": 9000 }
       ],
       "pickups": 
       [ 
-        { "type": "coin", "spawnPosition": -1, "spawnTime": 1000 },
-        { "type": "heal", "spawnPosition": -1, "spawnTime": 10000 }
+        { "type": "coin", "spawnPosition": 0.5, "spawnTime": 1000 }
       ],
-      "oneStarScore": 63,
-      "twoStarScore": 125,
-      "threeStarScore": 200,
+      "oneStarScore": 44,
+      "twoStarScore": 88,
+      "threeStarScore": 131,
       "ending-comment:": "//////////////////// END OF LEVEL 1 DEFINITION ////////////////////" 
+    },
+    {
+      "starting-comment:": "//////////////////// START OF LEVEL 2 DEFINTION ////////////////////",
+      "id": 2,
+      "background": "blue-sky-clear.png",
+      "backgroundMusic": "blue-sky.mp3",
+      "enemies": 
+      [
+        { "type": "bird", "spawnPosition": 0.5, "spawnTime": 2500 },
+        { "type": "bird", "spawnPosition": 0.3, "spawnTime": 5000 },
+        { "type": "bird", "spawnPosition": 0.7, "spawnTime": 7500 },
+        { "type": "bird", "spawnPosition": 0.5, "spawnTime": 10000 },
+        { "type": "bird", "spawnPosition": 0.3, "spawnTime": 12500 }
+      ],
+      "pickups": 
+      [ 
+        { "type": "coin", "spawnPosition": 0.1, "spawnTime": 6000 },
+        { "type": "coin", "spawnPosition": -1, "spawnTime": 13500 }
+      ],
+      "oneStarScore": 81,
+      "twoStarScore": 162,
+      "threeStarScore": 243,
+      "ending-comment:": "//////////////////// END OF LEVEL 2 DEFINITION ////////////////////" 
+    },
+    {
+      "starting-comment:": "//////////////////// START OF LEVEL 3 DEFINTION ////////////////////",
+      "id": 3,
+      "background": "blue-sky-clear.png",
+      "backgroundMusic": "blue-sky.mp3",
+      "enemies": 
+      [
+        { "type": "bird", "spawnPosition": 0.4, "spawnTime": 1000 },
+        { "type": "bird", "spawnPosition": 0.1, "spawnTime": 3000 },
+        { "type": "bird", "spawnPosition": 0.3, "spawnTime": 5000 },
+        { "type": "bird", "spawnPosition": 0.7, "spawnTime": 7000 },
+        { "type": "bird", "spawnPosition": 0.6, "spawnTime": 9000 },
+        { "type": "bird", "spawnPosition": 0.3, "spawnTime": 11000 },
+        { "type": "bird", "spawnPosition": 0.7, "spawnTime": 13000 },
+        { "type": "bird", "spawnPosition": 0.4, "spawnTime": 15000 },
+        { "type": "bird", "spawnPosition": 0.1, "spawnTime": 17000 },
+        { "type": "bird", "spawnPosition": 0.1, "spawnTime": 19000 }
+      ],
+      "pickups": 
+      [ 
+        { "type": "coin", "spawnPosition": 0.1, "spawnTime": 9000 },
+        { "type": "coin", "spawnPosition": 0.7, "spawnTime": 18000 },
+        { "type": "heal", "spawnPosition": -1, "spawnTime": 12000 }
+      ],
+      "oneStarScore": 112,
+      "twoStarScore": 225,
+      "threeStarScore": 337, 
+      "ending-comment:": "//////////////////// END OF LEVEL 3 DEFINITION ////////////////////" 
+    },
+    {
+      "starting-comment:": "//////////////////// START OF LEVEL 4 DEFINTION ////////////////////",
+      "id": 4,
+      "background": "blue-sky-clear.png",
+      "backgroundMusic": "blue-sky.mp3",
+      "enemies": 
+      [
+        { "type": "rocket", "spawnPosition": 0.5, "spawnTime": 2000 },
+        { "type": "rocket", "spawnPosition": 0.3, "spawnTime": 5000 },
+        { "type": "rocket", "spawnPosition": 0.1, "spawnTime": 7500 },
+        { "type": "rocket", "spawnPosition": 0.7, "spawnTime": 10000 }
+      ],
+      "pickups": 
+      [ 
+        { "type": "coin", "spawnPosition": 0.7, "spawnTime": 5000 }
+      ],
+      "oneStarScore": 75,
+      "twoStarScore": 150,
+      "threeStarScore": 225,
+      "ending-comment:": "//////////////////// END OF LEVEL 4 DEFINITION ////////////////////" 
+    },
+    {
+      "starting-comment:": "//////////////////// START OF LEVEL 5 DEFINTION ////////////////////",
+      "id": 5,
+      "background": "blue-sky-clear.png",
+      "backgroundMusic": "blue-sky.mp3",
+      "enemies": 
+      [
+        { "type": "bird", "spawnPosition": 0.7, "spawnTime": 1000 },
+        { "type": "bird", "spawnPosition": 0.1, "spawnTime": 3000 },
+        { "type": "rocket", "spawnPosition": 0.5, "spawnTime": 4000 },
+        { "type": "bird", "spawnPosition": 0.4, "spawnTime": 6000 },
+        { "type": "bird", "spawnPosition": 0.3, "spawnTime": 8000 },
+        { "type": "rocket", "spawnPosition": 0.6, "spawnTime": 9000 },
+        { "type": "bird", "spawnPosition": 0.4, "spawnTime": 11000 },
+        { "type": "bird", "spawnPosition": 0.2, "spawnTime": 13000 }
+      ],
+      "pickups": 
+      [ 
+        { "type": "coin", "spawnPosition": 0.7, "spawnTime": 5000 },
+        { "type": "heal", "spawnPosition": -1, "spawnTime": 7000 },
+        { "type": "coin", "spawnPosition": 0.5, "spawnTime": 8500 }
+      ],
+      "oneStarScore": 112,
+      "twoStarScore": 225,
+      "threeStarScore": 337,
+      "ending-comment:": "//////////////////// END OF LEVEL 5 DEFINITION ////////////////////" 
+    },
+    {
+      "starting-comment:": "//////////////////// START OF LEVEL 6 DEFINTION ////////////////////",
+      "id": 6,
+      "background": "blue-sky-clear.png",
+      "backgroundMusic": "blue-sky.mp3",
+      "enemies": 
+      [
+        { "type": "bird", "spawnPosition": 0.1, "spawnTime": 1000 },
+        { "type": "rocket", "spawnPosition": 0.7, "spawnTime": 3000 },
+        { "type": "rocket", "spawnPosition": 0.5, "spawnTime": 4000 },
+        { "type": "bird", "spawnPosition": 0.3, "spawnTime": 6000 },
+        { "type": "rocket", "spawnPosition": 0.2, "spawnTime": 8000 },
+        { "type": "rocket", "spawnPosition": 0.6, "spawnTime": 9000 },
+        { "type": "bird", "spawnPosition": 0.7, "spawnTime": 11000 },
+        { "type": "bird", "spawnPosition": 0.5, "spawnTime": 13000 },
+        { "type": "rocket", "spawnPosition": 0.4, "spawnTime": 14000 },
+        { "type": "bird", "spawnPosition": 0.6, "spawnTime": 16000 },
+        { "type": "bird", "spawnPosition": 0.1, "spawnTime": 17000 },
+        { "type": "rocket", "spawnPosition": 0.2, "spawnTime": 18500 }
+      ],
+      "pickups": 
+      [ 
+        { "type": "invincible", "spawnPosition": 0.5, "spawnTime": 100 },
+        { "type": "coin", "spawnPosition": 0.2, "spawnTime": 5000 },
+        { "type": "heal", "spawnPosition": -1, "spawnTime": 7000 },
+        { "type": "coin", "spawnPosition": -1, "spawnTime": 8500 }
+      ],
+      "oneStarScore": 162,
+      "twoStarScore": 325,
+      "threeStarScore": 487,
+      "ending-comment:": "//////////////////// END OF LEVEL 6 DEFINITION ////////////////////" 
+    },
+    {
+      "starting-comment:": "//////////////////// START OF LEVEL 7 DEFINTION ////////////////////",
+      "id": 7,
+      "background": "blue-sky-clear.png",
+      "backgroundMusic": "blue-sky.mp3",
+      "enemies": 
+      [
+        { "type": "chicken", "spawnPosition": 0.1, "spawnTime": 1000 },
+        { "type": "chicken", "spawnPosition": 0.7, "spawnTime": 3000 },
+        { "type": "chicken", "spawnPosition": 0.5, "spawnTime": 4000 },
+        { "type": "chicken", "spawnPosition": 0.2, "spawnTime": 8000 },
+        { "type": "chicken", "spawnPosition": 0.3, "spawnTime": 9000 }
+      ],
+      "pickups": 
+      [ 
+        { "type": "invincible", "spawnPosition": 0.5, "spawnTime": 100 },
+        { "type": "coin", "spawnPosition": 0.2, "spawnTime": 5000 },
+        { "type": "heal", "spawnPosition": -1, "spawnTime": 7000 },
+        { "type": "coin", "spawnPosition": -1, "spawnTime": 8500 }
+      ],
+      "oneStarScore": 175,
+      "twoStarScore": 350,
+      "threeStarScore": 525,
+      "ending-comment:": "//////////////////// END OF LEVEL 7 DEFINITION ////////////////////" 
+    },
+    {
+      "starting-comment:": "//////////////////// START OF LEVEL 8 DEFINTION ////////////////////",
+      "id": 8,
+      "background": "blue-sky-clear.png",
+      "backgroundMusic": "blue-sky.mp3",
+      "enemies": 
+      [
+        { "type": "bird", "spawnPosition": 0.1, "spawnTime": 1000 },
+        { "type": "bird", "spawnPosition": 0.5, "spawnTime": 3000 },
+        { "type": "chicken", "spawnPosition": -1, "spawnTime": 4000 },
+        { "type": "bird", "spawnPosition": 0.2, "spawnTime": 8000 },
+        { "type": "bird", "spawnPosition": 0.7, "spawnTime": 9000 },
+        { "type": "rocket", "spawnPosition": 0.3, "spawnTime": 12000 },
+        { "type": "chicken", "spawnPosition": -1, "spawnTime": 13000 },
+        { "type": "rocket", "spawnPosition": 0.4, "spawnTime": 15500 },
+        { "type": "bird", "spawnPosition": 0.3, "spawnTime": 16000 },
+        { "type": "bird", "spawnPosition": 0.6, "spawnTime": 17500 },
+        { "type": "chicken", "spawnPosition": -1, "spawnTime": 19000 },
+        { "type": "bird", "spawnPosition": 0.3, "spawnTime": 22000 },
+        { "type": "rocket", "spawnPosition": 0.5, "spawnTime": 23000 },
+        { "type": "bird", "spawnPosition": 0.7, "spawnTime": 25000 },
+        { "type": "bird", "spawnPosition": 0.2, "spawnTime": 27000 },
+        { "type": "chicken", "spawnPosition": 0.5, "spawnTime": 29000 }
+      ],
+      "pickups": 
+      [ 
+        { "type": "coin", "spawnPosition": 0.1, "spawnTime": 5000 },
+        { "type": "invincible", "spawnPosition": 0.7, "spawnTime": 6000 },
+        { "type": "heal", "spawnPosition": -1, "spawnTime": 7000 },
+        { "type": "coin", "spawnPosition": -1, "spawnTime": 28000 }
+      ],
+      "oneStarScore": 243,
+      "twoStarScore": 487,
+      "threeStarScore": 731,
+      "ending-comment:": "//////////////////// END OF LEVEL 8 DEFINITION ////////////////////" 
+    },
+    {
+      "starting-comment:": "//////////////////// START OF LEVEL 9 DEFINTION ////////////////////",
+      "id": 9,
+      "background": "blue-sky-clear.png",
+      "backgroundMusic": "blue-sky.mp3",
+      "enemies": 
+      [
+        { "type": "rocket", "spawnPosition": 0.2, "spawnTime": 1000 },
+        { "type": "rocket", "spawnPosition": 0.7, "spawnTime": 2000 },
+        { "type": "chicken", "spawnPosition": -1, "spawnTime": 4000 },
+        { "type": "chicken", "spawnPosition": 0.1, "spawnTime": 8000 },
+        { "type": "bird", "spawnPosition": -1, "spawnTime": 9000 },
+        { "type": "bird", "spawnPosition": -1, "spawnTime": 12000 },
+        { "type": "bird", "spawnPosition": -1, "spawnTime": 14000 },
+        { "type": "bird", "spawnPosition": -1, "spawnTime": 15500 },
+        { "type": "bird", "spawnPosition": -1, "spawnTime": 16000 },
+        { "type": "bird", "spawnPosition": -1, "spawnTime": 18000 },
+        { "type": "chicken", "spawnPosition": 0.5, "spawnTime": 19000 },
+        { "type": "chicken", "spawnPosition": 0.3, "spawnTime": 22000 },
+        { "type": "rocket", "spawnPosition": 0.5, "spawnTime": 24000 },
+        { "type": "chicken", "spawnPosition": 0.7, "spawnTime": 25000 },
+        { "type": "bird", "spawnPosition": 0.2, "spawnTime": 27000 },
+        { "type": "chicken", "spawnPosition": 0.5, "spawnTime": 30000 }
+      ],
+      "pickups": 
+      [ 
+        { "type": "coin", "spawnPosition": -1, "spawnTime": 5000 },
+        { "type": "invincible", "spawnPosition": 0.7, "spawnTime": 2000 },
+        { "type": "heal", "spawnPosition": 0.5, "spawnTime": 8500 },
+        { "type": "coin", "spawnPosition": -1, "spawnTime": 14000 }
+      ],
+      "oneStarScore": 281,
+      "twoStarScore": 562,
+      "threeStarScore": 843,
+      "ending-comment:": "//////////////////// END OF LEVEL 9 DEFINITION ////////////////////" 
+    },
+    {
+      "starting-comment:": "//////////////////// START OF LEVEL 10 DEFINTION ////////////////////",
+      "id": 10,
+      "background": "blue-sky-clear.png",
+      "backgroundMusic": "blue-sky.mp3",
+      "enemies": 
+      [
+        { "type": "chicken", "spawnPosition": 0.5, "spawnTime": 1000 },
+        { "type": "chicken", "spawnPosition": 0.6, "spawnTime": 2000 },
+        { "type": "chicken", "spawnPosition": 0.4, "spawnTime": 4000 },
+        { "type": "chicken", "spawnPosition": -1, "spawnTime": 6000 },
+        { "type": "bird", "spawnPosition": -1, "spawnTime": 8000 },
+        { "type": "rocket", "spawnPosition": -1, "spawnTime": 12000 },
+        { "type": "rocket", "spawnPosition": -1, "spawnTime": 14000 },
+        { "type": "bird", "spawnPosition": -1, "spawnTime": 15500 },
+        { "type": "chicken", "spawnPosition": 0.7, "spawnTime": 16000 },
+        { "type": "chicken", "spawnPosition": -1, "spawnTime": 18000 },
+        { "type": "bird", "spawnPosition": 0.2, "spawnTime": 19000 },
+        { "type": "bird", "spawnPosition": -1, "spawnTime": 22000 },
+        { "type": "bird", "spawnPosition": 0.3, "spawnTime": 24000 },
+        { "type": "rocket", "spawnPosition": 0.4, "spawnTime": 25000 },
+        { "type": "chicken", "spawnPosition": -1, "spawnTime": 27000 },
+        { "type": "chicken", "spawnPosition": -1, "spawnTime": 30000 }
+      ],
+      "pickups": 
+      [ 
+        { "type": "coin", "spawnPosition": -1, "spawnTime": 100 },
+        { "type": "coin", "spawnPosition": -1, "spawnTime": 300 },
+        { "type": "coin", "spawnPosition": -1, "spawnTime": 500 },
+        { "type": "heal", "spawnPosition": 0.5, "spawnTime": 17000 },
+        { "type": "coin", "spawnPosition": -1, "spawnTime": 32000 }
+      ],
+      "oneStarScore": 368,
+      "twoStarScore": 737,
+      "threeStarScore": 1106,
+      "ending-comment:": "//////////////////// END OF LEVEL 10 DEFINITION ////////////////////" 
     }
   ]
 }
