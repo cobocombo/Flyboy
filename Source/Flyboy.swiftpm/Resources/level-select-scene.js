@@ -29,28 +29,35 @@ class LevelSelectScene extends Phaser.Scene
     let data = this.cache.json.get('levels');
     let levelData = data.levels;
     levels.load({ levels: levelData });
-
-    let blockSize = device.screenWidth / 8;
+    
+    let blockSize = device.screenWidth / 8; 
     let spacing = blockSize * 0.5;
-    let columns = Math.floor((device.screenWidth - spacing) / (blockSize + spacing));
-    let startX = spacing;
+    let columns = Math.floor((this.scale.width + spacing) / (blockSize + spacing));
+    let totalWidth = columns * blockSize + (columns - 1) * spacing;
+    let startX = (this.scale.width - totalWidth) / 2;
     let startY = this.scale.height / 4;
-
+    
     levelData.forEach((level, index) => 
     {
       let col = index % columns;
       let row = Math.floor(index / columns);
-
       let x = startX + col * (blockSize + spacing) + blockSize / 2;
-      let y = startY + row * (blockSize + spacing);
-
+      let y = startY + row * (blockSize + spacing) + blockSize / 2;
+    
       let unlocked = levels.isLevelUnlocked({ id: level.id });
-      if(unlocked === true) 
+      if(unlocked) 
       {
-        let block = new LevelSelectBlock({ scene: this, x, y, level: level.id, starCount: levels.getStarsForLevel({ id: level.id }) || 0 });
+        let block = new LevelSelectBlock({
+          scene: this,
+          x,
+          y,
+          level: level.id,
+          starCount: levels.getStarsForLevel({ id: level.id }) || 0
+        });
+    
         block.setInteractive({ useHandCursor: true }).on('pointerup', () => 
         {
-          this.sound.play('tap', { volume: 0.8, loop: false }); 
+          this.sound.play('tap', { volume: 0.8 });
           levels.selectLevel({ id: level.id });
           this.scene.start('LoadingScene');
         });
@@ -61,9 +68,8 @@ class LevelSelectScene extends Phaser.Scene
         lock.setDisplaySize(blockSize, blockSize);
         lock.setOrigin(0.5);
         lock.setInteractive({ useHandCursor: true });
-        lock.on('pointerup', () => 
-        {
-          this.sound.play('error', { volume: 0.7, loop: false });
+        lock.on('pointerup', () => {
+          this.sound.play('error', { volume: 0.7 });
         });
       }
     });
