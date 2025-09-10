@@ -1,0 +1,126 @@
+{
+  "enemies": 
+  [
+    {
+      "starting-comment:": "//////////////////// START OF BIRD DEFINTION ////////////////////",
+      "name": "bird",
+      "sprite": "bird-fly-1.png",
+      "height": 12,
+      "flipX": true,
+      "animations": 
+      [
+        { 
+          "key": "bird-fly",
+          "frames":
+          [
+            { "key": "bird-fly-1", "sprite": "bird-fly-1.png" },
+            { "key": "bird-fly-2", "sprite": "bird-fly-2.png" }
+          ],
+          "frameRate": 4,
+          "repeat": -1
+        }
+      ],
+      "startingAnimation": "bird-fly",
+      "shootingAnimation": null,
+      "deathAnimation": "explosion",
+      "deathSprite": "explosion-1.png",
+      "speed": 6,
+      "maxNumberOfHits": 2,
+      "projectile": null,
+      "shootingRate": null,
+      "score": 25,
+      "soundEffects":
+      [
+        { "key": "bird-hit", "sound": "hit.mp3", "volume": 1.0 },
+        { "key": "bird-death", "sound": "squish.mp3", "volume": 1.0 }
+      ],
+      "ending-comment:": "//////////////////// END OF BIRD DEFINITION ////////////////////"
+    },
+    {
+      "starting-comment:": "//////////////////// START OF ROCKET DEFINTION ////////////////////",
+      "name": "rocket",
+      "sprite": "rocket-fly-1.png",
+      "height": 12,
+      "flipX": false,
+      "animations": 
+      [
+        { 
+          "key": "rocket-fly",
+          "frames":
+          [
+            { "key": "rocket-fly-1", "sprite": "rocket-fly-1.png" },
+            { "key": "rocket-fly-2", "sprite": "rocket-fly-2.png" },
+            { "key": "rocket-fly-3", "sprite": "rocket-fly-3.png" },
+            { "key": "rocket-fly-4", "sprite": "rocket-fly-4.png" }
+          ],
+          "frameRate": 8,
+          "repeat": -1
+        }
+      ],
+      "startingAnimation": "rocket-fly",
+      "shootingAnimation": null,
+      "deathAnimation": "explosion",
+      "deathSprite": "explosion-1.png",
+      "speed": 6,
+      "maxNumberOfHits": 3,
+      "projectile": null,
+      "shootingRate": null,
+      "score": 50,
+      "soundEffects":
+      [
+        { "key": "rocket-hit", "sound": "clank.mp3", "volume": 1.0 },
+        { "key": "rocket-death", "sound": "explosion.mp3", "volume": 1.0 }
+      ],
+      "ending-comment:": "//////////////////// END OF ROCKET DEFINITION ////////////////////"
+    },
+    {
+      "starting-comment:": "//////////////////// START OF CHICKEN DEFINTION ////////////////////",
+      "name": "chicken",
+      "sprite": "chicken-fly-1.png",
+      "height": 9,
+      "flipX": true,
+      "animations": 
+      [
+        { 
+          "key": "chicken-fly",
+          "frames":
+          [
+            { "key": "chicken-fly-1", "sprite": "chicken-fly-1.png" },
+            { "key": "chicken-fly-2", "sprite": "chicken-fly-2.png" },
+            { "key": "chicken-fly-3", "sprite": "chicken-fly-3.png" },
+            { "key": "chicken-fly-4", "sprite": "chicken-fly-4.png" }
+          ],
+          "frameRate": 8,
+          "repeat": -1
+        },
+        { 
+          "key": "chicken-shoot",
+          "frames":
+          [
+            { "key": "chicken-shoot-1", "sprite": "chicken-shoot-1.png" },
+            { "key": "chicken-shoot-2", "sprite": "chicken-shoot-2.png" },
+            { "key": "chicken-shoot-3", "sprite": "chicken-shoot-3.png" }
+          ],
+          "frameRate": 5,
+          "repeat": 0
+        }
+      ],
+      "startingAnimation": "chicken-fly",
+      "shootingAnimation": "chicken-shoot",
+      "deathAnimation": "explosion",
+      "deathSprite": "explosion-1.png",
+      "speed": 8,
+      "maxNumberOfHits": 5,
+      "projectile": "flame",
+      "shootingRate": 5000,
+      "score": 100,
+      "soundEffects":
+      [
+        { "key": "chicken-hit", "sound": "hit.mp3", "volume": 1.0 },
+        { "key": "chicken-shoot", "sound": "enemy-shoot.mp3", "volume": 1.0 },
+        { "key": "chicken-death", "sound": "squawk.mp3", "volume": 1.0 }
+      ],
+      "ending-comment:": "//////////////////// END OF CHICKEN DEFINITION ////////////////////"
+    }
+  ]
+}
