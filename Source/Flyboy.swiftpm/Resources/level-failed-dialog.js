@@ -20,7 +20,7 @@ class LevelFailedDialog extends ui.AlertDialog
 
     this.title = 'Level Failed';
     this.addComponents({ components: [ new ui.Text({ text: 'Try better next time!' }) ] });
-    this.addComponents({ components: [ new ImageV2({ source: 'x.png', width: '50px', height: '50px' }) ] });
+    this.addComponents({ components: [ new Img({ source: 'x.png', width: '50px', height: '50px' }) ] });
 
     let mainMenuButton = new ui.AlertDialogButton({ text: 'Main Menu', onTap: () => 
     { 

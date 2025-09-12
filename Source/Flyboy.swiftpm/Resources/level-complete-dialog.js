@@ -37,7 +37,7 @@ class LevelCompleteDialog extends ui.AlertDialog
     for(let i = 0; i < 3; i++) 
     {
       let starKey = i < starCount ? 'star-gold.png' : 'star-silver.png';
-      let star = new ImageV2({ source: starKey, width: '44px', height: '44px' })
+      let star = new Img({ source: starKey, width: '44px', height: '44px' })
       this.addComponents({ components: [ star ] });
     }
 
