@@ -52,8 +52,8 @@ class SaveDataManager
    */
   save({ key, data } = {}) 
   {
-    if(!typeChecker.check({ type: 'string', value: key })) console.error(this.errors.keyTypeError);
-    if(!typeChecker.check({ type: 'object', value: data })) console.error(this.errors.dataTypeError);
+    if(!typechecker.check({ type: 'string', value: key })) console.error(this.errors.keyTypeError);
+    if(!typechecker.check({ type: 'object', value: data })) console.error(this.errors.dataTypeError);
     try 
     {
       let json = JSON.stringify(data);
@@ -68,7 +68,7 @@ class SaveDataManager
    */
   load({ key } = {}) 
   {
-    if(!typeChecker.check({ type: 'string', value: key })) console.error(this.errors.keyTypeError);
+    if(!typechecker.check({ type: 'string', value: key })) console.error(this.errors.keyTypeError);
     try 
     {
       let json = localStorage.getItem(key);
@@ -84,7 +84,7 @@ class SaveDataManager
    */
   remove({ key } = {}) 
   {
-    if(!typeChecker.check({ type: 'string', value: key })) console.error(this.errors.keyTypeError);
+    if(!typechecker.check({ type: 'string', value: key })) console.error(this.errors.keyTypeError);
     try { localStorage.removeItem(key); } 
     catch { console.error(this.errors.removingError); }
   }

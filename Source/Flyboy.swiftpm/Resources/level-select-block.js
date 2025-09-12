@@ -29,10 +29,10 @@ class LevelSelectBlock extends Phaser.GameObjects.Container
     };
 
     if(!scene) console.error(this.errors.sceneError);
-    if(!typeChecker.check({ type: 'number', value: x })) console.error(this.errors.xTypeError);
-    if(!typeChecker.check({ type: 'number', value: y })) console.error(this.errors.yTypeError);
-    if(!typeChecker.check({ type: 'number', value: level })) console.error(this.errors.levelTypeError);
-    if(!typeChecker.check({ type: 'number', value: starCount })) console.error(this.errors.starCountTypeError);
+    if(!typechecker.check({ type: 'number', value: x })) console.error(this.errors.xTypeError);
+    if(!typechecker.check({ type: 'number', value: y })) console.error(this.errors.yTypeError);
+    if(!typechecker.check({ type: 'number', value: level })) console.error(this.errors.levelTypeError);
+    if(!typechecker.check({ type: 'number', value: starCount })) console.error(this.errors.starCountTypeError);
 
     let blockSize = device.screenWidth / 8;
     let block = scene.add.sprite(0, 0, 'block');

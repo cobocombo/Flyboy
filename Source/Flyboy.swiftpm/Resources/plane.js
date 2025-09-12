@@ -70,7 +70,7 @@ class Plane
    */
   setAnimation({ name } = {}) 
   {
-    if(!typeChecker.check({ type: 'string', value: name })) console.error(this.errors.nameTypeError);
+    if(!typechecker.check({ type: 'string', value: name })) console.error(this.errors.nameTypeError);
     if(this.currentAnimation !== name) 
     {
       this.sprite.play(name);
@@ -85,8 +85,8 @@ class Plane
    */
   setPosition({ x, y } = {}) 
   {
-    if(!typeChecker.check({ type: 'number', value: x })) console.error(this.errors.xTypeError);
-    if(!typeChecker.check({ type: 'number', value: y })) console.error(this.errors.yTypeError);
+    if(!typechecker.check({ type: 'number', value: x })) console.error(this.errors.xTypeError);
+    if(!typechecker.check({ type: 'number', value: y })) console.error(this.errors.yTypeError);
     this.sprite.setPosition(x, y);
     this.baseY = y;
   }
@@ -150,8 +150,8 @@ class Plane
    */
   update({ joystick, delta } = {})
   {
-    if(!typeChecker.check({ type: 'joystick', value: joystick })) console.error(this.errors.joystickTypeError);
-    if(!typeChecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
+    if(!typechecker.check({ type: 'joystick', value: joystick })) console.error(this.errors.joystickTypeError);
+    if(!typechecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
 
     let verticalSpeed = ((device.screenWidth / 3) * delta) / 1000;
     if(joystick.currentState === 'up') 

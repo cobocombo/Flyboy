@@ -29,8 +29,8 @@ class ShootButton
     };
 
     if(!scene) console.error(this.errors.sceneError);
-    if(!typeChecker.check({ type: 'plane', value: plane })) console.error(this.errors.planeTypeError);
-    if(!typeChecker.check({ type: 'array', value: projectileTypes })) console.error(this.errors.projectileTypesTypeError);
+    if(!typechecker.check({ type: 'plane', value: plane })) console.error(this.errors.planeTypeError);
+    if(!typechecker.check({ type: 'array', value: projectileTypes })) console.error(this.errors.projectileTypesTypeError);
 
     this.scene = scene;
     this.plane = plane;
@@ -82,7 +82,7 @@ class ShootButton
    */
   update({ delta } = {}) 
   {
-    if(!typeChecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
+    if(!typechecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
     if(!this.isHeld) return;
     this.elapsed += delta;
     if(this.elapsed >= this.shootCooldown) 

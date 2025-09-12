@@ -113,7 +113,7 @@ class GameScene extends Phaser.Scene
   /** Public method called when the game is over. */
   gameOver({ state } = {})
   {
-    if(!typeChecker.check({ type: 'string', value: state })) console.error(this.errors.stateTypeError);
+    if(!typechecker.check({ type: 'string', value: state })) console.error(this.errors.stateTypeError);
     if(state === 'death')
     {
       this.plane?.setAnimation({ name: this.plane.deathAnimation });
@@ -556,7 +556,7 @@ class GameScene extends Phaser.Scene
   /** Main phaser update loop for the game scene. */
   update(_time, delta) 
   {
-    if(!typeChecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
+    if(!typechecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
     this.elapsedTime += delta;
 
     this.updateBackground({ delta: delta });
@@ -573,7 +573,7 @@ class GameScene extends Phaser.Scene
   /** Public method called during the update loop of the game scene to update the moving background. */
   updateBackground({ delta } = {})
   {
-    if(!typeChecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
+    if(!typechecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
     let backgroundScrollSpeed = device.screenHeight / 8;
     this.background1.x -= (backgroundScrollSpeed * delta) / 1000;
     this.background2.x -= (backgroundScrollSpeed * delta) / 1000;
@@ -584,7 +584,7 @@ class GameScene extends Phaser.Scene
   /** Public method called during the update loop of the game scene to update all current enemies. Handles enemy to plane collision. */
   updateEnemies({ delta } = {})
   {
-    if(!typeChecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
+    if(!typechecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
     while(this.enemySpawnQueue.length > 0 && this.elapsedTime >= this.enemySpawnQueue[0].spawnTime) this.spawnEnemy();
     Phaser.Actions.Call(this.enemies.getChildren(), sprite => 
     {
@@ -602,7 +602,7 @@ class GameScene extends Phaser.Scene
   /** Public method called during the update loop of the game scene to update all current pickups. Handles pickup to plane collision. */
   updatePickups({ delta } = {})
   {
-    if(!typeChecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
+    if(!typechecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
     while(this.pickupSpawnQueue.length > 0 && this.elapsedTime >= this.pickupSpawnQueue[0].spawnTime) this.spawnPickup();
     Phaser.Actions.Call(this.pickups.getChildren(), sprite => 
     {
@@ -620,7 +620,7 @@ class GameScene extends Phaser.Scene
   /** Public method called during the game scene periodically when the user's score needs to be updated. */
   updateScore({ amount } = {})
   {
-    if(!typeChecker.check({ type: 'number', value: amount })) console.error(this.errors.amountTypeError);
+    if(!typechecker.check({ type: 'number', value: amount })) console.error(this.errors.amountTypeError);
     this.score += amount;
     this.hud.scoreText.setText(`Score: ${this.score}`);
   }
@@ -628,7 +628,7 @@ class GameScene extends Phaser.Scene
   /** Public method called during the update loop of the game scene to update all current projectiles. */
   updateProjectiles({ delta } = {})
   {
-    if(!typeChecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
+    if(!typechecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
 
     Phaser.Actions.Call(this.projectiles.getChildren(), projectileSprite => 
     {

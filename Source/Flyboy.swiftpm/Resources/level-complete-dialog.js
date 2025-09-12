@@ -25,8 +25,8 @@ class LevelCompleteDialog extends ui.AlertDialog
     };
 
     if(!scene) console.error(this.errors.sceneError);
-    if(!typeChecker.check({ type: 'number', value: score })) console.error(this.errors.scoreTypeError);
-    if(!typeChecker.check({ type: 'number', value: starCount })) console.error(this.errors.starCountTypeError);
+    if(!typechecker.check({ type: 'number', value: score })) console.error(this.errors.scoreTypeError);
+    if(!typechecker.check({ type: 'number', value: starCount })) console.error(this.errors.starCountTypeError);
 
     this.cancelable = false;
     this.rowfooter = false;

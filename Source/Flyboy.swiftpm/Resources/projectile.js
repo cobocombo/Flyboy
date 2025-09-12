@@ -38,20 +38,20 @@ class Projectile
     };
 
     if(!scene) console.error(this.errors.sceneError);
-    if(!typeChecker.check({ type: 'array', value: data })) console.error(this.errors.dataTypeError);
-    if(!typeChecker.check({ type: 'string', value: type })) console.error(this.errors.typeTypeError);
-    if(!typeChecker.check({ type: 'number', value: x })) console.error(this.errors.xTypeError);
-    if(!typeChecker.check({ type: 'number', value: y })) console.error(this.errors.yTypeError);
-    if(!typeChecker.check({ type: 'string', value: type })) console.error(this.errors.directionTypeError);
+    if(!typechecker.check({ type: 'array', value: data })) console.error(this.errors.dataTypeError);
+    if(!typechecker.check({ type: 'string', value: type })) console.error(this.errors.typeTypeError);
+    if(!typechecker.check({ type: 'number', value: x })) console.error(this.errors.xTypeError);
+    if(!typechecker.check({ type: 'number', value: y })) console.error(this.errors.yTypeError);
+    if(!typechecker.check({ type: 'string', value: type })) console.error(this.errors.directionTypeError);
 
     this.scene = scene;
     let projectileData = data.find(p => p.name === type);
     if(!projectileData) console.error(this.errors.dataNotFoundError);
 
-    if(!typeChecker.check({ type: 'string', value: projectileData.name })) console.error(this.errors.nameTypeError);
-    if(!typeChecker.check({ type: 'string', value: projectileData.sprite })) console.error(this.errors.spriteTypeError);
-    if(!typeChecker.check({ type: 'number', value: projectileData.height })) console.error(this.errors.heightTypeError);
-    if(!typeChecker.check({ type: 'number', value: projectileData.speed })) console.error(this.errors.speedTypeError);
+    if(!typechecker.check({ type: 'string', value: projectileData.name })) console.error(this.errors.nameTypeError);
+    if(!typechecker.check({ type: 'string', value: projectileData.sprite })) console.error(this.errors.spriteTypeError);
+    if(!typechecker.check({ type: 'number', value: projectileData.height })) console.error(this.errors.heightTypeError);
+    if(!typechecker.check({ type: 'number', value: projectileData.speed })) console.error(this.errors.speedTypeError);
 
     this.name = projectileData.name;
     this.sprite = scene.add.sprite(x, y, projectileData.name);
@@ -87,7 +87,7 @@ class Projectile
    */
   update({ delta, speed, direction } = {}) 
   {
-    if(!typeChecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
+    if(!typechecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
     if(direction === 'right') this.sprite.x += ((speed * delta) / 1000);
     else this.sprite.x -= ((speed * delta) / 1000);
   }

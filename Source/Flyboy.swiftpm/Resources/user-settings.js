@@ -39,7 +39,7 @@ class SettingsManager
    */
   addSettings({ soundOn } = {})
   {
-    if(!typeChecker.check({ type: 'boolean', value: soundOn })) console.error(this.errors.soundOnTypeError);
+    if(!typechecker.check({ type: 'boolean', value: soundOn })) console.error(this.errors.soundOnTypeError);
     let data = saveData.load({ key: saveData.storageKeys.settings });
     if(!data) data = { soundOn: true };
     else data = { soundOn: soundOn };

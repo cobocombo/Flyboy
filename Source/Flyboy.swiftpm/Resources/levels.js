@@ -73,10 +73,10 @@ class LevelManager
    */
   addLevelProgress({ id, stars, unlocked, score } = {}) 
   {
-    if(!typeChecker.check({ type: 'number', value: id })) console.error(this.errors.idTypeError);
-    if(!typeChecker.check({ type: 'number', value: stars })) console.error(this.errors.starsTypeError);
-    if(!typeChecker.check({ type: 'boolean', value: unlocked })) console.error(this.errors.unlockedTypeError);
-    if(!typeChecker.check({ type: 'number', value: score })) console.error(this.errors.scoreTypeError);
+    if(!typechecker.check({ type: 'number', value: id })) console.error(this.errors.idTypeError);
+    if(!typechecker.check({ type: 'number', value: stars })) console.error(this.errors.starsTypeError);
+    if(!typechecker.check({ type: 'boolean', value: unlocked })) console.error(this.errors.unlockedTypeError);
+    if(!typechecker.check({ type: 'number', value: score })) console.error(this.errors.scoreTypeError);
 
     let data = saveData.load({ key: saveData.storageKeys.levelProgress });
     if(!data) data = { levels: [] };
@@ -108,7 +108,7 @@ class LevelManager
    */
   getStarsForLevel({ id } = {}) 
   {
-    if(!typeChecker.check({ type: 'number', value: id })) console.error(this.errors.idTypeError);
+    if(!typechecker.check({ type: 'number', value: id })) console.error(this.errors.idTypeError);
     let data = saveData.load({ key: saveData.storageKeys.levelProgress });
     if(!data) return 0;
     let level = data.levels.find(level => level.id === id);
@@ -131,7 +131,7 @@ class LevelManager
    */
   isLevelUnlocked({ id } = {}) 
   {
-    if(!typeChecker.check({ type: 'number', value: id })) console.error(this.errors.idTypeError);
+    if(!typechecker.check({ type: 'number', value: id })) console.error(this.errors.idTypeError);
   
     let data = saveData.load({ key: saveData.storageKeys.levelProgress });
     if(!data) return false;
@@ -146,11 +146,11 @@ class LevelManager
    */
   load({ levels } = {}) 
   {
-    if(!typeChecker.check({ type: 'array', value: levels })) console.error(this.errors.levelsTypeError);
+    if(!typechecker.check({ type: 'array', value: levels })) console.error(this.errors.levelsTypeError);
     this.levels = [];
     for(const rawLevel of levels) 
     {
-      if(!typeChecker.check({ type: 'object', value: rawLevel })) continue;
+      if(!typechecker.check({ type: 'object', value: rawLevel })) continue;
       if(rawLevel?.id != null) this.levels.push(rawLevel);
     }
     this.currentLevel = null;
@@ -162,7 +162,7 @@ class LevelManager
    */
   selectLevel({ id } = {}) 
   {
-    if(!typeChecker.check({ type: 'number', value: id })) console.error(this.errors.levelIdTypeError);
+    if(!typechecker.check({ type: 'number', value: id })) console.error(this.errors.levelIdTypeError);
     let level = this.levels.find(level => level.id === id);
     if(!level) console.error(this.errors.levelNotFoundError);
     this.currentLevel = level;

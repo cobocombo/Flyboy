@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////
 
-typeChecker.register({ name: 'plane', constructor: Plane });
-typeChecker.register({ name: 'joystick', constructor: Joystick });
-typeChecker.register({ name: 'shoot-button', constructor: ShootButton });
+typechecker.register({ name: 'plane', constructor: Plane });
+typechecker.register({ name: 'joystick', constructor: Joystick });
+typechecker.register({ name: 'shoot-button', constructor: ShootButton });
 
 let game = new ui.PhaserGame({ 
   config: 
