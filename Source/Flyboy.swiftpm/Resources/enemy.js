@@ -128,7 +128,7 @@ class Enemy
    */
   update({ delta } = {}) 
   {
-    if(!typeChecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
+    if(!typechecker.check({ type: 'number', value: delta })) console.error(this.errors.deltaTypeError);
     this.sprite.x -= (this.speed * delta) / 1000;
   }
 }

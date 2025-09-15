@@ -16,6 +16,8 @@ let package = Package(
         .iOSApplication(
             name: "Flyboy",
             targets: ["AppModule"],
+            bundleIdentifier: "com.cobo.flyboyadventuregame",
+            teamIdentifier: "4U5LUB477B",
             displayVersion: "1.0",
             bundleVersion: "1",
             appIcon: .asset("AppIcon"),
@@ -29,7 +31,8 @@ let package = Package(
                 .landscapeRight,
                 .landscapeLeft,
                 .portraitUpsideDown(.when(deviceFamilies: [.pad]))
-            ]
+            ],
+            appCategory: .arcadeGames
         )
     ],
     targets: [
