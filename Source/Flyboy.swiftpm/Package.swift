@@ -19,18 +19,15 @@ let package = Package(
             bundleIdentifier: "com.cobo.flyboyadventuregame",
             teamIdentifier: "4U5LUB477B",
             displayVersion: "1.0",
-            bundleVersion: "1",
+            bundleVersion: "5",
             appIcon: .asset("AppIcon"),
             accentColor: .presetColor(.green),
             supportedDeviceFamilies: [
-                .pad,
                 .phone
             ],
             supportedInterfaceOrientations: [
-                .portrait,
                 .landscapeRight,
-                .landscapeLeft,
-                .portraitUpsideDown(.when(deviceFamilies: [.pad]))
+                .landscapeLeft
             ],
             appCategory: .arcadeGames
         )

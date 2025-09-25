@@ -30,8 +30,8 @@ class LevelCompleteDialog extends ui.AlertDialog
 
     this.cancelable = false;
     this.rowfooter = false;
-
-    this.title = 'Level Complete!';
+    
+    this.title = `Level ${levels.currentLevel.id} Complete!`;
     this.addComponents({ components: [ new ui.Text({ text: `Score: ${score}` }) ] });
 
     for(let i = 0; i < 3; i++) 

@@ -18,7 +18,7 @@ class LevelFailedDialog extends ui.AlertDialog
     this.cancelable = false;
     this.rowfooter = false;
 
-    this.title = 'Level Failed';
+    this.title = `Level ${levels.currentLevel.id} Failed!`;
     this.addComponents({ components: [ new ui.Text({ text: 'Try better next time!' }) ] });
     this.addComponents({ components: [ new Img({ source: 'x.png', width: '50px', height: '50px' }) ] });
 
