@@ -27,10 +27,10 @@ class Joystick
     this.currentState = this.states.idle;
 
     this.base = scene.add.image(0, 0, 'joystick-base');
-    this.base.setScale((device.screenWidth / 5) / this.base.height);
+    this.base.setScale((device.screenWidth / 4) / this.base.height);
 
     this.stick = scene.add.image(0, 0, 'joystick');
-    this.stick.setScale((device.screenWidth / 5) / this.base.height);
+    this.stick.setScale((device.screenWidth / 4) / this.base.height);
     this.stick.setInteractive();
     this.scene.input.setDraggable(this.stick);
 
@@ -38,7 +38,7 @@ class Joystick
     this.stick.setPosition(20 + (this.base.displayWidth) / 2, device.screenWidth - 20 - (this.base.displayHeight) / 2);
 
     this.centerY = device.screenWidth - 20 - (this.base.displayHeight) / 2;
-    this.dragRange = this.base.displayHeight / 4;
+    this.dragRange = this.base.displayHeight / 6;
 
     this.stick.on('drag', (pointer, dragX, dragY) => 
     {
