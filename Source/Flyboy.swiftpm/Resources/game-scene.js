@@ -525,7 +525,7 @@ class GameScene extends Phaser.Scene
     let spawnX = device.screenHeight;
     let spawnPosition = 0.5;
 
-    if(enemyData.spawnPosition === -1) spawnPosition = Math.floor((Math.random() * (0.75 - 0.1) + 0.1) * 100) / 100;
+    if(enemyData.spawnPosition === -1) spawnPosition = Math.floor((Math.random() * (0.75 - 0.2) + 0.2) * 100) / 100;
     else spawnPosition = enemyData.spawnPosition;
     let spawnY = device.screenWidth * spawnPosition;
     
@@ -542,7 +542,7 @@ class GameScene extends Phaser.Scene
     let spawnX = device.screenHeight;
     let spawnPosition = 0.5;
 
-    if(pickupData.spawnPosition === -1) spawnPosition = Math.floor((Math.random() * (0.75 - 0.1) + 0.1) * 100) / 100;
+    if(pickupData.spawnPosition === -1) spawnPosition = Math.floor((Math.random() * (0.75 - 0.2) + 0.2) * 100) / 100;
     else spawnPosition = pickupData.spawnPosition;
     let spawnY = device.screenWidth * spawnPosition;
 

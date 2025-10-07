@@ -36,7 +36,7 @@
       ],
       "pickups": 
       [ 
-        { "type": "coin", "spawnPosition": 0.1, "spawnTime": 6000 },
+        { "type": "coin", "spawnPosition": 0.2, "spawnTime": 6000 },
         { "type": "coin", "spawnPosition": -1, "spawnTime": 13500 }
       ],
       "oneStarScore": 81,
@@ -52,19 +52,19 @@
       "enemies": 
       [
         { "type": "bird", "spawnPosition": 0.4, "spawnTime": 1000 },
-        { "type": "bird", "spawnPosition": 0.1, "spawnTime": 3000 },
+        { "type": "bird", "spawnPosition": 0.2, "spawnTime": 3000 },
         { "type": "bird", "spawnPosition": 0.3, "spawnTime": 5000 },
         { "type": "bird", "spawnPosition": 0.7, "spawnTime": 7000 },
         { "type": "bird", "spawnPosition": 0.6, "spawnTime": 9000 },
         { "type": "bird", "spawnPosition": 0.3, "spawnTime": 11000 },
         { "type": "bird", "spawnPosition": 0.7, "spawnTime": 13000 },
         { "type": "bird", "spawnPosition": 0.4, "spawnTime": 15000 },
-        { "type": "bird", "spawnPosition": 0.1, "spawnTime": 17000 },
-        { "type": "bird", "spawnPosition": 0.1, "spawnTime": 19000 }
+        { "type": "bird", "spawnPosition": 0.2, "spawnTime": 17000 },
+        { "type": "bird", "spawnPosition": 0.2, "spawnTime": 19000 }
       ],
       "pickups": 
       [ 
-        { "type": "coin", "spawnPosition": 0.1, "spawnTime": 9000 },
+        { "type": "coin", "spawnPosition": 0.2, "spawnTime": 9000 },
         { "type": "coin", "spawnPosition": 0.7, "spawnTime": 18000 },
         { "type": "heal", "spawnPosition": -1, "spawnTime": 12000 }
       ],
@@ -82,7 +82,7 @@
       [
         { "type": "rocket", "spawnPosition": 0.5, "spawnTime": 2000 },
         { "type": "rocket", "spawnPosition": 0.3, "spawnTime": 5000 },
-        { "type": "rocket", "spawnPosition": 0.1, "spawnTime": 7500 },
+        { "type": "rocket", "spawnPosition": 0.2, "spawnTime": 7500 },
         { "type": "rocket", "spawnPosition": 0.7, "spawnTime": 10000 }
       ],
       "pickups": 
@@ -102,7 +102,7 @@
       "enemies": 
       [
         { "type": "bird", "spawnPosition": 0.7, "spawnTime": 1000 },
-        { "type": "bird", "spawnPosition": 0.1, "spawnTime": 3000 },
+        { "type": "bird", "spawnPosition": 0.2, "spawnTime": 3000 },
         { "type": "rocket", "spawnPosition": 0.5, "spawnTime": 4000 },
         { "type": "bird", "spawnPosition": 0.4, "spawnTime": 6000 },
         { "type": "bird", "spawnPosition": 0.3, "spawnTime": 8000 },
@@ -128,7 +128,7 @@
       "backgroundMusic": "blue-sky.mp3",
       "enemies": 
       [
-        { "type": "bird", "spawnPosition": 0.1, "spawnTime": 1000 },
+        { "type": "bird", "spawnPosition": 0.2, "spawnTime": 1000 },
         { "type": "rocket", "spawnPosition": 0.7, "spawnTime": 3000 },
         { "type": "rocket", "spawnPosition": 0.5, "spawnTime": 4000 },
         { "type": "bird", "spawnPosition": 0.3, "spawnTime": 6000 },
@@ -138,7 +138,7 @@
         { "type": "bird", "spawnPosition": 0.5, "spawnTime": 13000 },
         { "type": "rocket", "spawnPosition": 0.4, "spawnTime": 14000 },
         { "type": "bird", "spawnPosition": 0.6, "spawnTime": 16000 },
-        { "type": "bird", "spawnPosition": 0.1, "spawnTime": 17000 },
+        { "type": "bird", "spawnPosition": 0.2, "spawnTime": 17000 },
         { "type": "rocket", "spawnPosition": 0.2, "spawnTime": 18500 }
       ],
       "pickups": 
@@ -160,7 +160,7 @@
       "backgroundMusic": "blue-sky.mp3",
       "enemies": 
       [
-        { "type": "chicken", "spawnPosition": 0.1, "spawnTime": 1000 },
+        { "type": "chicken", "spawnPosition": 0.2, "spawnTime": 1000 },
         { "type": "chicken", "spawnPosition": 0.7, "spawnTime": 3000 },
         { "type": "chicken", "spawnPosition": 0.5, "spawnTime": 4000 },
         { "type": "chicken", "spawnPosition": 0.2, "spawnTime": 8000 },
@@ -185,7 +185,7 @@
       "backgroundMusic": "blue-sky.mp3",
       "enemies": 
       [
-        { "type": "bird", "spawnPosition": 0.1, "spawnTime": 1000 },
+        { "type": "bird", "spawnPosition": 0.2, "spawnTime": 1000 },
         { "type": "bird", "spawnPosition": 0.5, "spawnTime": 3000 },
         { "type": "chicken", "spawnPosition": -1, "spawnTime": 4000 },
         { "type": "bird", "spawnPosition": 0.2, "spawnTime": 8000 },
@@ -204,7 +204,7 @@
       ],
       "pickups": 
       [ 
-        { "type": "coin", "spawnPosition": 0.1, "spawnTime": 5000 },
+        { "type": "coin", "spawnPosition": 0.2, "spawnTime": 5000 },
         { "type": "invincible", "spawnPosition": 0.7, "spawnTime": 6000 },
         { "type": "heal", "spawnPosition": -1, "spawnTime": 7000 },
         { "type": "coin", "spawnPosition": -1, "spawnTime": 28000 }
@@ -224,7 +224,7 @@
         { "type": "rocket", "spawnPosition": 0.2, "spawnTime": 1000 },
         { "type": "rocket", "spawnPosition": 0.7, "spawnTime": 2000 },
         { "type": "chicken", "spawnPosition": -1, "spawnTime": 4000 },
-        { "type": "chicken", "spawnPosition": 0.1, "spawnTime": 8000 },
+        { "type": "chicken", "spawnPosition": 0.2, "spawnTime": 8000 },
         { "type": "bird", "spawnPosition": -1, "spawnTime": 9000 },
         { "type": "bird", "spawnPosition": -1, "spawnTime": 12000 },
         { "type": "bird", "spawnPosition": -1, "spawnTime": 14000 },

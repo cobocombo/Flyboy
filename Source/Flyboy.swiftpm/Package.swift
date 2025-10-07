@@ -19,7 +19,7 @@ let package = Package(
             bundleIdentifier: "com.cobo.flyboyadventuregame",
             teamIdentifier: "4U5LUB477B",
             displayVersion: "1.0",
-            bundleVersion: "7",
+            bundleVersion: "8",
             appIcon: .asset("AppIcon"),
             accentColor: .presetColor(.green),
             supportedDeviceFamilies: [
