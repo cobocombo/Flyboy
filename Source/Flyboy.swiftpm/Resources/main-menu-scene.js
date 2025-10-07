@@ -42,7 +42,7 @@ class MainMenuScene extends Phaser.Scene
     });
 
     this.settingsTapped = false;
-    this.settingsDialog = new ui.Dialog({ id: 'settings-dialog', width: `400px`, height: `200px` });
+    this.settingsDialog = new ui.Dialog({ id: 'settings-dialog', width: `400px`, height: `300px` });
     this.settingsDialog.cancelable = false;
     this.settingsDialog.addEventListener({ event: 'posthide', handler: () => 
     {

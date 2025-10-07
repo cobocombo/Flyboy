@@ -18,17 +18,24 @@ class SettingsPage extends ui.Page
   {
     let dialog = app.getComponentById({ id: 'settings-dialog' });
     this.navigationBarTitle = 'Settings';
-    this.saveButton = new ui.BarButton({ text: 'Save', onTap: () => 
+    this.doneButton = new ui.BarButton({ text: 'Done', onTap: () => 
     { 
       this.save();
       dialog.dismiss(); 
       this.sound.play('tap', { volume: 0.8, loop: false });
     }});
 
-    this.navigationBarButtonsRight = [ this.saveButton ];
+    this.navigationBarButtonsRight = [ this.doneButton ];
     this.setupBody();
   }
   
+  /** Public method called when the user taps the privacy policy item. */
+  privacyPolicyItemTapped()
+  {
+    browser.open({ url: 'https://github.com/cobocombo/Flyboy/blob/main/PRIVACY_POLICY.md', inApp: true, animated: true });
+  }
+  
+  /** Public method called when the user taps the report a bug item. */
   reportABugItemTapped()
   {
     let reportABugModal = new ui.Modal({ id: 'report-a-bug-modal' });
@@ -44,6 +51,7 @@ class SettingsPage extends ui.Page
     let settingsList = new ui.List();
     settingsList.addItem({ item: new ui.ListItem({ left: new ui.Icon({ icon: 'ion-ios-musical-notes', size: '32px' }), center: 'Sound', right: this.soundSwitch }) });
     settingsList.addItem({ item: new ui.ListItem({ left: new ui.Icon({ icon: 'ion-ios-bug', size: '32px' }), center: 'Report A Bug', tappable: true, modifiers: ['chevron'], onTap: this.reportABugItemTapped.bind(this) }) });
+    settingsList.addItem({ item: new ui.ListItem({ left: new ui.Icon({ icon: 'ion-ios-eye', size: '32px' }), center: "Privacy Policy", tappable: true, modifiers: ['chevron'], onTap: this.privacyPolicyItemTapped.bind(this) }) });
     settingsList.addItem({ item: new ui.ListItem({ left: new ui.Icon({ icon: 'ion-ios-information-circle', size: '30px' }), center: 'Version: 1.0' }) });
     this.addComponents({ components: [ settingsList ]});
   }
