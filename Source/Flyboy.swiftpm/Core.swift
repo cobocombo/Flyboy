@@ -42,8 +42,6 @@ class ScriptitCoreController: UIViewController, WKScriptMessageHandler
     
     self.webView = WKWebView(frame: view.bounds, configuration: webViewConfiguration);
     self.webView.autoresizingMask = [ .flexibleWidth, .flexibleHeight];
-    self.webView.isOpaque = false;
-    self.webView.backgroundColor = .black;
     
     if let htmlPath = Bundle.main.path(forResource: "app", ofType: "html")
     {

@@ -8,6 +8,7 @@ let game = new ui.PhaserGame({
   config: 
   { 
     type: Phaser.WEBGL,
+    backgroundColor: '#000000',
     scene: [ SplashScene, MainMenuScene, LevelSelectScene, LoadingScene, GameScene ],
     physics: 
     { 
