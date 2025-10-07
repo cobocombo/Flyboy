@@ -28,6 +28,12 @@ class SettingsPage extends ui.Page
     this.navigationBarButtonsRight = [ this.saveButton ];
     this.setupBody();
   }
+  
+  reportABugItemTapped()
+  {
+    let reportABugModal = new ui.Modal({ id: 'report-a-bug-modal' });
+    reportABugModal.present({ root: new ReportABugPage() });
+  }
 
   /** Public method called to set the body of the settings page. */
   setupBody()
@@ -37,6 +43,7 @@ class SettingsPage extends ui.Page
 
     let settingsList = new ui.List();
     settingsList.addItem({ item: new ui.ListItem({ left: new ui.Icon({ icon: 'ion-ios-musical-notes', size: '32px' }), center: 'Sound', right: this.soundSwitch }) });
+    settingsList.addItem({ item: new ui.ListItem({ left: new ui.Icon({ icon: 'ion-ios-bug', size: '32px' }), center: 'Report A Bug', tappable: true, modifiers: ['chevron'], onTap: this.reportABugItemTapped.bind(this) }) });
     settingsList.addItem({ item: new ui.ListItem({ left: new ui.Icon({ icon: 'ion-ios-information-circle', size: '30px' }), center: 'Version: 1.0' }) });
     this.addComponents({ components: [ settingsList ]});
   }
